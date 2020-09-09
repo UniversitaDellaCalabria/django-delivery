@@ -1,22 +1,7 @@
 <template>
   <div id="app">
     <Header></Header>
-        <h4>{{ msg }}</h4>
-        <p>Servizio di Approvvigionamento SIM e Router del Campus Universitario.</p>
-        <!--<h4>Accedi</h4>-->
-        <ul>
-          <li><a href="#" target="_blank">
-                Accedi
-              </a>
-          </li>
-          <!--
-          <li>
-            <a href="#" target="_blank">
-                Contatti
-            </a>
-          </li>
-          -->
-        </ul>
+        <router-view></router-view>     
     <Footer></Footer>
   </div>
 </template>

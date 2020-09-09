@@ -61,6 +61,13 @@ npm run dev
 # install webpack bundle
 # npm install webpack-bundle-tracker --save-dev
 # npm install write-file-webpack-plugin --save-dev
+
+# sass loader
+# npm install --save-dev node-sass sass-loader
+
+# ad a pure vue.js router
+npm install vue-router --save
+vue add router
 ````
 
 ````
