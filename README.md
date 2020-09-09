@@ -40,7 +40,21 @@ Vue.js setup
 ------------
 
 ````
+apt install npm
+
+# this will embed nmp env in pyenv
+pip install nodeenv
+nodeenv -p
+
+# this will install vue in the venv
 npm install -g vue-cli
+
+# put the project informations and create the vue project in the current folder
+vue init webpack-simple
+
+# install the vue project in the venv
+npm install
+
 
 ````
 
