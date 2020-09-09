@@ -1,26 +1,37 @@
 <template>
   <div id="app">
-    <img src="https://ds.auth.unical.it/static/images/unical_logo.svg">
-    <h4>{{ msg }}</h4>
-    <p>Servizio di Approvvigionamento SIM e Router del Campus Universitario.</p>
-    <!--<h4>Accedi</h4>-->
-    <ul>
-      <li><a href="#" target="_blank">
-            Accedi
-          </a>
-      </li>
-      <li>
-        <a href="#" target="_blank">
-            Contatti
-        </a>
-      </li>
-    </ul>
+    <Header></Header>
+        <h4>{{ msg }}</h4>
+        <p>Servizio di Approvvigionamento SIM e Router del Campus Universitario.</p>
+        <!--<h4>Accedi</h4>-->
+        <ul>
+          <li><a href="#" target="_blank">
+                Accedi
+              </a>
+          </li>
+          <!--
+          <li>
+            <a href="#" target="_blank">
+                Contatti
+            </a>
+          </li>
+          -->
+        </ul>
+    <Footer></Footer>
   </div>
 </template>
 
 <script>
+import Header from './components/Header'
+import Footer from './components/Footer'
+
+
 export default {
   name: 'app',
+  components: {
+    Header,
+    Footer
+  },
   data () {
     return {
       msg: 'Welcome to uniDelivery App'
@@ -57,4 +68,10 @@ a {
   color: #918f90;
   text-decoration: none;
 }
+</style>
+
+<style scoped lang="sass">
+html, body
+  margin: 0
+  min-height: 100vh
 </style>

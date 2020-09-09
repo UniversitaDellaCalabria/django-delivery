@@ -57,6 +57,10 @@ npm install
 
 # run dev server
 npm run dev
+
+# install webpack bundle
+# npm install webpack-bundle-tracker --save-dev
+# npm install write-file-webpack-plugin --save-dev
 ````
 
 ````

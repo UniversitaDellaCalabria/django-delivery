@@ -2,3 +2,4 @@
 uniDelivery/db.sqlite3
 django-rest-framework
 env
+node_modules
