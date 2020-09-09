@@ -16,7 +16,7 @@ export default new Router({
       component: Home
     },
     {
-      path: '/',
+      path: '/contacts',
       name: 'contacts',
       component: Contacts
     },
