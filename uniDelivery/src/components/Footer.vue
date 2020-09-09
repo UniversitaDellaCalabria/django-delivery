@@ -1,7 +1,6 @@
 <template>
   <footer>
-    <div id="sitemaps">
-      <h5>Sitemap</h5>
+    <hr>
       <ul>
         <router-link tag='li' :to="{ name: 'home'}">
           <a>Home</a>
@@ -23,6 +22,8 @@ export default{
 </script>
 
 
-<style scoped lang="sass">
-
+<style scoped lang="scss">
+    footer {
+        margin-top: 5em;
+    }
 </style>

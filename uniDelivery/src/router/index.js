@@ -2,7 +2,9 @@ import Vue from 'vue'
 import Router from 'vue-router'
 
 import Home from '../views/Home'
-import CuteCat from '../views/CuteCat'
+import Contacts from '../views/Contacts'
+import PageOne from '../views/PageOne'
+import PageTwo from '../views/PageTwo'
 
 Vue.use(Router)
 
@@ -14,9 +16,19 @@ export default new Router({
       component: Home
     },
     {
-      path: '/cutecate',
-      name: 'cutecat',
-      component: CuteCat
+      path: '/',
+      name: 'contacts',
+      component: Contacts
+    },
+    {
+      path: '/page_one',
+      name: 'page_one',
+      component: PageOne
+    },
+    {
+      path: '/page_two',
+      name: 'page_two',
+      component: PageTwo
     }
   ]
 })

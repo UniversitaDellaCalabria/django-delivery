@@ -1,7 +1,8 @@
 <template>
   <section class="container">
     <p>Servizio di Approvvigionamento SIM e Router del Campus Universitario.</p>
-    <redirectButton pathname="cutecat"></redirectButton>
+    <redirectButton pathname="page_one"></redirectButton>
+    <redirectButton pathname="page_two"></redirectButton>
   </section>
 </template>
 

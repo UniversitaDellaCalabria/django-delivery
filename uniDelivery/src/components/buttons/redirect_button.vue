@@ -1,5 +1,5 @@
 <template>
-  <button type="button" @click="goTo">My cute cat</button>
+  <button type="button" @click="goTo">{{ this.pathname }}</button>
 </template>
 
 <script>
