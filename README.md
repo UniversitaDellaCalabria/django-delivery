@@ -55,7 +55,8 @@ vue init webpack-simple
 # install the vue project in the venv
 npm install
 
-
+# run dev server
+npm run dev
 ````
 
 ````

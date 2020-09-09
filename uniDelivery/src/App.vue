@@ -1,20 +1,19 @@
 <template>
   <div id="app">
-    <img src="./assets/logo.png">
-    <h1>{{ msg }}</h1>
-    <h2>Essential Links</h2>
+    <img src="https://ds.auth.unical.it/static/images/unical_logo.svg">
+    <h4>{{ msg }}</h4>
+    <p>Servizio di Approvvigionamento SIM e Router del Campus Universitario.</p>
+    <!--<h4>Accedi</h4>-->
     <ul>
-      <li><a href="https://vuejs.org" target="_blank">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank">Twitter</a></li>
-    </ul>
-    <h2>Ecosystem</h2>
-    <ul>
-      <li><a href="http://router.vuejs.org/" target="_blank">vue-router</a></li>
-      <li><a href="http://vuex.vuejs.org/" target="_blank">vuex</a></li>
-      <li><a href="http://vue-loader.vuejs.org/" target="_blank">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank">awesome-vue</a></li>
+      <li><a href="#" target="_blank">
+            Accedi
+          </a>
+      </li>
+      <li>
+        <a href="#" target="_blank">
+            Contatti
+        </a>
+      </li>
     </ul>
   </div>
 </template>
@@ -24,7 +23,7 @@ export default {
   name: 'app',
   data () {
     return {
-      msg: 'Welcome to Your Vue.js App'
+      msg: 'Welcome to uniDelivery App'
     }
   }
 }
@@ -55,6 +54,7 @@ li {
 }
 
 a {
-  color: #42b983;
+  color: #918f90;
+  text-decoration: none;
 }
 </style>
