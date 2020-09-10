@@ -4,6 +4,7 @@ from django.shortcuts import render
 from rest_framework import generics, viewsets, permissions
 
 from . models import *
+from . permissions import *
 from . serializers import *
 
 
@@ -11,8 +12,9 @@ ERROR_MESS = _("Non hai accesso a questa risorsa")
 
 # Abstract Classes to put some conventions in
 class ApiResourceList(generics.ListCreateAPIView):
-    permission_classes = [permissions.DjangoModelPermissionsOrAnonReadOnly]
+    # permission_classes = [permissions.DjangoModelPermissionsOrAnonReadOnly]
     # permission_classes = [permissions.DjangoModelPermissions]
+    permission_classes = [AllowCampainOperator]
 
     def perform_create(self, serializer):
         serializer.save(user_ins=self.request.user)

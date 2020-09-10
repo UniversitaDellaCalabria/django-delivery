@@ -91,9 +91,12 @@ vue init webpack-simple
 # install the vue project in the venv
 npm install
 
-# ad a pure vue.js router
+# add a pure vue.js router
 npm install vue-router --save
 vue add router
+
+# add vue-good-table
+npm install --save vue-good-table
 
 # run dev server
 npm run dev
