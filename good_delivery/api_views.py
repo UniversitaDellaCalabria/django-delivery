@@ -11,16 +11,16 @@ ERROR_MESS = _("Non hai accesso a questa risorsa")
 
 # Abstract Classes to put some conventions in
 class ApiResourceList(generics.ListCreateAPIView):
-    # ~ permission_classes = [permissions.DjangoModelPermissionsOrAnonReadOnly]
-    permission_classes = [permissions.DjangoModelPermissions]
+    permission_classes = [permissions.DjangoModelPermissionsOrAnonReadOnly]
+    # permission_classes = [permissions.DjangoModelPermissions]
 
     def perform_create(self, serializer):
         serializer.save(user_ins=self.request.user)
 
 
 class ApiResourceDetail(generics.RetrieveUpdateDestroyAPIView):
-    # ~ permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    permission_classes = [permissions.DjangoModelPermissions]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    # permission_classes = [permissions.DjangoModelPermissions]
 
     def perform_update(self, serializer):
         serializer.save(user_mod=self.request.user)
@@ -29,27 +29,15 @@ class ApiResourceDetail(generics.RetrieveUpdateDestroyAPIView):
 
 class ApiDeliveryCampaignList(ApiResourceList):
     description = _('Available Campains')
-    queryset = DeliveryCampaign.objects.all()
+    queryset = DeliveryCampaign.objects.filter(is_active=True)
     serializer_class = DeliveryCampaignSerializer
 
 
 class ApiDeliveryCampaignDetail(ApiResourceDetail):
     description = _('Detail of a Campain')
-    queryset = DeliveryCampaign.objects.all()
+    queryset = DeliveryCampaign.objects.filter(is_active=True)
     serializer_class = DeliveryCampaignSerializer
 
-
-class ApiDeliveryCampaignList(ApiResourceList):
-    description = _('Available DeliveryCampaign')
-    queryset = DeliveryCampaign.objects.all()
-    serializer_class = DeliveryCampaignSerializer
-
-
-class ApiDeliveryCampaignDetail(ApiResourceDetail):
-    description = _('Detail of a DeliveryCampaign')
-    queryset = DeliveryCampaign.objects.all()
-    serializer_class = DeliveryCampaignSerializer
-    
 
 class ApiDeliveryPointList(ApiResourceList):
     description = _('Available DeliveryPoint')
@@ -61,7 +49,7 @@ class ApiDeliveryPointDetail(ApiResourceDetail):
     description = _('Detail of a DeliveryPoint')
     queryset = DeliveryPoint.objects.all()
     serializer_class = DeliveryPointSerializer
-    
+
 
 class ApiUserDeliveryPointList(ApiResourceList):
     description = _('Available UserDeliveryPoint')
@@ -73,7 +61,7 @@ class ApiUserDeliveryPointDetail(ApiResourceDetail):
     description = _('Detail of a UserDeliveryPoint')
     queryset = UserDeliveryPoint.objects.all()
     serializer_class = UserDeliveryPointSerializer
-    
+
 
 class ApiOperatorDeliveryPointList(ApiResourceList):
     description = _('Available OperatorDeliveryPoint')
@@ -85,7 +73,7 @@ class ApiOperatorDeliveryPointDetail(ApiResourceDetail):
     description = _('Detail of a OperatorDeliveryPoint')
     queryset = OperatorDeliveryPoint.objects.all()
     serializer_class = OperatorDeliveryPointSerializer
-    
+
 
 class ApiGoodCategoryList(ApiResourceList):
     description = _('Available GoodCategory')
@@ -97,7 +85,7 @@ class ApiGoodCategoryDetail(ApiResourceDetail):
     description = _('Detail of a GoodCategory')
     queryset = GoodCategory.objects.all()
     serializer_class = GoodCategorySerializer
-    
+
 
 class ApiGoodList(ApiResourceList):
     description = _('Available Good')
@@ -109,7 +97,7 @@ class ApiGoodDetail(ApiResourceDetail):
     description = _('Detail of a Good')
     queryset = Good.objects.all()
     serializer_class = GoodSerializer
-    
+
 
 class ApiDeliveryPointGoodStockList(ApiResourceList):
     description = _('Available DeliveryPointGoodStock')
@@ -121,7 +109,7 @@ class ApiDeliveryPointGoodStockDetail(ApiResourceDetail):
     description = _('Detail of a DeliveryPointGoodStock')
     queryset = DeliveryPointGoodStock.objects.all()
     serializer_class = DeliveryPointGoodStockSerializer
-    
+
 
 class ApiDeliveryPointGoodStockIdentifierList(ApiResourceList):
     description = _('Available DeliveryPointGoodStockIdentifier')
@@ -133,7 +121,7 @@ class ApiDeliveryPointGoodStockIdentifierDetail(ApiResourceDetail):
     description = _('Detail of a DeliveryPointGoodStockIdentifier')
     queryset = DeliveryPointGoodStockIdentifier.objects.all()
     serializer_class = DeliveryPointGoodStockIdentifierSerializer
-    
+
 
 class ApiGoodDeliveryList(ApiResourceList):
     description = _('Available GoodDelivery')
@@ -145,7 +133,7 @@ class ApiGoodDeliveryDetail(ApiResourceDetail):
     description = _('Detail of a GoodDelivery')
     queryset = GoodDelivery.objects.all()
     serializer_class = GoodDeliverySerializer
-    
+
 
 class ApiAgreementList(ApiResourceList):
     description = _('Available Agreement')
@@ -157,7 +145,7 @@ class ApiAgreementDetail(ApiResourceDetail):
     description = _('Detail of a Agreement')
     queryset = Agreement.objects.all()
     serializer_class = AgreementSerializer
-    
+
 
 class ApiGoodDeliveryAgreementList(ApiResourceList):
     description = _('Available GoodDeliveryAgreement')
@@ -169,7 +157,7 @@ class ApiGoodDeliveryAgreementDetail(ApiResourceDetail):
     description = _('Detail of a GoodDeliveryAgreement')
     queryset = GoodDeliveryAgreement.objects.all()
     serializer_class = GoodDeliveryAgreementSerializer
-    
+
 
 class ApiGoodDeliveryAttachmentList(ApiResourceList):
     description = _('Available GoodDeliveryAttachment')

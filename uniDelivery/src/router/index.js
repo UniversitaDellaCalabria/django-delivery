@@ -1,7 +1,8 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 
-import Home from '../views/Home'
+import HomeOperator from '../views/HomeOperator'
+import MyUsersOperator from '../views/MyUsersOperator'
 import Contacts from '../views/Contacts'
 import PageOne from '../views/PageOne'
 import PageTwo from '../views/PageTwo'
@@ -13,7 +14,12 @@ export default new Router({
     {
       path: '/',
       name: 'home',
-      component: Home
+      component: HomeOperator
+    },
+    {
+      path: '/campain/:campain',
+      name: 'users',
+      component: MyUsersOperator
     },
     {
       path: '/contacts',

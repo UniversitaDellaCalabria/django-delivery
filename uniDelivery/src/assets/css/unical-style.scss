@@ -1,0 +1,212 @@
+/**
+ * Università della Calabria
+ * Style SCSS
+ */
+
+/**
+ * Università della Calabria COLORS
+ */
+$bordeaux_unical: #b71918;
+$dark_grey_unical: #383838;
+$light_grey_unical: #9d9d9c;
+$white: #ffffff;
+
+/**
+ * Generic elements
+ */
+a {
+    cursor: pointer;
+    color: $bordeaux_unical;
+}
+a:hover, a:active {
+    color: $dark_grey_unical;
+}
+a.read-more{
+    color: $light_grey_unical;
+}
+.badge-primary {
+    background: $bordeaux_unical;
+}
+.badge-secondary {
+    background: $dark_grey_unical;
+}
+.btn-primary {
+    background: $dark_grey_unical;
+}
+.btn-primary:hover {
+    background: $light_grey_unical;
+}
+.btn-outline-primary {
+    color: $dark_grey_unical;
+    -webkit-box-shadow: inset 0 0 0 1px $dark_grey_unical;
+    box-shadow: inset 0 0 0 1px $dark_grey_unical;
+}
+.btn-outline-primary:hover {
+    color: $light_grey_unical;
+    -webkit-box-shadow: inset 0 0 0 1px $light_grey_unical;
+    box-shadow: inset 0 0 0 1px $light_grey_unical;
+}
+.btn-outline-primary:active,
+.btn-outline-primary:focus {
+    color: $dark_grey_unical !important;
+    box-shadow: inset 0 1px 0 $light_grey_unical, 0 1px 1px $light_grey_unical, 0 0 0 0.2rem rgba(101, 101, 102, 0.5) !important;
+}
+.btn-secondary {
+    background: $bordeaux_unical;
+}
+.btn-secondary:hover {
+    background: $dark_grey_unical;
+}
+.btn:not(.btn-outline-primary):not(.btn-outline-secondary):active,
+.btn:not(.btn-outline-primary):not(.btn-outline-secondary):focus {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 0 0.2rem rgba(101, 101, 102, 0.5) !important;
+    background-color:#475664 !important;
+}
+.text-primary {
+    color: $dark_grey_unical !important;
+}
+.text-secondary {
+    color: $bordeaux_unical !important;
+}
+
+/**
+ * Header Slim Wrapper
+ */
+.it-header-slim-wrapper{
+    background: $bordeaux_unical;
+ }
+.it-header-slim-wrapper .it-header-slim-wrapper-content .header-slim-right-zone button{
+    background: $dark_grey_unical;
+}
+.it-header-slim-wrapper .it-header-slim-wrapper-content .header-slim-right-zone button:hover{
+    background: $light_grey_unical;
+    color: $dark_grey_unical;
+}
+
+/**
+ * Header Center Wrapper
+ */
+@media (min-width : 992px) {
+    .it-header-center-wrapper {
+        height: 130px;
+    }
+}
+.it-header-center-wrapper{
+    background: $white;
+}
+
+.it-header-center-wrapper .it-header-center-content-wrapper .it-brand-wrapper a,
+.it-header-center-wrapper .it-header-center-content-wrapper .it-right-zone{
+    color: $dark_grey_unical;
+}
+.it-header-center-wrapper .it-header-center-content-wrapper .it-right-zone .it-socials ul .icon,
+.it-header-center-wrapper .it-header-center-content-wrapper .it-search-wrapper a.rounded-icon svg{
+    fill: $dark_grey_unical;
+}
+
+
+/**
+ * Logo
+ */
+.it-header-center-wrapper .it-header-center-content-wrapper .it-brand-wrapper a .img {
+    width: 100%;
+}
+/**
+ * Header Navbar Wrapper
+ */
+
+/* Desktops and laptops ----------- */
+@media (min-width : 992px) {
+    .it-header-center-wrapper .it-header-center-content-wrapper .it-brand-wrapper a .logo_icon image{
+        width: 100%;
+    }
+}
+/* Others than desktop ----------- */
+@media (max-width : 991px) {
+    .it-header-center-wrapper .it-header-center-content-wrapper .it-brand-wrapper a .logo_icon image{
+        height: 100%;
+    }
+}
+
+
+/**
+ * Header Navbar Wrapper
+ */
+
+/* Desktops and laptops ----------- */
+@media (min-width : 992px) {
+    .it-header-navbar-wrapper {
+        background: $dark_grey_unical;
+    }
+}
+/* Others than desktop ----------- */
+@media (max-width : 991px) {
+    .it-header-navbar-wrapper {
+        background: none;
+    }
+    .custom-navbar-toggler svg{
+        fill: $dark_grey_unical;
+    }
+}
+
+/**
+ * Main Body
+ */
+
+/**
+ * Footer Main
+ */
+.it-footer-main{
+    background: $dark_grey_unical;
+}
+
+/**
+ * Footer Small Prints
+ */
+.it-footer-small-prints{
+    background: $bordeaux_unical;
+}
+
+/**
+ * -------------------------------------------------------------
+ */
+
+
+/**
+ * Carousel
+ */
+.it-carousel-wrapper .owl-dots .owl-dot{
+    background: $dark_grey_unical;
+}
+
+/**
+ * Back to top
+ */
+.back-to-top {
+    background: $light_grey_unical;
+}
+.back-to-top:hover {
+    background: $dark_grey_unical;
+}
+
+/**
+ * Form Bootstrap Italia
+ */
+ .toggles label input[type="checkbox"]:checked + .lever::after {
+    background-color: $bordeaux_unical;
+}
+.form-check [type=radio]:checked+label::after,
+.form-check [type=checkbox]:checked+label::after {
+    background-color: $bordeaux_unical;
+    border-color: $bordeaux_unical;
+}
+.form-check [type=radio]:checked+label::before {
+    border-color: $bordeaux_unical;
+}
+
+/**
+ * Section muted
+ */
+.section.section-muted {
+    background-color: #f7f7f7;
+}

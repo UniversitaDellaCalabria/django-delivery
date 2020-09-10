@@ -16,7 +16,7 @@ def _attachment_upload(instance, filename):
 class TimeStampedModel(models.Model):
 	create = models.DateTimeField(auto_now_add=True)
 	modified =  models.DateTimeField(auto_now=True)
-	
+
 	class Meta:
 		abstract = True
 
@@ -36,6 +36,7 @@ class DeliveryCampaign(TimeStampedModel):
         verbose_name = _('Campagna di consegne')
         verbose_name_plural = _('Campagne di consegne')
 
+    @property
     def is_in_progress(self):
         return self.date_start<=timezone.now() and self.date_end>timezone.now()
 
