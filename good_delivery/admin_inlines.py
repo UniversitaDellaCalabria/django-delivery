@@ -3,6 +3,7 @@ from django.contrib import admin
 
 from .models import *
 
+
 class OperatorDeliveryPointInline(admin.TabularInline):
 	 model = OperatorDeliveryPoint
 	 extra = 0
@@ -21,7 +22,6 @@ class GoodInline(admin.TabularInline):
 class DeliveryPointGoodStockIdentifierInline(admin.TabularInline):
     model = DeliveryPointGoodStockIdentifier
     extra = 0
-
 
 
 class DeliveryPointGoodStockInline(admin.TabularInline):
