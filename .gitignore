@@ -5,3 +5,6 @@ django_delivery/run.sh
 django_delivery/certificates/*
 django_delivery/data/*
 django_delivery/django_delivery/settingslocal.py
+
+django-rest-framework/
+uniDelivery
