@@ -8,8 +8,8 @@ class OperatorDeliveryPointInline(admin.TabularInline):
 	 extra = 0
 
 
-class GoodDeliveryAgreementInline(admin.TabularInline):
-    model = GoodDeliveryAgreement
+class DeliveryCampaignAgreementInline(admin.TabularInline):
+    model = DeliveryCampaignAgreement
     extra = 0
 
 

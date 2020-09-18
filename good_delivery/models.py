@@ -174,8 +174,8 @@ class DeliveryPointGoodStockIdentifier(TimeStampedModel):
                                        help_text=_('Identificativo del prodotto/servizio'))
 
     class Meta:
-        verbose_name = _('Idenficativo bene in stock')
-        verbose_name_plural = _('Idenficativi beni in stock')
+        verbose_name = _('Identificativo bene in stock')
+        verbose_name_plural = _('Identificativi beni in stock')
 
     def __str__(self):
         return '{} - {}'.format(self.delivery_point_stock,
@@ -329,12 +329,12 @@ class Agreement(TimeStampedModel):
         return '{}'.format(self.name)
 
 
-class GoodDeliveryAgreement(TimeStampedModel):
+class DeliveryCampaignAgreement(TimeStampedModel):
     """
     agreement associato a una consegna
     """
-    good_delivery = models.ForeignKey(GoodDelivery,
-                                      on_delete=models.PROTECT)
+    campaign = models.ForeignKey(DeliveryCampaign,
+                                 on_delete=models.PROTECT)
     agreement = models.ForeignKey(Agreement, on_delete=models.PROTECT)
 
     class Meta:
@@ -342,7 +342,7 @@ class GoodDeliveryAgreement(TimeStampedModel):
         verbose_name_plural = _('Agreement consegne')
 
     def __str__(self):
-        return '{} - {}'.format(self.good_delivery, self.agreement)
+        return '{} - {}'.format(self.campaign, self.agreement)
 
 
 class GoodDeliveryAttachment(TimeStampedModel):

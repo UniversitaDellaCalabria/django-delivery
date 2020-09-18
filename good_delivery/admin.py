@@ -11,7 +11,8 @@ class DeliveryCampaignAdmin(admin.ModelAdmin):
     list_filter = ('date_start', 'date_end',
                    'require_agreement', 'is_active')
     search_fields = ('name',)
-    
+    inlines = [DeliveryCampaignAgreementInline,]
+
 
 @admin.register(DeliveryPoint)
 class DeliveryPointAdmin(admin.ModelAdmin):
@@ -68,10 +69,15 @@ class GoodDeliveryAdmin(admin.ModelAdmin):
     list_display = ('delivered_to', 'created_by', 'create', 'modified')
     list_filter = ('delivered_to',)
     search_fields = ('delivered_to',)
-    inlines = [GoodDeliveryAgreementInline,]
 
-# @admin.register(Agreement)
+@admin.register(Agreement)
 class AgreementAdmin(admin.ModelAdmin):
     list_display = ('name', 'description', 'is_active')
     list_filter = ('name', 'description', 'is_active')
     search_fields = ('name', 'description')
+
+# @admin.register(DeliveryCampaignAgreement)
+class DeliveryCampaignAgreementAdmin(admin.ModelAdmin):
+    list_display = ('campaign', 'agreement')
+    list_filter = ('campaign', 'agreement')
+    search_fields = ('campaign__name', 'agreement__name')
