@@ -39,3 +39,7 @@ Todo
 
 Tests
 -----
+
+````
+./manage.py test good_delivery
+````
