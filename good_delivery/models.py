@@ -152,8 +152,8 @@ class DeliveryPointGoodStock(TimeStampedModel):
     delivery_point = models.ForeignKey(DeliveryPoint,
                                        on_delete=models.CASCADE)
     good = models.ForeignKey(Good, on_delete=models.CASCADE)
-    # 0 for unlimited
-    max_number = models.IntegerField(default=0)
+    max_number = models.IntegerField(default=0, 
+                                     help_text=_("0 for unlimited"))
 
     class Meta:
         unique_together = ("good", "delivery_point")

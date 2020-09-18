@@ -101,9 +101,7 @@ def operator_new_delivery_preload(request, campaign_id, user_delivery_point_id,
                                                 created_by__operator=request.user,
                                                 created_by__delivery_point=reservation.delivery_point).first()
     stocks = DeliveryPointGoodStock.objects.filter(delivery_point=reservation.delivery_point)
-    goods_ids = set()
-    for stock in stocks:
-        goods_ids.add(stock.good.pk)
+    goods_ids = tuple(set([stock.good.pk for stock in stocks]))
     goods = Good.objects.filter(pk__in=goods_ids)
 
     title = _("Nuova consegna (seleziona prodotto)")
@@ -164,7 +162,6 @@ def operator_good_delivery_detail(request, campaign_id, user_delivery_point_id,
             return redirect('good_delivery:operator_user_reservation_detail',
                             campaign_id=campaign_id,
                             user_delivery_point_id=reservation.pk)
-
     d = {'campaign': campaign,
          'form': form,
          'good_delivery': good_delivery,

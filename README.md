@@ -24,6 +24,14 @@ cp django_delivery/settingslocal.py.example django_delivery/settingslocal.py
 ./manage.py runserver
 ````
 
+Setup
+-----
+
+- Add good_delivery in settings.INSTALLED_APPS
+- create your RSA keys
+  ````openssl req -nodes -new -x509 -days 3650 -keyout private.key -out public.cert -subj '/CN=your.own.fqdn.com'````
+
+
 Use cases and usage example
 ---------------------------
 

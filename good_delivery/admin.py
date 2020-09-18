@@ -1,5 +1,6 @@
 from django.contrib import admin
 
+from . admin_inlines import *
 from . models import *
 
 
@@ -10,19 +11,20 @@ class DeliveryCampaignAdmin(admin.ModelAdmin):
     list_filter = ('date_start', 'date_end',
                    'require_agreement', 'is_active')
     search_fields = ('name',)
-
+    
 
 @admin.register(DeliveryPoint)
 class DeliveryPointAdmin(admin.ModelAdmin):
     list_display = ('campaign','name','location','notes','is_active')
     list_filter = ('campaign__name', 'is_active')
     search_fields = ('campaign__name','name','location')
+    inlines = [OperatorDeliveryPointInline]
 
 
 @admin.register(OperatorDeliveryPoint)
 class OperatorDeliveryPointAdmin(admin.ModelAdmin):
-    list_display = ('delivery_point','operator')
-    list_filter = ('delivery_point__campaign','delivery_point__name')
+    list_display = ('delivery_point','operator', 'create')
+    list_filter = ('delivery_point__campaign','delivery_point__name', 'create')
     search_fields = ('operator__user__first_name','operator__user__last_name','delivery_point__name')
 
 
