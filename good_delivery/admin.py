@@ -39,9 +39,10 @@ class UserDeliveryPointAdmin(admin.ModelAdmin):
 class GoodCategoryAdmin(admin.ModelAdmin):
     list_display = ('name',)
     search_fields = ('name','description')
+    inlines = [GoodInline,]
 
 
-@admin.register(Good)
+# @admin.register(Good)
 class GoodAdmin(admin.ModelAdmin):
     list_display = ('name','category')
     list_filter = ('category__name',)
@@ -67,9 +68,9 @@ class GoodDeliveryAdmin(admin.ModelAdmin):
     list_display = ('delivered_to', 'created_by', 'create', 'modified')
     list_filter = ('delivered_to',)
     search_fields = ('delivered_to',)
+    inlines = [GoodDeliveryAgreementInline,]
 
-
-@admin.register(Agreement)
+# @admin.register(Agreement)
 class AgreementAdmin(admin.ModelAdmin):
     list_display = ('name', 'description', 'is_active')
     list_filter = ('name', 'description', 'is_active')
