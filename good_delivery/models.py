@@ -156,6 +156,7 @@ class DeliveryPointGoodStock(TimeStampedModel):
     max_number = models.IntegerField(default=0)
 
     class Meta:
+        unique_together = ("good", "delivery_point")
         verbose_name = _('Stock beni centro di consegna')
         verbose_name_plural = _('Stock beni centri di consegna')
 
