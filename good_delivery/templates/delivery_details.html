@@ -1,0 +1,71 @@
+{% load i18n %}
+{% load good_delivery_tags %}
+
+
+{% if delivery.delivery_date %}
+    <span class="badge badge-success mb-2">
+        {% trans "Consegnato" %}
+    </span>
+{% else %}
+    <span class="badge badge-danger mb-2">
+        {% trans "Attesa ritiro" %}
+    </span>
+{% endif %}
+
+{% if delivery.disabled_date %}
+    <span class="badge badge-danger mb-2">
+        {% trans "Disabilitata" %}
+    </span>
+{% endif %}
+
+{% if delivery.return_date %}
+    <span class="badge badge-warning mb-2">
+        {% trans "Restituito" %}
+    </span>
+{% endif %}
+<h5 class="card-title">{{ delivery.good }}</h5>
+
+{% if delivery.good_stock_identifier %}
+<p class="card-text">
+    <b>ID: {{ delivery.good_stock_identifier.good_identifier }}</b>
+</p>
+{% elif delivery.good_identifier %}
+<p class="card-text">
+    <b>ID: {{ delivery.good_identifier }}</b>
+</p>
+{% endif %}
+
+{% if delivery.notes %}
+<p class="card-text">
+    {{ delivery.notes }}
+</p>
+{% endif %}
+
+<p class="card-text">
+    <b>{% trans "Data inserimento" %}:</b> {{ delivery.create }}
+    <br>
+    <b>{% trans "Operatore" %}:</b> {{ delivery.created_by }}
+</p>
+
+{% if delivery.delivery_date %}
+<p class="card-text">
+    <b>{% trans "Consegnato il" %}:</b> {{ delivery.delivery_date }}
+    {% if delivery.develivered_by and delivery.delivered_by != delivery.created_by %}
+        <b>{% trans "Operatore" %}:</b> {{ delivery.delivered_by }}
+    {% endif %}
+</p>
+{% endif %}
+
+{% if delivery.disabled_date %}
+<p class="card-text">
+    <b>{% trans "Disabilitata il" %}:</b> {{ delivery.disabled_date }}
+    <b>{% trans "Operatore" %}:</b> {{ delivery.disabled_by }}
+</p>
+{% endif %}
+
+{% if delivery.return_date %}
+<p class="card-text">
+    <b>{% trans "Restituito il" %}:</b> {{ delivery.return_date }}
+    <b>{% trans "Operatore" %}:</b> {{ delivery.returned_to }}
+</p>
+{% endif %}

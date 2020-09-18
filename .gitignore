@@ -1,5 +1,7 @@
 *__pycache__*
-uniDelivery/db.sqlite3
-django-rest-framework
-env
-node_modules
+django_delivery/db.sqlite3
+django_delivery/run.sh
+
+django_delivery/certificates/*
+django_delivery/data/*
+django_delivery/django_delivery/settingslocal.py

@@ -1,0 +1,297 @@
+{% extends "base_page_schema.html" %}
+
+{% load i18n %}
+{% load static %}
+{% load good_delivery_tags %}
+
+{% block menu_links %}
+{% include 'operator_menu.html' %}
+{% endblock menu_links %}
+
+{% block top_buttons %}
+<!--
+<div class="pb-md-4">
+-->
+    <a role="button" class="btn btn-outline-secondary"
+       href="{% url 'good_delivery:operator_active_campaigns' %}">
+        <svg class="icon icon-xs">
+            <use xlink:href="{% static 'svg/sprite.svg' %}#it-arrow-left"></use>
+        </svg> {% trans "Torna alla Dashboard" %}
+    </a>
+    <a role="button" class="btn btn-outline-secondary"
+       href="{% url 'good_delivery:operator_user_reservation_detail' campaign.pk reservation.pk %}">
+        <svg class="icon icon-xs">
+            <use xlink:href="{% static 'svg/sprite.svg' %}#it-arrow-left"></use>
+        </svg> {% trans "Torna a" %} {{ reservation }}
+    </a>
+<!--
+</div>
+-->
+
+{% if not campaign.require_agreement and not good_delivery.delivery_date and not good_delivery.return_date and not good_delivery.disabled_date %}
+<button type="button"
+   class="btn btn-outline-success"
+   data-toggle="modal"
+   data-target="#deliveryGood">
+    <svg class="icon icon-xs icon-success">
+        <use xlink:href="{% static 'svg/sprite.svg' %}#it-check-circle"></use>
+    </svg> {% trans "Marca come consegnato" %}
+</button>
+<div class="modal fade" tabindex="-1" role="dialog" id="deliveryGood">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    {% trans "Completa procedura di consegna" %}
+                </h5>
+                <button class="close" type="button"
+                        data-dismiss="modal" aria-label="Close">
+                   <svg class="icon">
+                      <use xlink:href="{% static 'svg/sprite.svg' %}#it-close"></use>
+                   </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>{% trans "Desideri completare la procedura di consegna " %}
+                   <b>{{ good_delivery }}</b> ?
+                </p>
+            </div>
+            <div class="modal-footer">
+                <a role="button" class="btn btn-success"
+                   href="{% url 'good_delivery:operator_good_delivery_deliver' campaign.pk reservation.pk good_delivery.pk %}">
+                    {% trans "Si, confermo" %}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if good_delivery.delivery_date and not good_delivery.return_date %}
+<button type="button"
+   class="btn btn-outline-warning"
+   data-toggle="modal"
+   data-target="#returnGood">
+    <svg class="icon icon-xs icon-warning">
+        <use xlink:href="{% static 'svg/sprite.svg' %}#it-exchange-circle"></use>
+    </svg> {% trans "Marca come restituito" %}
+</button>
+<div class="modal fade" tabindex="-1" role="dialog" id="returnGood">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    {% trans "Completa procedura di consegna" %}
+                </h5>
+                <button class="close" type="button"
+                        data-dismiss="modal" aria-label="Close">
+                   <svg class="icon">
+                      <use xlink:href="{% static 'svg/sprite.svg' %}#it-close"></use>
+                   </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>{% trans "Desideri restituire il bene?" %}</p>
+            </div>
+            <div class="modal-footer">
+                <a role="button" class="btn btn-success"
+                   href="{% url 'good_delivery:operator_good_delivery_return' campaign.pk reservation.pk good_delivery.pk %}">
+                    {% trans "Si, confermo" %}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if not good_delivery.disabled_date %}
+<button type="button"
+   class="btn btn-outline-info"
+   data-toggle="modal"
+   data-target="#disableDelivery">
+    <svg class="icon icon-xs icon-info">
+        <use xlink:href="{% static 'svg/sprite.svg' %}#it-ban"></use>
+    </svg> {% trans "Disabilita" %}
+</button>
+<div class="modal fade" tabindex="-1" role="dialog" id="disableDelivery">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    {% trans "Disabilita procedura di consegna" %}
+                </h5>
+                <button class="close" type="button"
+                        data-dismiss="modal" aria-label="Close">
+                   <svg class="icon">
+                      <use xlink:href="{% static 'svg/sprite.svg' %}#it-close"></use>
+                   </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>{% trans "Desideri disabilitare la procedura di consegna " %}
+                   <b>{{ good_delivery }}</b> ?
+                </p>
+            </div>
+            <div class="modal-footer">
+                <a role="button" class="btn btn-info"
+                   href="{% url 'good_delivery:operator_good_delivery_disable' campaign.pk reservation.pk good_delivery.pk %}">
+                    {% trans "Si, confermo" %}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if good_delivery.is_waiting %}
+<button type="button"
+   class="btn btn-outline-danger"
+   data-toggle="modal"
+   data-target="#deleteDeliveryGood">
+    <svg class="icon icon-xs icon-danger">
+        <use xlink:href="{% static 'svg/sprite.svg' %}#it-close-circle"></use>
+    </svg> {% trans "Elimina" %}
+</button>
+<div class="modal fade" tabindex="-1" role="dialog" id="deleteDeliveryGood">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    {% trans "Elimina procedura di consegna" %}
+                </h5>
+                <button class="close" type="button"
+                        data-dismiss="modal" aria-label="Close">
+                   <svg class="icon">
+                      <use xlink:href="{% static 'svg/sprite.svg' %}#it-close"></use>
+                   </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>{% trans "Desideri eliminare la procedura di consegna " %}
+                   <b>{{ good_delivery }}</b> ?
+                </p>
+            </div>
+            <div class="modal-footer">
+                <a role="button" class="btn btn-danger"
+                   href="{% url 'good_delivery:operator_good_delivery_delete' campaign.pk reservation.pk good_delivery.pk %}">
+                    {% trans "Si, confermo" %}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+
+{% comment %}
+{% if good_delivery.disabled_date %}
+<button type="button"
+   class="btn btn-outline-success"
+   data-toggle="modal"
+   data-target="#enableDelivery">
+    <svg class="icon icon-xs icon-success">
+        <use xlink:href="{% static 'svg/sprite.svg' %}#it-check-circle"></use>
+    </svg> {% trans "Riabilita" %}
+</button>
+<div class="modal fade" tabindex="-1" role="dialog" id="enableDelivery">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    {% trans "Riabilita procedura di consegna" %}
+                </h5>
+                <button class="close" type="button"
+                        data-dismiss="modal" aria-label="Close">
+                   <svg class="icon">
+                      <use xlink:href="{% static 'svg/sprite.svg' %}#it-close"></use>
+                   </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>{% trans "Desideri riabilitare la procedura di consegna " %}
+                   <b>{{ good_delivery }}</b> ?
+                </p>
+            </div>
+            <div class="modal-footer">
+                <a role="button" class="btn btn-success"
+                   href="{% url 'good_delivery:good_delivery_enable' campaign.pk reservation.pk good_delivery.pk %}">
+                    {% trans "Si, confermo" %}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endcomment %}
+
+{% endblock top_buttons %}
+
+{% block page_content %}
+    <div class="pb-4">
+        <form method="post" enctype="multipart/form-data">
+            {% include 'form_template.html' %}
+
+            {% if good_delivery.is_waiting %}
+                {% block form_buttons %}
+                <div>
+                    <button type="button"
+                            class="btn btn-success btn-block"
+                            data-toggle="modal"
+                            data-target="#action">
+                            <svg class="icon icon-xs icon-white">
+                                <use xlink:href="{% static 'svg/sprite.svg' %}#it-check"></use>
+                            </svg>
+                            {% trans "Modifica l'assegnazione" %}
+                    </button>
+                    <div class="modal fade" tabindex="-1" role="dialog" id="action">
+                        <div class="modal-dialog modal-dialog-centered" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">
+                                        {% trans "Modifica assegnazione bene" %}
+                                    </h5>
+                                    <button class="close" type="button"
+                                            data-dismiss="modal" aria-label="Close">
+                                       <svg class="icon">
+                                          <use xlink:href="{% static 'svg/sprite.svg' %}#it-close"></use>
+                                       </svg>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>{% trans "Vuoi davvero procedere confermando i dati immessi?" %}</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <input class="btn btn-success"
+                                           type="submit"
+                                           value="{% trans 'Si, procedi' %}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endblock form_buttons %}
+            {% endif %}
+        </form>
+    </div>
+
+    {% if logs %}
+    <div id="collapseDiv1-lft" class="collapse-div collapse-left-icon" role="tablist">
+        <div class="collapse-header" id="heading2-lft">
+            <button data-toggle="collapse" data-target="#collapse2-lft" aria-expanded="false" aria-controls="collapse2-lft">
+                {% trans "Aggiornamenti di stato (Log)" %} ({{ logs|length }})
+            </button>
+        </div>
+        <div id="collapse2-lft" class="collapse" role="tabpanel" aria-labelledby="heading2-lft">
+            <div class="collapse-body">
+                {% include "logs.html" %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+{% endblock page_content %}
+
+{% block extra_scripts %}
+{{ block.super }}
+{{ form.media }}
+{% endblock extra_scripts %}

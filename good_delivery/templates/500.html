@@ -1,0 +1,11 @@
+{% extends 'error-page.html' %}
+
+{% load i18n %}
+
+{% block error_type %}
+    {% trans "Internal Error 500" %}
+{% endblock error_type %}
+
+{% block error_description %}
+    {% trans "This service has encourrend and unexpected error" %}
+{% endblock error_description %}

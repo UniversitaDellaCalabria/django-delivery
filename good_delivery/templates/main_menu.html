@@ -1,0 +1,20 @@
+{% load i18n %}
+{% load static %}
+
+{% block menu_pre_buttons %}
+<li class="nav-item">
+    <a class="nav-link" href="{% url 'good_delivery:user_index' %}">
+        <span>{% trans "Home" %}</span>
+    </a>
+</li>
+{% endblock menu_pre_buttons %}
+
+<li class="nav-item">
+    <a class="nav-link"
+       href="#">
+        <span>{% trans "Documentazione" %}</span>
+    </a>
+</li>
+
+{% block menu_post_buttons %}
+{% endblock menu_post_buttons %}

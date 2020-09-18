@@ -1,0 +1,69 @@
+{% extends "base_page_schema.html" %}
+
+{% load i18n %}
+{% load static %}
+
+
+{% block menu_links %}
+{% include 'operator_menu.html' %}
+{% endblock menu_links %}
+
+{% block top_buttons %}
+<a role="button" class="btn btn-outline-secondary"
+   href="">
+    <svg class="icon icon-xs">
+        <use xlink:href="{% static 'svg/sprite.svg' %}#it-arrow-left"></use>
+    </svg> {% trans "Torna alla Dashboard" %}
+</a>
+{% endblock top_buttons %}
+
+{% block page_content %}
+ <div class="mt-5">
+    <form method="post" enctype="multipart/form-data">
+        {% include 'form_template.html' %}
+        {% block form_buttons %}
+        <div>
+            <button type="button"
+                    class="btn btn-success btn-block"
+                    data-toggle="modal"
+                    data-target="#action">
+                    <svg class="icon icon-xs icon-white">
+                        <use xlink:href="{% static 'svg/sprite.svg' %}#it-check"></use>
+                    </svg>
+                    {% trans "Crea l'assegnazione" %}
+            </button>
+            <div class="modal fade" tabindex="-1" role="dialog" id="action">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">
+                                {% trans "Nuova assegnazione bene" %}
+                            </h5>
+                            <button class="close" type="button"
+                                    data-dismiss="modal" aria-label="Close">
+                               <svg class="icon">
+                                  <use xlink:href="{% static 'svg/sprite.svg' %}#it-close"></use>
+                               </svg>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <p>{% trans "Vuoi davvero procedere confermando i dati immessi?" %}</p>
+                        </div>
+                        <div class="modal-footer">
+                            <input class="btn btn-success"
+                                   type="submit"
+                                   value="{% trans 'Si, procedi' %}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endblock form_buttons %}
+    </form>
+</div>
+{% endblock page_content %}
+
+{% block extra_scripts %}
+{{ block.super }}
+{{ form.media }}
+{% endblock extra_scripts %}

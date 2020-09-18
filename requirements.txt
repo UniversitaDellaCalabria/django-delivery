@@ -1,5 +1,0 @@
-django
-git+https://github.com/peppelinux/django-rest-framework.git@agid_oas3
-pyYaml
-uritemplate
-django-cors-headers

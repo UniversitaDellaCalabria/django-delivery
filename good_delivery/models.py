@@ -1,8 +1,22 @@
+import json
+import logging
+
 from django.conf import settings
+from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django.contrib.auth import get_user_model
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.db.models import Q
+from django.templatetags.static import static
 from django.utils import timezone
 from django.utils.translation import gettext as _
+
+from ckeditor.fields import RichTextField
+
+from . jwts import *
+
+
+logger = logging.getLogger(__name__)
 
 
 def _attachment_upload(instance, filename):
@@ -36,7 +50,7 @@ class DeliveryCampaign(TimeStampedModel):
         verbose_name = _('Campagna di consegne')
         verbose_name_plural = _('Campagne di consegne')
 
-    @property
+    # @property
     def is_in_progress(self):
         return self.date_start<=timezone.now() and self.date_end>timezone.now()
 
@@ -73,6 +87,12 @@ class UserDeliveryPoint(TimeStampedModel):
         verbose_name = _('Utenteal punto di raccolta')
         verbose_name_plural = _('Utenti ai punti di raccolta')
         unique_together = ("user", "delivery_point")
+
+
+    def get_good_deliveries(self):
+        deliveries = GoodDelivery.objects.filter(delivered_to=self.user,
+                                                 created_by__delivery_point=self.delivery_point).count()
+        return deliveries
 
     def __str__(self):
         return '{} - {}'.format(self.user, self.delivery_point)
@@ -167,8 +187,9 @@ class GoodDelivery(TimeStampedModel):
     """
     delivered_to = models.ForeignKey(get_user_model(),
                                      on_delete=models.PROTECT)
-    delivered_by = models.ForeignKey(OperatorDeliveryPoint,
-                                     on_delete=models.PROTECT)
+    created_by = models.ForeignKey(OperatorDeliveryPoint,
+                                   on_delete=models.PROTECT,
+                                   related_name="created_by")
     good = models.ForeignKey(Good, on_delete=models.PROTECT)
     good_stock_identifier = models.ForeignKey(DeliveryPointGoodStockIdentifier,
                                               blank=True, null=True,
@@ -178,21 +199,103 @@ class GoodDelivery(TimeStampedModel):
     good_identifier = models.CharField(max_length=255, blank=True, null=True)
     delivery_date = models.DateTimeField(_('Data di consegna'),
                                          blank=True, null=True)
+    delivered_by = models.ForeignKey(OperatorDeliveryPoint,
+                                     on_delete=models.PROTECT,
+                                     blank=True, null=True,
+                                     related_name="deliveder_by")
     disabled_date = models.DateTimeField(_('Data di disabilitazione'),
                                          blank=True, null=True)
+    disabled_by = models.ForeignKey(OperatorDeliveryPoint,
+                                    on_delete=models.PROTECT,
+                                    blank=True, null=True,
+                                    related_name="disabled_by")
     return_date = models.DateTimeField(_('Data di restituzione'),
                                        blank=True, null=True)
+    returned_to = models.ForeignKey(OperatorDeliveryPoint,
+                                    on_delete=models.PROTECT,
+                                    blank=True, null=True,
+                                    related_name="returned_to")
     notes = models.TextField(max_length=1023, null=True, blank=True)
 
     class Meta:
         verbose_name = _('Consegna prodotto')
         verbose_name_plural = _('Consegne prodotti')
 
+    def save(self, *args, **kwargs):
+        # good identifiers
+        stock_identifier = self.good_stock_identifier
+        manual_identifier = self.good_identifier
+
+        # only one identifier is permitted
+        if stock_identifier and manual_identifier:
+            raise Exception(_("Al più un identificatore"))
+
+        delivery_point = self.created_by.delivery_point
+        good = self.good
+        stock = DeliveryPointGoodStock.objects.filter(delivery_point=delivery_point,
+                                                      good=good).first()
+        stock_identifiers = DeliveryPointGoodStockIdentifier.objects.filter(delivery_point_stock=stock)
+
+        # if a stock identifiers list is available,
+        # manual identifier is not permitted
+        if stock_identifiers and not self.good_stock_identifier:
+            raise Exception(_("Selezionare il codice identificativo "
+                              "dalla lista"))
+
+        campaign = delivery_point.campaign
+        # check if there is an existent delivery
+        # (same good, same id, same campaign)
+        existent_delivery = GoodDelivery.objects.filter(Q(good_stock_identifier=stock_identifier) &
+                                                        Q(good_stock_identifier__isnull=False) |
+                                                        Q(good_identifier=manual_identifier) &
+                                                        Q(good_identifier__isnull=False),
+                                                        good=good,
+                                                        created_by__delivery_point__campaign=campaign)
+                                                        # return_date__isnull=True)
+        # if operator is editing a delivery (self.pk exists)
+        # we can exclude it from deliveries list
+        if self.pk:
+            existent_delivery = existent_delivery.exclude(pk=self.pk)
+        existent_delivery = existent_delivery.first()
+        # if there is a delivery with same good code
+        # (same good, same id, same campaign)
+        # save operation is not permitted!
+        if existent_delivery:
+            raise Exception(_("Esiste già una consegna di questo prodotto, "
+                              "per questa campagna, "
+                              "con questo codice identificativo"))
+
+        super(GoodDelivery, self).save(*args, **kwargs)
+
+    def log_action(self, msg, action, user):
+        LogEntry.objects.log_action(user_id         = user.pk,
+                                    content_type_id = ContentType.objects.get_for_model(self).pk,
+                                    object_id       = self.pk,
+                                    object_repr     = self.__str__(),
+                                    action_flag     = action,
+                                    change_message  = msg)
+        logger.info(msg)
+
     def get_year(self):
         return self.delivery_date.year
 
+    def build_jwt(self):
+        data = {'id': self.pk,
+                'user': self.delivered_to.pk}
+        # serialized = serializers.serialize('json', [good_delivery], ensure_ascii=False)
+        encrypted_data = encrypt_to_jwe(json.dumps(data).encode())
+        return encrypted_data
+        # decrypted = json.loads(decrypt_from_jwe(encrypted_data))
+        # return decrypted
+
+    def is_waiting(self):
+        if self.delivery_date: return False
+        if self.return_date: return False
+        if self.disabled_date: return False
+        return True
+
     def __str__(self):
-        return '{} - {}'.format(self.user, self.product)
+        return '{} - {}'.format(self.delivered_to, self.good)
 
     # TODO save()
 
@@ -213,7 +316,8 @@ class Agreement(TimeStampedModel):
     accettazione condizioni
     """
     name = models.CharField(max_length=255)
-    description = models.TextField(max_length=1023)
+    # description = models.TextField(max_length=1023)
+    description = RichTextField(max_length=1023)
     is_active = models.BooleanField(default=True)
 
     class Meta:

@@ -1,0 +1,39 @@
+{% extends "base_page_schema.html" %}
+
+{% load i18n %}
+{% load static %}
+{% load good_delivery_tags %}
+
+{% block menu_links %}
+{% include 'operator_menu.html' %}
+{% endblock menu_links %}
+
+{% block top_buttons %}
+<a role="button" class="btn btn-outline-secondary"
+   href="{% url 'good_delivery:operator_active_campaigns' %}">
+    <svg class="icon icon-xs">
+        <use xlink:href="{% static 'svg/sprite.svg' %}#it-arrow-left"></use>
+    </svg> {% trans "Torna alla Dashboard" %}
+</a>
+{% endblock top_buttons %}
+
+{% block page_content %}
+    <p>
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+    eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
+    ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+    aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit
+    in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+    </p>
+    {% include 'datatables/table.html' %}
+{% endblock page_content %}
+
+{% block extra_scripts %}
+    {% url 'good_delivery:campaign_users_json' campaign_id=campaign.pk as ajax_url %}
+    {% include 'datatables/datatable_script.html' with ajax_url=ajax_url %}
+{% endblock extra_scripts %}
+
+
+
+
+

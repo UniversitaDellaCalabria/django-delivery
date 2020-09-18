@@ -1,0 +1,49 @@
+{% load i18n %}
+
+{% if request.user.is_authenticated %}
+<div class="nav-item dropdown">
+     <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" aria-expanded="false">
+        <div class="it-access-top-wrapper">
+            <button class="btn btn-primary btn-sm" href="#" type="button">
+                {% trans "Ruolo" %}:
+                {% if is_operator %}
+                    {% trans "Operatore" %}
+                {% else %}
+                    {% trans "Utente" %}
+                {% endif %}
+            </button>
+        </div>
+    </a>
+    <div class="dropdown-menu">
+        <div class="row">
+            <div class="col-12">
+                <div class="link-list-wrapper">
+                    <ul class="link-list">
+                        <li>
+                            <a class="list-item" href="{% url 'good_delivery:user_index' %}">
+                                <span>{% trans "Utente" %}</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="list-item" href="{% url 'good_delivery:operator_active_campaigns' %}">
+                                <span>{% trans "Operatore" %}</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="list-item" href="#">
+                                <span>{% trans "Esci" %}</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<a href="#">
+    <button class="btn btn-primary btn-sm" type="button">
+        {% trans "Accedi" %}
+    </button>
+</a>
+{% endif %}

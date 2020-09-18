@@ -51,3 +51,24 @@ class DeliveryPointGoodStockAdmin(admin.ModelAdmin):
     list_display = ('delivery_point','good','max_number')
     list_filter = ('delivery_point__campaign__name','delivery_point__name','good__name')
     search_fields = ('delivery_point__campaign__name','delivery_point__name','good__name')
+
+
+@admin.register(DeliveryPointGoodStockIdentifier)
+class DeliveryPointGoodStockIdentifierAdmin(admin.ModelAdmin):
+    list_display = ('delivery_point_stock','good_identifier')
+    list_filter = ('delivery_point_stock',)
+    search_fields = ('delivery_point_stock','good_identifier')
+
+
+@admin.register(GoodDelivery)
+class GoodDeliveryAdmin(admin.ModelAdmin):
+    list_display = ('delivered_to', 'created_by', 'create', 'modified')
+    list_filter = ('delivered_to',)
+    search_fields = ('delivered_to',)
+
+
+@admin.register(Agreement)
+class AgreementAdmin(admin.ModelAdmin):
+    list_display = ('name', 'description', 'is_active')
+    list_filter = ('name', 'description', 'is_active')
+    search_fields = ('name', 'description')

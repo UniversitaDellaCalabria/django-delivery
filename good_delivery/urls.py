@@ -1,129 +1,36 @@
 from django.conf import settings
-from django.urls import path, include
-from rest_framework import routers, permissions
-from rest_framework.renderers import JSONOpenAPIRenderer
-from rest_framework.schemas.agid_schema_views import get_schema_view
+from django.urls import include, path, re_path
 
-from . api_views import *
+from . views import *
+from . views_datatables import *
 
 
 app_name="good_delivery"
-base_url = f'api/{app_name}'
-urlpatterns = []
 
+prefix = "delivery"
 
-agid_api_dict = {'title': "Unical - Good Delivery",
-                 #  'generator_class': openapi_agid_generator,
-                 'permission_classes': (permissions.AllowAny,),
-                 'description': "Sistema per la gestione degli approvvigionamenti di beni",
-                 'termsOfService': 'https://tos.unical.it',
-                 'x-api-id': '00000000-0000-0000-0000-000000000002',
-                 'x-summary': "Sistema per la gestione degli approvvigionamenti di beni",
-                 'license': dict(name='apache2',
-                                 url='http://www.apache.org/licenses/LICENSE-2.0.html'),
-                 'servers': [dict(description='description',
-                                  url='https://adas.unical.it'),
-                             dict(description='description',
-                                  url='https://adas.unical.it')],
-                 'tags': [dict(description='description',
-                               name='api'),
-                          dict(description='description',
-                               name='public')],
-                 'contact': dict(email = 'giuseppe.demarco@unical.it',
-                                 name = 'Giuseppe De Marco',
-                                 url = 'https://github.com/UniversitaDellaCalabria'),
-                 'version': "0.1.2",
-}
+urlpatterns = [
+    # user
+    path('{}'.format(prefix), user_index, name='user_index'),
+    path('{}/use_token'.format(prefix), user_use_token, name='user_use_token'),
 
-if 'rest_framework' in settings.INSTALLED_APPS:
+    # operator
+    path('{}/operator/'.format(prefix), operator_active_campaigns, name='operator_active_campaigns'),
+    path('{}/operator/campaigns/'.format(prefix), operator_active_campaigns, name='operator_active_campaigns'),
+    path('{}/operator/campaigns/<int:campaign_id>/'.format(prefix), operator_campaign_detail, name='operator_campaign_detail'),
+    path('{}/operator/campaigns/<int:campaign_id>/<int:user_delivery_point_id>/'.format(prefix), operator_user_reservation_detail, name='operator_user_reservation_detail'),
+    path('{}/operator/campaigns/<int:campaign_id>/<int:user_delivery_point_id>/new/'.format(prefix), operator_new_delivery_preload, name='operator_new_delivery_preload'),
+    path('{}/operator/campaigns/<int:campaign_id>/<int:user_delivery_point_id>/new/<int:good_id>/'.format(prefix), operator_new_delivery, name='operator_new_delivery'),
+    path('{}/operator/campaigns/<int:campaign_id>/<int:user_delivery_point_id>/<int:delivery_id>/'.format(prefix), operator_good_delivery_detail, name='operator_good_delivery_detail'),
+    path('{}/operator/campaigns/<int:campaign_id>/<int:user_delivery_point_id>/<int:delivery_id>/deliver/'.format(prefix), operator_good_delivery_deliver, name='operator_good_delivery_deliver'),
+    path('{}/operator/campaigns/<int:campaign_id>/<int:user_delivery_point_id>/<int:delivery_id>/return/'.format(prefix), operator_good_delivery_return, name='operator_good_delivery_return'),
+    path('{}/operator/campaigns/<int:campaign_id>/<int:user_delivery_point_id>/<int:delivery_id>/disable/'.format(prefix), operator_good_delivery_disable, name='operator_good_delivery_disable'),
+    path('{}/operator/campaigns/<int:campaign_id>/<int:user_delivery_point_id>/<int:delivery_id>/delete/'.format(prefix), operator_good_delivery_delete, name='operator_good_delivery_delete'),
+    # path('{}operator/campaigns/<int:campaign_id>/<int:user_delivery_point_id>/<int:delivery_id>/enable/'.format(prefix), good_delivery_enable, name='good_delivery_enable'),
+]
 
-    # general resources
-    urlpatterns += path('openapi.json',
-                        get_schema_view(renderer_classes = [JSONOpenAPIRenderer],
-                                        **agid_api_dict),
-                        name='openapi-schema-json'),
-    urlpatterns += path('openapi',
-                        get_schema_view(**agid_api_dict),
-                        name='openapi-schema'),
-
-    # specifi resources
-    urlpatterns += path('{}/DeliveryCampaign/'.format(base_url),
-                        ApiDeliveryCampaignList.as_view()),
-    urlpatterns += path('{}/DeliveryCampaign/<int:pk>/'.format(base_url),
-                        ApiDeliveryCampaignDetail.as_view()),
-
-
-    urlpatterns += path('{}/DeliveryPoint/'.format(base_url),
-                        ApiDeliveryPointList.as_view()),
-    urlpatterns += path('{}/DeliveryPoint/<int:pk>/'.format(base_url),
-                        ApiDeliveryPointDetail.as_view()),
-
-
-    urlpatterns += path('{}/UserDeliveryPoint/'.format(base_url),
-                        ApiUserDeliveryPointList.as_view()),
-    urlpatterns += path('{}/UserDeliveryPoint/<int:pk>/'.format(base_url),
-                        ApiUserDeliveryPointDetail.as_view()),
-
-
-    urlpatterns += path('{}/OperatorDeliveryPoint/'.format(base_url),
-                        ApiOperatorDeliveryPointList.as_view()),
-    urlpatterns += path('{}/OperatorDeliveryPoint/<int:pk>/'.format(base_url),
-                        ApiOperatorDeliveryPointDetail.as_view()),
-
-
-    urlpatterns += path('{}/GoodCategory/'.format(base_url),
-                        ApiGoodCategoryList.as_view()),
-    urlpatterns += path('{}/GoodCategory/<int:pk>/'.format(base_url),
-                        ApiGoodCategoryDetail.as_view()),
-
-
-    urlpatterns += path('{}/Good/'.format(base_url),
-                        ApiGoodList.as_view()),
-    urlpatterns += path('{}/Good/<int:pk>/'.format(base_url),
-                        ApiGoodDetail.as_view()),
-
-
-    urlpatterns += path('{}/DeliveryPointGoodStock/'.format(base_url),
-                        ApiDeliveryPointGoodStockList.as_view()),
-    urlpatterns += path('{}/DeliveryPointGoodStock/<int:pk>/'.format(base_url),
-                        ApiDeliveryPointGoodStockDetail.as_view()),
-
-
-    urlpatterns += path('{}/DeliveryPointGoodStockIdentifier/'.format(base_url),
-                        ApiDeliveryPointGoodStockIdentifierList.as_view()),
-    urlpatterns += path('{}/DeliveryPointGoodStockIdentifier/<int:pk>/'.format(base_url),
-                        ApiDeliveryPointGoodStockIdentifierDetail.as_view()),
-
-
-    urlpatterns += path('{}/GoodDelivery/'.format(base_url),
-                        ApiGoodDeliveryList.as_view()),
-    urlpatterns += path('{}/GoodDelivery/<int:pk>/'.format(base_url),
-                        ApiGoodDeliveryDetail.as_view()),
-
-
-    urlpatterns += path('{}/Agreement/'.format(base_url),
-                        ApiAgreementList.as_view()),
-    urlpatterns += path('{}/Agreement/<int:pk>/'.format(base_url),
-                        ApiAgreementDetail.as_view()),
-
-
-    urlpatterns += path('{}/GoodDeliveryAgreement/'.format(base_url),
-                        ApiGoodDeliveryAgreementList.as_view()),
-    urlpatterns += path('{}/GoodDeliveryAgreement/<int:pk>/'.format(base_url),
-                        ApiGoodDeliveryAgreementDetail.as_view()),
-
-
-    urlpatterns += path('{}/GoodDeliveryAttachment/'.format(base_url),
-                        ApiGoodDeliveryAttachmentList.as_view()),
-    urlpatterns += path('{}/GoodDeliveryAttachment/<int:pk>/'.format(base_url),
-                        ApiGoodDeliveryAttachmentDetail.as_view()),
-
-
-
-    # that's for routers (automatic urls)
-    # ~ router = routers.DefaultRouter()
-    # ~ router.register('{}/campaigns/'.format(base_url), ApiDeliveryCampaignListViewSet)
-    # ~ urlpatterns += router.urls
-    # ~ urlpatterns += path('api/', include(router.urls)),
-
-
+# Datatables URLs
+urlpatterns += [
+    # User json
+    path('{}/<int:campaign_id>/campaign_users.json'.format(prefix), campaign_users, name='campaign_users_json'),
+]

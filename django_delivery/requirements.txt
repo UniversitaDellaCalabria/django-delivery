@@ -1,0 +1,33 @@
+Django>=3.0.1,<4
+
+django_ckeditor
+
+# datatables ajax
+git+https://github.com/peppelinux/django-datatables-ajax.git
+
+# development
+ipython
+
+# SASS dynamic compiler
+libsass
+git+https://github.com/jrief/django-sass-processor.git
+
+# settings dependencies
+mysqlclient
+
+#Bootstrap Italia + Unical template
+#libsass
+#django-sass-processor
+#django_compressor
+#git+https://github.com/italia/design-django-theme.git
+#git+https://github.com/UniversitaDellaCalabria/django-unical-agid-template.git
+design-django-theme
+django-unical-bootstrap-italia
+
+# markdown
+markdown
+
+# advanced filter in admin
+django-admin-search-builder
+
+cryptojwt
