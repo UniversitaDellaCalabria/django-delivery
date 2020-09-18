@@ -22,3 +22,8 @@ class DeliveryPointGoodStockIdentifierInline(admin.TabularInline):
     model = DeliveryPointGoodStockIdentifier
     extra = 0
 
+
+
+class DeliveryPointGoodStockInline(admin.TabularInline):
+    model = DeliveryPointGoodStock
+    extra = 0

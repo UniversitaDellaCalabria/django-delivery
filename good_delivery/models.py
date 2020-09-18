@@ -84,8 +84,8 @@ class UserDeliveryPoint(TimeStampedModel):
     delivery_point = models.ForeignKey(DeliveryPoint, on_delete=models.CASCADE)
 
     class Meta:
-        verbose_name = _('Utente al punto di raccolta')
-        verbose_name_plural = _('Utenti ai punti di raccolta')
+        verbose_name = _('Prenotazioni utenti')
+        verbose_name_plural = _('Prenotazioni utenti')
         unique_together = ("user", "delivery_point")
 
 

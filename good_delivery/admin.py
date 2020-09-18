@@ -19,10 +19,10 @@ class DeliveryPointAdmin(admin.ModelAdmin):
     list_display = ('campaign','name','location','notes','is_active')
     list_filter = ('campaign__name', 'is_active')
     search_fields = ('campaign__name','name','location')
-    inlines = [OperatorDeliveryPointInline]
+    inlines = [OperatorDeliveryPointInline, DeliveryPointGoodStockInline]
 
 
-@admin.register(OperatorDeliveryPoint)
+# @admin.register(OperatorDeliveryPoint)
 class OperatorDeliveryPointAdmin(admin.ModelAdmin):
     list_display = ('delivery_point','operator', 'create')
     list_filter = ('delivery_point__campaign','delivery_point__name', 'create')
@@ -50,12 +50,12 @@ class GoodAdmin(admin.ModelAdmin):
     search_fields = ('name','category__name')
 
 
-@admin.register(DeliveryPointGoodStock)
+# @admin.register(DeliveryPointGoodStock)
 class DeliveryPointGoodStockAdmin(admin.ModelAdmin):
     list_display = ('delivery_point','good','max_number')
     list_filter = ('delivery_point__campaign__name','delivery_point__name','good__name')
     search_fields = ('delivery_point__campaign__name','delivery_point__name','good__name')
-    inlines = [DeliveryPointGoodStockIdentifierInline, ]
+    # inlines = [DeliveryPointGoodStockIdentifierInline, ]
 
 # @admin.register(DeliveryPointGoodStockIdentifier)
 class DeliveryPointGoodStockIdentifierAdmin(admin.ModelAdmin):
@@ -72,9 +72,9 @@ class GoodDeliveryAdmin(admin.ModelAdmin):
 
 @admin.register(Agreement)
 class AgreementAdmin(admin.ModelAdmin):
-    list_display = ('name', 'description', 'is_active')
-    list_filter = ('name', 'description', 'is_active')
-    search_fields = ('name', 'description')
+    list_display = ('name', 'is_active')
+    list_filter = ('name', 'is_active')
+    search_fields = ('name', )
 
 # @admin.register(DeliveryCampaignAgreement)
 class DeliveryCampaignAgreementAdmin(admin.ModelAdmin):
