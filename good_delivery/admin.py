@@ -54,9 +54,9 @@ class DeliveryPointGoodStockAdmin(admin.ModelAdmin):
     list_display = ('delivery_point','good','max_number')
     list_filter = ('delivery_point__campaign__name','delivery_point__name','good__name')
     search_fields = ('delivery_point__campaign__name','delivery_point__name','good__name')
+    inlines = [DeliveryPointGoodStockIdentifierInline, ]
 
-
-@admin.register(DeliveryPointGoodStockIdentifier)
+# @admin.register(DeliveryPointGoodStockIdentifier)
 class DeliveryPointGoodStockIdentifierAdmin(admin.ModelAdmin):
     list_display = ('delivery_point_stock','good_identifier')
     list_filter = ('delivery_point_stock',)
