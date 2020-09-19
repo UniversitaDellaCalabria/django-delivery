@@ -3,9 +3,10 @@ django-good-delivery
 
 A Django Framework app to manage delivery of goods in presence. This application was created to manage a valid list of users for the delivery of an asset, such as a sim card or a 4g router. This application can therefore manage a stock of uniquely identifiable products and at the same time serve for the delivery of anonymous goods, such as glasses of water or bananas (without id!).
 
-Delivery operations are organized through the definition of Campaigns, valid in a specific time interval.
-Each campaign involves the activation of Delivery Points, which are assigned users with privileges as an operator enabled to manage the flow, and the definition of an Agreement text that the user is required to accept when collecting the goods.
-A stock of available products is defined for each delivery point, each of which may or may not be identified by a code, unique within the campaign.
+Delivery operations are organized through the definition of Campaigns, in a specific time interval.
+Each campaign involves the activation of Delivery Points, which are assigned users with privilegesto manage the flow, called operators. Each campaign can show an Agreement text that the user is required to accept when collecting the goods, before the delivery can be intended as succesfully concluded.
+A stock of available products is defined for each delivery point, each of which may or may not be identified by a code. Glass of water could not have a identification code, SIM card should instead.
+
 Users entitled to collect the goods are associated with a single delivery point.
 
  Delivery campaign configuration (Django admin):
@@ -70,4 +71,12 @@ Tests
 
 ````
 ./manage.py test good_delivery
+````
+
+coverage
+````
+pip install coverage
+coverage erase
+coverage run ./manage.py test good_delivery
+coverage report -m
 ````
