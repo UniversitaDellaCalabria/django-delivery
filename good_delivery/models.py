@@ -214,7 +214,7 @@ class GoodDelivery(TimeStampedModel):
                                               blank=True, null=True,
                                               on_delete=models.CASCADE)
     # se non è presente un identificativo in stock
-    # ma l'operatore deve specificarlo
+    # ma l'operatore deve specificarlo per check
     good_identifier = models.CharField(max_length=255, blank=True, null=True)
     delivery_date = models.DateTimeField(_('Data di consegna'),
                                          blank=True, null=True)
@@ -234,7 +234,7 @@ class GoodDelivery(TimeStampedModel):
                                     on_delete=models.CASCADE,
                                     blank=True, null=True,
                                     related_name="returned_to")
-    notes = models.TextField(max_length=1023, null=True, blank=True)
+    notes = models.TextField(null=True, blank=True)
 
     class Meta:
         verbose_name = _('Consegna prodotto')
