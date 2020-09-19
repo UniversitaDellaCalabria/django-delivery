@@ -1,7 +1,7 @@
 django-good-delivery
 --------------------
 
-A Django Framework app to manage delivery of goods in presence. This application was created to manage a valid list of users for the delivery of an asset, such as a sim card or a 4g router. This application can therefore manage a stock of uniquely identifiable products and at the same time serve for the delivery of anonymous goods, such as glasses of water or bananas (without id!).
+A Django Framework app to manage delivery of goods in presence. This application was created to manage a valid list of users for the delivery of an asset, such as a sim card or a 4g router. This application can therefore manage a stock of uniquely identifiable products and at the same time serve for the delivery of anonymous goods, such as glasses of water or bananas (goods without any identificative value).
 
 Delivery operations are organized through the definition of Campaigns, in a specific time interval.
 Each campaign involves the activation of Delivery Points, which are assigned users with privilegesto manage the flow, called operators. Each campaign can show an Agreement text that the user is required to accept when collecting the goods, before the delivery can be intended as succesfully concluded.
