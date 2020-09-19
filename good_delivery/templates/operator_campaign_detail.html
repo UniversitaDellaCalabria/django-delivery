@@ -17,14 +17,53 @@
 </a>
 {% endblock top_buttons %}
 
-{% block page_content %}
+{% block over_content %}
+
+    {% if campaign.note_operator %}
     <p>
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-    eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
-    ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-    aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit
-    in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+        {{ campaign.note_operator }}
     </p>
+    {% endif %}
+    <div class="col-12 col-lg-4 category-box">
+    <!--start card-->
+    <div class="card-wrapper card-space">
+      <div class="card card-bg no-after">
+        <div class="card-body">
+            {% if campaign.is_in_progress %}
+                <span class="badge badge-success mb-2">
+                    {% trans "In corso" %}
+                </span>
+            {% else %}
+                <span class="badge badge-danger mb-2">
+                    {% trans "Non in corso" %}
+                </span>
+            {% endif %}
+        <a class="read-more" href="{% url 'good_delivery:operator_campaign_detail' campaign_id=campaign.pk %}">
+            <h5 class="card-title">{{ campaign.name }}</h5>
+        </a>
+          <p class="card-text">
+              <b>{% trans "Data inizio" %}:</b> {{ campaign.date_start }}
+              <br>
+              <b>{% trans "Data fine" %}:</b> {{ campaign.date_end }}
+              <br>
+              <b>{% trans 'Liberatoria obbligatoria' %}:</b>
+              <svg class="icon icon-xs">
+              {% if campaign.requre_agreement %}
+                <use xlink:href="{% static 'svg/sprite.svg' %}#it-check"></use>
+              {% else %}
+                <use xlink:href="{% static 'svg/sprite.svg' %}#it-close"></use>
+              {% endif %}
+              </svg>
+          </p>
+        </div>
+      </div>
+    </div>
+    <!--end card-->
+    </div>
+
+{% endblock over_content %}
+
+{% block page_content %}
     {% include 'datatables/table.html' %}
 {% endblock page_content %}
 

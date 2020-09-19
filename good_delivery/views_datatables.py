@@ -14,7 +14,7 @@ from good_delivery.decorators import *
 from good_delivery.models import *
 
 
-_columns = ['pk', 'user', 'delivery_point', 'get_good_deliveries']
+_columns = ['pk', 'user', 'delivery_point', 'state']
 
 
 class UsersDeliveryPointDTD(DjangoDatatablesServerProc):

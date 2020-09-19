@@ -4,7 +4,7 @@
 <script charset="utf8" src="{% static 'js/escape_html.js' %}"></script>
 <script charset="utf8" src="{% static 'js/datatables/datatables.min.js' %}"></script>
 <script>
-var url = "{{ var_url }}";
+//var url = "{{ var_url }}";
 
 $(function() {
 
@@ -43,9 +43,9 @@ $(function() {
             data: function(args) {
                 return{
                     "args": JSON.stringify(args),
-                    {% for k,v in request.GET.items %}
-                        "{{ k }}": "{{ v }}",
-                    {% endfor %}
+                    //{% for k,v in request.GET.items %}
+                        //"{{ k }}": "{{ v }}",
+                    //{% endfor %}
                 };
             }
         };

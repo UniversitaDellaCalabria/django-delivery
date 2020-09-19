@@ -29,7 +29,7 @@ class GoodDeliveryTest(TestCase):
         self.admin = get_user_model().objects.create(**_user_admin)
         self.user = get_user_model().objects.create(**_user)
         self.operator = get_user_model().objects.create(**_user_op)
-        self.client = Client()
+        self.client = Client(enforce_csrf_checks=True)
         
         self.good_cat_food = GoodCategory.objects.create(name='food')
         self.good_cat_gear = GoodCategory.objects.create(name='hitech')
@@ -37,7 +37,7 @@ class GoodDeliveryTest(TestCase):
         self.good_gear = Good.objects.create(name='sim/router', category=self.good_cat_gear)
 
 
-    def simple_campaign_food(self):
+    def _campaign_food(self):
         campaign = DeliveryCampaign.objects.create(**campaing_data)
         devpoint = DeliveryPoint.objects.create(campaign=campaign,
                                                 name='ufficio_frutta')
@@ -46,8 +46,9 @@ class GoodDeliveryTest(TestCase):
         good_devpoint = DeliveryPointGoodStock.objects.create(delivery_point=devpoint,
                                                               good=self.good_food,
                                                               max_number=0)
-
-    def simple_campaign_gear(self):
+        return good_devpoint
+        
+    def _campaign_gear(self):
         data = campaign_data.copy()
         data['name'] = 'gears'
         campaign = DeliveryCampaign.objects.create(**data)
@@ -60,4 +61,19 @@ class GoodDeliveryTest(TestCase):
                                                               good=self.good_gear,
                                                               max_number=0)
         booking = UserDeliveryPoint.objects.create(delivery_point=devpoint,
-                                                   operator=self.user)
+                                                   user=self.user)
+        return booking
+    
+    def test_op_gear(self):
+        self.client.force_login(self.operator)
+        
+        url = reverse('good_delivery:operator_active_campaigns')
+        home = self.client.get(url)
+        assert b'non abilitato' in home.content
+        
+        campaign_booking = self._campaign_gear()
+        url = reverse('good_delivery:operator_active_campaigns')
+        home = self.client.get(url, follow=True)
+        assert b'Prenotazioni da gestire' in home.content
+        
+        

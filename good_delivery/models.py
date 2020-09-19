@@ -45,7 +45,12 @@ class DeliveryCampaign(TimeStampedModel):
     date_end = models.DateTimeField()
     require_agreement = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)
-
+    
+    note_operator = models.TextField(help_text=_('Notes to operators'),
+                                     blank=True, null=True)
+    note_users = models.TextField(help_text=_('Notes to users'),
+                                     blank=True, null=True)
+    
     class Meta:
         verbose_name = _('Campagna di consegne')
         verbose_name_plural = _('Campagne di consegne')
@@ -82,7 +87,18 @@ class UserDeliveryPoint(TimeStampedModel):
     """
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     delivery_point = models.ForeignKey(DeliveryPoint, on_delete=models.CASCADE)
-
+    
+    @property
+    def state(self):
+        delivery = GoodDelivery.objects.filter(delivered_to=self.user,
+                                               campaign=self.delivery_point.campaign).last()
+        if delivery:
+            return delivery.state
+        else:
+            return _('da consegnare')
+            
+        
+    
     class Meta:
         verbose_name = _('Prenotazioni utenti')
         verbose_name_plural = _('Prenotazioni utenti')
@@ -186,34 +202,36 @@ class GoodDelivery(TimeStampedModel):
     """
     assegnazione di un prodotto a un utente, da parte di un operatore
     """
+    campaign = models.ForeignKey(DeliveryCampaign,
+                                 on_delete=models.CASCADE)
     delivered_to = models.ForeignKey(get_user_model(),
-                                     on_delete=models.PROTECT)
+                                     on_delete=models.CASCADE)
     created_by = models.ForeignKey(OperatorDeliveryPoint,
-                                   on_delete=models.PROTECT,
+                                   on_delete=models.CASCADE,
                                    related_name="created_by")
-    good = models.ForeignKey(Good, on_delete=models.PROTECT)
+    good = models.ForeignKey(Good, on_delete=models.CASCADE)
     good_stock_identifier = models.ForeignKey(DeliveryPointGoodStockIdentifier,
                                               blank=True, null=True,
-                                              on_delete=models.PROTECT)
+                                              on_delete=models.CASCADE)
     # se non è presente un identificativo in stock
     # ma l'operatore deve specificarlo
     good_identifier = models.CharField(max_length=255, blank=True, null=True)
     delivery_date = models.DateTimeField(_('Data di consegna'),
                                          blank=True, null=True)
     delivered_by = models.ForeignKey(OperatorDeliveryPoint,
-                                     on_delete=models.PROTECT,
+                                     on_delete=models.CASCADE,
                                      blank=True, null=True,
                                      related_name="deliveder_by")
     disabled_date = models.DateTimeField(_('Data di disabilitazione'),
                                          blank=True, null=True)
     disabled_by = models.ForeignKey(OperatorDeliveryPoint,
-                                    on_delete=models.PROTECT,
+                                    on_delete=models.CASCADE,
                                     blank=True, null=True,
                                     related_name="disabled_by")
     return_date = models.DateTimeField(_('Data di restituzione'),
                                        blank=True, null=True)
     returned_to = models.ForeignKey(OperatorDeliveryPoint,
-                                    on_delete=models.PROTECT,
+                                    on_delete=models.CASCADE,
                                     blank=True, null=True,
                                     related_name="returned_to")
     notes = models.TextField(max_length=1023, null=True, blank=True)
@@ -294,6 +312,17 @@ class GoodDelivery(TimeStampedModel):
         if self.return_date: return False
         if self.disabled_date: return False
         return True
+    
+    @property
+    def state(self):
+        if self.is_waiting():
+            return _('waiting')
+        elif self.disabled_date:
+            return _('disabled')
+        elif self.delivery_date:
+            return _('delivered')
+        else:
+            return _('unknown')
 
     def __str__(self):
         return '{} - {}'.format(self.delivered_to, self.good)

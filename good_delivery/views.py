@@ -28,7 +28,7 @@ def user_index(request):
     active_campaigns = DeliveryCampaign.objects.filter(is_active=True)
     good_deliveries = GoodDelivery.objects.filter(delivered_to=request.user,
                                                   created_by__delivery_point__is_active=True,
-                                                  created_by__delivery_point__campaign__in=active_campaigns)
+                                                  campaign__in=active_campaigns)
     template = "user_index.html"
     d = {'good_deliveries': good_deliveries,
          'title': title,}
@@ -40,14 +40,16 @@ def user_index(request):
 def operator_active_campaigns(request, my_delivery_points):
     title =_("Campagne attive")
     template = "operator_active_campaigns.html"
-    active_campaigns = set()
-    for dp in my_delivery_points:
-        active_campaigns.add(dp.delivery_point.campaign)
+    active_campaigns = tuple(set([dp.delivery_point.campaign 
+                                  for dp in my_delivery_points]))
     d = {'campaigns': active_campaigns,
          'is_operator': True,
          'title': title,}
-
-    return render(request, template, d)
+    if len(active_campaigns) == 1:
+        return redirect(reverse('good_delivery:operator_campaign_detail', 
+                                args=[active_campaigns[0].pk]))
+    else:
+        return render(request, template, d)
 
 @login_required
 @campaign_is_active
@@ -218,7 +220,8 @@ def operator_new_delivery(request, campaign_id, user_delivery_point_id,
 
             operator_delivery_point = OperatorDeliveryPoint.objects.get(operator=request.user,
                                                                         delivery_point=reservation.delivery_point)
-            delivery = GoodDelivery(delivered_to=reservation.user,
+            delivery = GoodDelivery(campaign=operator_delivery_point.delivery_point.campaign,
+                                    delivered_to=reservation.user,
                                     created_by=operator_delivery_point,
                                     good=good,
                                     good_stock_identifier=good_stock_identifier,
