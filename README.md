@@ -9,6 +9,9 @@ A stock of available products is defined for each delivery point, each of which 
 
 Users entitled to collect the goods are associated with a single delivery point.
 
+Management and flow description
+-------------------------------
+
  Delivery campaign configuration (Django admin):
  
  - creation of a new delivery campaign (DeliveryCampaign);
