@@ -27,18 +27,12 @@
             <div class="card-wrapper card-space">
               <div class="card card-bg no-after">
                 <div class="card-body">
-                    {% if campaign.is_in_progress %}
-                        <span class="badge badge-success mb-2">
-                            {% trans "In corso" %}
-                        </span>
-                    {% else %}
-                        <span class="badge badge-danger mb-2">
-                            {% trans "Non in corso" %}
-                        </span>
-                    {% endif %}
-                <a class="read-more" href="{% url 'good_delivery:operator_campaign_detail' campaign_id=campaign.pk %}">
-                    <h5 class="card-title">{{ campaign.name }}</h5>
-                </a>
+                    <span class="badge badge-success mb-2">
+                        {% trans "In corso" %}
+                    </span>
+                    <a class="read-more" href="{% url 'good_delivery:operator_campaign_detail' campaign_id=campaign.pk %}">
+                        <h5 class="card-title">{{ campaign.name }}</h5>
+                    </a>
                   <p class="card-text">
                       <b>{% trans "Data inizio" %}:</b> {{ campaign.date_start }}
                       <br>
