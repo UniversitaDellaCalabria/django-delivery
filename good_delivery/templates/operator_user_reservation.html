@@ -55,8 +55,8 @@
 
                         {% include "delivery_details.html" %}
 
-                        {% if delivery.created_by.delivery_point.campaign.is_in_progress %}
-                        <a href="{% url 'good_delivery:operator_good_delivery_detail' campaign.pk reservation.pk delivery.pk %}"
+                        {% if good_delivery.created_by.delivery_point.campaign.is_in_progress %}
+                        <a href="{% url 'good_delivery:operator_good_delivery_detail' campaign.pk reservation.pk good_delivery.pk %}"
                            role="button"
                            class="btn btn-outline-success btn-sm btn-block">
                             <span>

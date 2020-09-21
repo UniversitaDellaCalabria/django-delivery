@@ -29,13 +29,6 @@ class OperatorDeliveryPointAdmin(admin.ModelAdmin):
     search_fields = ('operator__user__first_name','operator__user__last_name','delivery_point__name')
 
 
-@admin.register(UserDeliveryPoint)
-class UserDeliveryPointAdmin(admin.ModelAdmin):
-    list_display = ('delivery_point','user')
-    list_filter = ('delivery_point__campaign','delivery_point__name')
-    search_fields = ('user__first_name','user__last_name','delivery_point__name')
-
-
 @admin.register(GoodCategory)
 class GoodCategoryAdmin(admin.ModelAdmin):
     list_display = ('name',)
@@ -66,7 +59,7 @@ class DeliveryPointGoodStockIdentifierAdmin(admin.ModelAdmin):
 
 @admin.register(GoodDelivery)
 class GoodDeliveryAdmin(admin.ModelAdmin):
-    list_display = ('delivered_to', 'created_by', 'create', 'modified')
+    list_display = ('delivered_to', 'create', 'modified')
     list_filter = ('delivered_to',)
     search_fields = ('delivered_to',)
 

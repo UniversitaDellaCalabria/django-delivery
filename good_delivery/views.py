@@ -27,7 +27,7 @@ def user_index(request):
     title =_("Home page utente")
     active_campaigns = DeliveryCampaign.objects.filter(is_active=True)
     good_deliveries = GoodDelivery.objects.filter(delivered_to=request.user,
-                                                  created_by__delivery_point__is_active=True,
+                                                  delivery_point__is_active=True,
                                                   campaign__in=active_campaigns)
     template = "user_index.html"
     d = {'good_deliveries': good_deliveries,
@@ -40,13 +40,13 @@ def user_index(request):
 def operator_active_campaigns(request, my_delivery_points):
     title =_("Campagne attive")
     template = "operator_active_campaigns.html"
-    active_campaigns = tuple(set([dp.delivery_point.campaign 
+    active_campaigns = tuple(set([dp.delivery_point.campaign
                                   for dp in my_delivery_points]))
     d = {'campaigns': active_campaigns,
          'is_operator': True,
          'title': title,}
     if len(active_campaigns) == 1:
-        return redirect(reverse('good_delivery:operator_campaign_detail', 
+        return redirect(reverse('good_delivery:operator_campaign_detail',
                                 args=[active_campaigns[0].pk]))
     else:
         return render(request, template, d)
@@ -120,19 +120,18 @@ def operator_new_delivery_preload(request, campaign_id, user_delivery_point_id,
 @campaign_is_active
 @campaign_is_in_progress
 @is_campaign_operator
-def operator_good_delivery_detail(request, campaign_id, user_delivery_point_id,
-                                  delivery_id, campaign, delivery_points):
+def operator_good_delivery_detail(request, campaign_id, delivery_id,
+                                  campaign, delivery_points):
     template = "operator_good_delivery_detail.html"
-    reservation = get_object_or_404(UserDeliveryPoint,
-                                    pk=user_delivery_point_id,
-                                    delivery_point__in=delivery_points)
+    sub_title = campaign
     good_delivery = get_object_or_404(GoodDelivery,
-                                      created_by__delivery_point__in=delivery_points,
+                                      campaign=campaign,
+                                      delivery_point__in=delivery_points,
                                       pk=delivery_id)
     title = good_delivery
     stock = get_object_or_404(DeliveryPointGoodStock,
                               good=good_delivery.good,
-                              delivery_point=reservation.delivery_point)
+                              delivery_point=good_delivery.delivery_point)
 
     form = GoodDeliveryForm(instance=good_delivery, stock=stock)
 
@@ -143,16 +142,14 @@ def operator_good_delivery_detail(request, campaign_id, user_delivery_point_id,
         if not campaign.is_in_progress():
             messages.add_message(request, messages.ERROR,
                              _("La campagna non è attualmente in corso"))
-            return redirect('good_delivery:operator_user_reservation_detail',
-                            campaign_id=campaign_id,
-                            user_delivery_point_id=reservation.pk)
+            return redirect('good_delivery:operator_active_campaigns')
 
         if not good_delivery.is_waiting():
             messages.add_message(request, messages.ERROR,
                              _("La consegna non può più subire modifiche"))
-            return redirect('good_delivery:operator_user_reservation_detail',
+            return redirect('good_delivery:operator_good_delivery_detail',
                             campaign_id=campaign_id,
-                            user_delivery_point_id=reservation.pk)
+                            delivery_id=good_delivery.pk)
 
         form = GoodDeliveryForm(instance=good_delivery,
                                 data=request.POST,
@@ -161,17 +158,16 @@ def operator_good_delivery_detail(request, campaign_id, user_delivery_point_id,
             form.save()
             messages.add_message(request, messages.SUCCESS,
                                  _("Modifica effettuata correttamente"))
-            return redirect('good_delivery:operator_user_reservation_detail',
+            return redirect('good_delivery:operator_good_delivery_detail',
                             campaign_id=campaign_id,
-                            user_delivery_point_id=reservation.pk)
+                            delivery_id=good_delivery.pk)
     d = {'campaign': campaign,
          'form': form,
          'good_delivery': good_delivery,
          'is_operator': True,
          'logs': logs,
-         'reservation': reservation,
+         'sub_title': sub_title,
          'title': title,}
-
     return render(request, template, d)
 
 @login_required
@@ -205,9 +201,9 @@ def operator_new_delivery(request, campaign_id, user_delivery_point_id,
             messages.add_message(request, messages.ERROR,
                                  _("Raggiunto il numero max di consegne "
                                    "per questo stock: {}").format(stock.max_number))
-            return redirect('good_delivery:operator_user_reservation_detail',
-                            campaign_id=campaign_id,
-                            user_delivery_point_id=user_delivery_point_id)
+            # return redirect('good_delivery:operator_user_reservation_detail',
+                            # campaign_id=campaign_id,
+                            # user_delivery_point_id=user_delivery_point_id)
 
         form = GoodDeliveryForm(data=request.POST, stock=stock)
         d['form'] = form
@@ -220,49 +216,47 @@ def operator_new_delivery(request, campaign_id, user_delivery_point_id,
 
             operator_delivery_point = OperatorDeliveryPoint.objects.get(operator=request.user,
                                                                         delivery_point=reservation.delivery_point)
-            delivery = GoodDelivery(campaign=operator_delivery_point.delivery_point.campaign,
-                                    delivered_to=reservation.user,
-                                    created_by=operator_delivery_point,
-                                    good=good,
-                                    good_stock_identifier=good_stock_identifier,
-                                    good_identifier=good_identifier,
-                                    notes=notes)
-            delivery.save()
+            good_delivery = GoodDelivery(campaign=operator_delivery_point.delivery_point.campaign,
+                                         delivered_to=reservation.user,
+                                         created_by=operator_delivery_point,
+                                         good=good,
+                                         good_stock_identifier=good_stock_identifier,
+                                         good_identifier=good_identifier,
+                                         notes=notes)
+            good_delivery.save()
 
             msg = _("Inserimento effettuato con successo")
             messages.add_message(request, messages.SUCCESS, msg)
-            if delivery.delivered_to.email:
-                token = delivery.build_jwt()
+            if good_delivery.delivered_to.email:
+                token = good_delivery.build_jwt()
                 uri = request.build_absolute_uri(reverse('good_delivery:user_use_token'))
                 mail_params = {'hostname': settings.HOSTNAME,
-                               'user': delivery.delivered_to,
+                               'user': good_delivery.delivered_to,
                                'url': '{}?token={}'.format(uri, token),
                                'added_text': msg
                               }
-                m_subject = _('{} - {}').format(settings.HOSTNAME, delivery)
+                m_subject = _('{} - {}').format(settings.HOSTNAME, good_delivery)
 
                 send_custom_mail(subject=m_subject,
-                                 recipients=[delivery.delivered_to],
+                                 recipients=[good_delivery.delivered_to],
                                  body=settings.NEW_DELIVERY_WITH_TOKEN_CREATED,
                                  params=mail_params)
 
 
-            return redirect('good_delivery:operator_user_reservation_detail',
-                            campaign_id=campaign_id,
-                            user_delivery_point_id=user_delivery_point_id)
+            # return redirect('good_delivery:operator_user_reservation_detail',
+                            # campaign_id=campaign_id,
+                            # user_delivery_point_id=user_delivery_point_id)
     return render(request, template, d)
 
 @login_required
 @campaign_is_active
 @campaign_is_in_progress
 @is_campaign_operator
-def operator_good_delivery_deliver(request, campaign_id, user_delivery_point_id,
-                                   delivery_id, campaign, delivery_points):
-    reservation = get_object_or_404(UserDeliveryPoint,
-                                    pk=user_delivery_point_id,
-                                    delivery_point__in=delivery_points)
+def operator_good_delivery_deliver(request, campaign_id, delivery_id,
+                                   campaign, delivery_points):
     good_delivery = get_object_or_404(GoodDelivery,
-                                      created_by__delivery_point__in=delivery_points,
+                                      campaign=campaign,
+                                      delivery_point__in=delivery_points,
                                       pk=delivery_id)
     if campaign.require_agreement:
         messages.add_message(request, messages.ERROR,
@@ -278,10 +272,7 @@ def operator_good_delivery_deliver(request, campaign_id, user_delivery_point_id,
                              _("Consegna disabilitata"))
     else:
         good_delivery.delivery_date = timezone.now()
-        operator = get_object_or_404(OperatorDeliveryPoint,
-                                     operator=request.user,
-                                     delivery_point=reservation.delivery_point)
-        good_delivery.delivered_by = operator
+        good_delivery.delivered_by = request.user
         good_delivery.save(update_fields=['delivery_date',
                                           'delivered_by',
                                           'modified'])
@@ -291,22 +282,19 @@ def operator_good_delivery_deliver(request, campaign_id, user_delivery_point_id,
 
         messages.add_message(request, messages.SUCCESS,
                                  _("Consegna completata"))
-    return redirect('good_delivery:operator_user_reservation_detail',
-                    campaign_id=campaign_id,
-                    user_delivery_point_id=reservation.pk)
+    return redirect('good_delivery:operator_campaign_detail',
+                    campaign_id=campaign_id)
 
 
 @login_required
 @campaign_is_active
 @campaign_is_in_progress
 @is_campaign_operator
-def operator_good_delivery_return(request, campaign_id, user_delivery_point_id,
-                                  elivery_id, campaign, delivery_points):
-    reservation = get_object_or_404(UserDeliveryPoint,
-                                    pk=user_delivery_point_id,
-                                    delivery_point__in=delivery_points)
+def operator_good_delivery_return(request, campaign_id, delivery_id,
+                                  campaign, delivery_points):
     good_delivery = get_object_or_404(GoodDelivery,
-                                      created_by__delivery_point__in=delivery_points,
+                                      campaign=campaign,
+                                      delivery_point__in=delivery_points,
                                       pk=delivery_id)
     if not good_delivery.delivery_date:
         messages.add_message(request, messages.ERROR,
@@ -316,10 +304,7 @@ def operator_good_delivery_return(request, campaign_id, user_delivery_point_id,
                              _("Bene già restituito"))
     else:
         good_delivery.return_date = timezone.now()
-        operator = get_object_or_404(OperatorDeliveryPoint,
-                                     operator=request.user,
-                                     delivery_point=reservation.delivery_point)
-        good_delivery.returned_to = operator
+        good_delivery.returned_to = request.user
         good_delivery.save(update_fields=['return_date',
                                           'returned_to',
                                           'modified'])
@@ -329,31 +314,25 @@ def operator_good_delivery_return(request, campaign_id, user_delivery_point_id,
 
         messages.add_message(request, messages.SUCCESS,
                                  _("Restituzione completata"))
-    return redirect('good_delivery:operator_user_reservation_detail',
-                    campaign_id=campaign_id,
-                    user_delivery_point_id=reservation.pk)
+    return redirect('good_delivery:operator_campaign_detail',
+                    campaign_id=campaign_id)
 
 @login_required
 @campaign_is_active
 @campaign_is_in_progress
 @is_campaign_operator
-def operator_good_delivery_disable(request, campaign_id, user_delivery_point_id,
-                                   delivery_id, campaign, delivery_points):
-    reservation = get_object_or_404(UserDeliveryPoint,
-                                    pk=user_delivery_point_id,
-                                    delivery_point__in=delivery_points)
+def operator_good_delivery_disable(request, campaign_id, delivery_id,
+                                   campaign, delivery_points):
     good_delivery = get_object_or_404(GoodDelivery,
-                                      created_by__delivery_point__in=delivery_points,
+                                      campaign=campaign,
+                                      delivery_point__in=delivery_points,
                                       pk=delivery_id)
     if good_delivery.disabled_date:
         messages.add_message(request, messages.ERROR,
                              _("Consegna già disabilitata"))
     else:
         good_delivery.disabled_date = timezone.now()
-        operator = get_object_or_404(OperatorDeliveryPoint,
-                                     operator=request.user,
-                                     delivery_point=reservation.delivery_point)
-        good_delivery.disabled_by = operator
+        good_delivery.disabled_by = request.user
         good_delivery.save(update_fields=['disabled_date',
                                           'disabled_by',
                                           'modified'])
@@ -363,21 +342,18 @@ def operator_good_delivery_disable(request, campaign_id, user_delivery_point_id,
 
         messages.add_message(request, messages.SUCCESS,
                                  _("Disabilitazione completata"))
-    return redirect('good_delivery:operator_user_reservation_detail',
-                    campaign_id=campaign_id,
-                    user_delivery_point_id=reservation.pk)
+    return redirect('good_delivery:operator_campaign_detail',
+                    campaign_id=campaign_id)
 
 @login_required
 @campaign_is_active
 @campaign_is_in_progress
 @is_campaign_operator
-def operator_good_delivery_delete(request, campaign_id, user_delivery_point_id,
-                                  delivery_id, campaign, delivery_points):
-    reservation = get_object_or_404(UserDeliveryPoint,
-                                    pk=user_delivery_point_id,
-                                    delivery_point__in=delivery_points)
+def operator_good_delivery_delete(request, campaign_id, delivery_id,
+                                  campaign, delivery_points):
     good_delivery = get_object_or_404(GoodDelivery,
-                                      created_by__delivery_point__in=delivery_points,
+                                      campaign=campaign,
+                                      delivery_point__in=delivery_points,
                                       pk=delivery_id)
     if good_delivery.is_waiting():
         good_delivery.delete()
@@ -386,9 +362,8 @@ def operator_good_delivery_delete(request, campaign_id, user_delivery_point_id,
     else:
         messages.add_message(request, messages.ERROR,
                              _("Eliminazione non consentita"))
-    return redirect('good_delivery:operator_user_reservation_detail',
-                    campaign_id=campaign_id,
-                    user_delivery_point_id=reservation.pk)
+    return redirect('good_delivery:operator_campaign_detail',
+                    campaign_id=campaign_id)
 
 def user_use_token(request):
     title =_("Accettazione condizioni")
@@ -401,7 +376,7 @@ def user_use_token(request):
         good_delivery = get_object_or_404(GoodDelivery,
                                           pk=pk,
                                           delivered_to__pk=user_id)
-        campaign = good_delivery.created_by.delivery_point.campaign
+        campaign = good_delivery.campaign
         if request.user.is_authenticated and not request.user.pk==user_id:
             msg = _("Utente non autorizzato")
         elif not campaign.is_active or not campaign.is_in_progress():
@@ -425,6 +400,45 @@ def user_use_token(request):
         return custom_message(request=request,
                               message=_("Invalid token"),
                               status=500)
+
+
+@login_required
+@campaign_is_active
+@campaign_is_in_progress
+@is_campaign_operator
+def operator_good_delivery_send_token(request, campaign_id, delivery_id,
+                                      campaign, delivery_points):
+    good_delivery = get_object_or_404(GoodDelivery,
+                                      campaign=campaign,
+                                      delivery_point__in=delivery_points,
+                                      pk=delivery_id)
+    if not good_delivery.is_waiting():
+        messages.add_message(request, messages.ERROR,
+                             _("Consegna bloccata"))
+    else:
+        token = good_delivery.build_jwt()
+        uri = request.build_absolute_uri(reverse('good_delivery:user_use_token'))
+        msg = good_delivery
+        mail_params = {'hostname': settings.HOSTNAME,
+                       'user': good_delivery.delivered_to,
+                       'url': '{}?token={}'.format(uri, token),
+                       'added_text': msg
+                      }
+        m_subject = _('{} - {}').format(settings.HOSTNAME, good_delivery)
+
+        send_custom_mail(subject=m_subject,
+                         recipients=[good_delivery.delivered_to],
+                         body=settings.NEW_DELIVERY_WITH_TOKEN_CREATED,
+                         params=mail_params)
+        messages.add_message(request, messages.SUCCESS,
+                             _("Link di attivazione inviato a {}").format(good_delivery.delivered_to.email))
+    return redirect('good_delivery:operator_campaign_detail',
+                    campaign_id=campaign_id)
+
+
+
+
+
 
 
 # ENABLE METHOD DISABLED

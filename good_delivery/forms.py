@@ -23,18 +23,19 @@ class GoodDeliveryForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         stock = kwargs.pop('stock', None)
         super().__init__(*args, **kwargs)
-        good = stock.good
-        delivery_point = stock.delivery_point
-        campaign = delivery_point.campaign
-        existent_deliveries = GoodDelivery.objects.filter(created_by__delivery_point__campaign=campaign,
-                                                          good=good)
-        stock_ids = []
-        for ed in existent_deliveries:
-            if ed.good_stock_identifier:
-                stock_ids.append(ed.good_stock_identifier.good_identifier)
-        identifiers = DeliveryPointGoodStockIdentifier.objects.filter(delivery_point_stock=stock)
-        identifiers = identifiers.exclude(good_identifier__in=stock_ids)
-        self.fields['good_stock_identifier'].queryset = identifiers
+        if not self.instance:
+            good = stock.good
+            delivery_point = stock.delivery_point
+            campaign = delivery_point.campaign
+            existent_deliveries = GoodDelivery.objects.filter(campaign=campaign,
+                                                              good=good)
+            stock_ids = []
+            for ed in existent_deliveries:
+                if ed.good_stock_identifier:
+                    stock_ids.append(ed.good_stock_identifier.good_identifier)
+            identifiers = DeliveryPointGoodStockIdentifier.objects.filter(delivery_point_stock=stock)
+            identifiers = identifiers.exclude(good_identifier__in=stock_ids)
+            self.fields['good_stock_identifier'].queryset = identifiers
 
     class Media:
         js = ('js/textarea-autosize.js',)

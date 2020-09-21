@@ -14,7 +14,7 @@ from good_delivery.decorators import *
 from good_delivery.models import *
 
 
-_columns = ['pk', 'user', 'delivery_point', 'state']
+_columns = ['pk', 'delivered_to', 'delivery_point', 'good', 'state']
 
 
 class UsersDeliveryPointDTD(DjangoDatatablesServerProc):
@@ -29,10 +29,12 @@ class UsersDeliveryPointDTD(DjangoDatatablesServerProc):
             text = params['text']
             if text:
                 self.aqs = self.aqs.filter(
-                    Q(user__first_name__icontains=text) | \
-                    Q(user__last_name__icontains=text) | \
-                    Q(delivery_point__campaign__name__icontains=text) | \
-                    Q(delivery_point__name__icontains=text))
+                    Q(delivered_to__username__icontains=text) | \
+                    Q(delivered_to__first_name__icontains=text) | \
+                    Q(delivered_to__last_name__icontains=text) | \
+                    Q(delivery_point__name__icontains=text) | \
+                    Q(good__category__name__icontains=text) | \
+                    Q(good__name__icontains=text))
 
 @csrf_exempt
 @login_required
@@ -45,7 +47,7 @@ def campaign_users(request, campaign_id, campaign, delivery_points):
     :return: JsonResponse
     """
     columns = _columns
-    users_dp = UserDeliveryPoint.objects.filter(delivery_point__campaign=campaign,
-                                                delivery_point__is_active=True)
+    users_dp = GoodDelivery.objects.filter(campaign=campaign,
+                                           delivery_point__is_active=True)
     dtd = UsersDeliveryPointDTD( request, users_dp, columns )
     return JsonResponse(dtd.get_dict())

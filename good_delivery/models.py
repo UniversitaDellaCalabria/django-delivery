@@ -45,12 +45,12 @@ class DeliveryCampaign(TimeStampedModel):
     date_end = models.DateTimeField()
     require_agreement = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)
-    
+
     note_operator = models.TextField(help_text=_('Notes to operators'),
                                      blank=True, null=True)
     note_users = models.TextField(help_text=_('Notes to users'),
                                      blank=True, null=True)
-    
+
     class Meta:
         verbose_name = _('Campagna di consegne')
         verbose_name_plural = _('Campagne di consegne')
@@ -79,42 +79,6 @@ class DeliveryPoint(TimeStampedModel):
 
     def __str__(self):
         return '({}) {}'.format(self.campaign, self.name)
-
-
-class UserDeliveryPoint(TimeStampedModel):
-    """
-    assegnazione utenti finali a un punto di raccolta
-    """
-    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
-    delivery_point = models.ForeignKey(DeliveryPoint, on_delete=models.CASCADE)
-    
-    @property
-    def state(self):
-        delivery = GoodDelivery.objects.filter(delivered_to=self.user,
-                                               campaign=self.delivery_point.campaign).last()
-        if delivery:
-            return delivery.state
-        else:
-            return _('da consegnare')
-            
-        
-    
-    class Meta:
-        verbose_name = _('Prenotazioni utenti')
-        verbose_name_plural = _('Prenotazioni utenti')
-        unique_together = ("user", "delivery_point")
-
-
-    def get_good_deliveries(self):
-        deliveries = GoodDelivery.objects.filter(delivered_to=self.user,
-                                                 created_by__delivery_point=self.delivery_point).count()
-        return deliveries
-
-    def __str__(self):
-        return '{} - {}'.format(self.user, self.delivery_point)
-
-    #onsave
-    #same user can't join multiple delivery point in a campaign
 
 
 class OperatorDeliveryPoint(TimeStampedModel):
@@ -168,7 +132,7 @@ class DeliveryPointGoodStock(TimeStampedModel):
     delivery_point = models.ForeignKey(DeliveryPoint,
                                        on_delete=models.CASCADE)
     good = models.ForeignKey(Good, on_delete=models.CASCADE)
-    max_number = models.IntegerField(default=0, 
+    max_number = models.IntegerField(default=0,
                                      help_text=_("0 for unlimited"))
 
     class Meta:
@@ -204,11 +168,10 @@ class GoodDelivery(TimeStampedModel):
     """
     campaign = models.ForeignKey(DeliveryCampaign,
                                  on_delete=models.CASCADE)
+    delivery_point = models.ForeignKey(DeliveryPoint,
+                                       on_delete=models.PROTECT)
     delivered_to = models.ForeignKey(get_user_model(),
-                                     on_delete=models.CASCADE)
-    created_by = models.ForeignKey(OperatorDeliveryPoint,
-                                   on_delete=models.CASCADE,
-                                   related_name="created_by")
+                                     on_delete=models.PROTECT)
     good = models.ForeignKey(Good, on_delete=models.CASCADE)
     good_stock_identifier = models.ForeignKey(DeliveryPointGoodStockIdentifier,
                                               blank=True, null=True,
@@ -218,20 +181,20 @@ class GoodDelivery(TimeStampedModel):
     good_identifier = models.CharField(max_length=255, blank=True, null=True)
     delivery_date = models.DateTimeField(_('Data di consegna'),
                                          blank=True, null=True)
-    delivered_by = models.ForeignKey(OperatorDeliveryPoint,
-                                     on_delete=models.CASCADE,
+    delivered_by = models.ForeignKey(get_user_model(),
+                                     on_delete=models.PROTECT,
                                      blank=True, null=True,
                                      related_name="deliveder_by")
     disabled_date = models.DateTimeField(_('Data di disabilitazione'),
                                          blank=True, null=True)
-    disabled_by = models.ForeignKey(OperatorDeliveryPoint,
-                                    on_delete=models.CASCADE,
+    disabled_by = models.ForeignKey(get_user_model(),
+                                    on_delete=models.PROTECT,
                                     blank=True, null=True,
                                     related_name="disabled_by")
     return_date = models.DateTimeField(_('Data di restituzione'),
                                        blank=True, null=True)
-    returned_to = models.ForeignKey(OperatorDeliveryPoint,
-                                    on_delete=models.CASCADE,
+    returned_to = models.ForeignKey(get_user_model(),
+                                    on_delete=models.PROTECT,
                                     blank=True, null=True,
                                     related_name="returned_to")
     notes = models.TextField(null=True, blank=True)
@@ -240,7 +203,7 @@ class GoodDelivery(TimeStampedModel):
         verbose_name = _('Consegna prodotto')
         verbose_name_plural = _('Consegne prodotti')
 
-    def save(self, *args, **kwargs):
+    def save_BACKUP(self, *args, **kwargs):
         # good identifiers
         stock_identifier = self.good_stock_identifier
         manual_identifier = self.good_identifier
@@ -249,9 +212,8 @@ class GoodDelivery(TimeStampedModel):
         if stock_identifier and manual_identifier:
             raise Exception(_("Al più un identificatore"))
 
-        delivery_point = self.created_by.delivery_point
         good = self.good
-        stock = DeliveryPointGoodStock.objects.filter(delivery_point=delivery_point,
+        stock = DeliveryPointGoodStock.objects.filter(delivery_point=self.delivery_point,
                                                       good=good).first()
         stock_identifiers = DeliveryPointGoodStockIdentifier.objects.filter(delivery_point_stock=stock)
 
@@ -261,7 +223,6 @@ class GoodDelivery(TimeStampedModel):
             raise Exception(_("Selezionare il codice identificativo "
                               "dalla lista"))
 
-        campaign = delivery_point.campaign
         # check if there is an existent delivery
         # (same good, same id, same campaign)
         existent_delivery = GoodDelivery.objects.filter(Q(good_stock_identifier=stock_identifier) &
@@ -269,7 +230,7 @@ class GoodDelivery(TimeStampedModel):
                                                         Q(good_identifier=manual_identifier) &
                                                         Q(good_identifier__isnull=False),
                                                         good=good,
-                                                        created_by__delivery_point__campaign=campaign)
+                                                        campaign=self.campaign)
                                                         # return_date__isnull=True)
         # if operator is editing a delivery (self.pk exists)
         # we can exclude it from deliveries list
@@ -301,24 +262,46 @@ class GoodDelivery(TimeStampedModel):
     def build_jwt(self):
         data = {'id': self.pk,
                 'user': self.delivered_to.pk}
-        # serialized = serializers.serialize('json', [good_delivery], ensure_ascii=False)
         encrypted_data = encrypt_to_jwe(json.dumps(data).encode())
         return encrypted_data
-        # decrypted = json.loads(decrypt_from_jwe(encrypted_data))
-        # return decrypted
 
     def is_waiting(self):
         if self.delivery_date: return False
         if self.return_date: return False
         if self.disabled_date: return False
         return True
-    
+
+    def can_be_returned(self):
+        if not self.delivery_date: return False
+        if self.return_date: return False
+        return True
+
+    def can_be_disabled(self):
+        if self.disabled_date: return False
+        return True
+
+    def can_be_deleted(self):
+        return self.is_waiting()
+
+    def can_be_marked_by_operator(self):
+        # marked as delivered by operator
+        # without user confirmation
+        return not self.campaign.require_agreement and self.is_waiting()
+
+    def can_be_marked_by_user(self):
+        # marked as delivered by user action
+        if not self.campaign.is_in_progress(): return False
+        if not good_delivery.campaign.require_agreement: return False
+        return good_delivery.is_waiting()
+
     @property
     def state(self):
         if self.is_waiting():
             return _('waiting')
         elif self.disabled_date:
             return _('disabled')
+        elif self.return_date:
+            return _('returned')
         elif self.delivery_date:
             return _('delivered')
         else:
