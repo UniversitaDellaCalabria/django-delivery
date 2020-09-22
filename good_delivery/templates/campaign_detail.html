@@ -28,10 +28,10 @@
               <br>
               <b>{% trans 'Prenotazione obbligatoria' %}:</b>
               <svg class="icon icon-xs">
-              {% if campaign.require_user_reservation %}
-                <use xlink:href="{% static 'svg/sprite.svg' %}#it-check"></use>
-              {% else %}
+              {% if campaign.operator_can_create %}
                 <use xlink:href="{% static 'svg/sprite.svg' %}#it-close"></use>
+              {% else %}
+                <use xlink:href="{% static 'svg/sprite.svg' %}#it-check"></use>
               {% endif %}
               </svg>
           </p>

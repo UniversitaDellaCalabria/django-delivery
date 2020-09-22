@@ -44,7 +44,7 @@ class DeliveryCampaign(TimeStampedModel):
     date_start = models.DateTimeField()
     date_end = models.DateTimeField()
     require_agreement = models.BooleanField(default=True)
-    require_user_reservation = models.BooleanField(default=True)
+    operator_can_create = models.BooleanField(default=True)
     new_delivery_if_disabled = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)
     note_operator = models.TextField(help_text=_('Notes to operators'),

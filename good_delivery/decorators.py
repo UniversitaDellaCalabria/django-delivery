@@ -34,15 +34,15 @@ def campaign_is_in_progress(func_to_decorate):
     return new_func
 
 
-def campaign_not_require_reservation(func_to_decorate):
+def operator_can_create(func_to_decorate):
     """
     """
     def new_func(*original_args, **original_kwargs):
         request = original_args[0]
         campaign = original_kwargs['campaign']
-        if campaign.require_user_reservation:
-            return custom_message(request, _("La campagna richiede la prenotazione"))
-        return func_to_decorate(*original_args, **original_kwargs)
+        if campaign.operator_can_create:
+            return func_to_decorate(*original_args, **original_kwargs)
+        return custom_message(request, _("La campagna richiede la prenotazione"))
     return new_func
 
 

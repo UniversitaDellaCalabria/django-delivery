@@ -86,7 +86,7 @@ def operator_campaign_detail(request, campaign_id, campaign, delivery_points):
 @login_required
 @campaign_is_active
 @campaign_is_in_progress
-@campaign_not_require_reservation
+@operator_can_create
 @is_campaign_operator
 def operator_new_delivery_preload(request, campaign_id, campaign,
                                   delivery_points):
@@ -116,7 +116,7 @@ def operator_new_delivery_preload(request, campaign_id, campaign,
 @login_required
 @campaign_is_active
 @campaign_is_in_progress
-@campaign_not_require_reservation
+@operator_can_create
 @is_campaign_operator
 def operator_new_delivery(request, campaign_id, user_id, good_stock_id,
                           campaign, delivery_points):
