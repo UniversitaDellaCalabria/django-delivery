@@ -41,7 +41,7 @@
 
                     {% include "delivery_details.html" %}
 
-                    {% if good_delivery.campaign.is_in_progress and good_delivery.campaign.require_agreement and good_delivery.is_waiting %}
+                    {% if good_delivery.can_be_marked_by_user %}
                         <button type="button"
                            class="btn btn-outline-success"
                            data-toggle="modal"

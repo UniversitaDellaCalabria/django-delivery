@@ -59,8 +59,10 @@ class GoodDeliveryForm(forms.ModelForm):
                 excluded_stock_ids.append(ed.good_stock_identifier.good_identifier)
         # if operator is editing an existent delivery
         # its stock identifier must be included (and not be present in exclusion list)
-        if self.instance.pk and self.instance.good_stock_identifier.good_identifier in excluded_stock_ids:
-            excluded_stock_ids.remove(self.instance.good_stock_identifier.good_identifier)
+        if self.instance.pk and self.instance.good_stock_identifier:
+            good_identifier = self.instance.good_stock_identifier.good_identifier
+            if good_identifier in excluded_stock_ids:
+                excluded_stock_ids.remove(self.instance.good_stock_identifier.good_identifier)
         # exclude list from queryset
         identifiers = identifiers.exclude(good_identifier__in=excluded_stock_ids)
         self.fields['good_stock_identifier'].queryset = identifiers

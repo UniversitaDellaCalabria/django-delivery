@@ -214,16 +214,6 @@ class GoodDelivery(TimeStampedModel):
                 raise Exception(_("Identificatori non coincidenti"))
 
         good = self.good
-        stock = DeliveryPointGoodStock.objects.filter(delivery_point=self.delivery_point,
-                                                      good=good).first()
-        stock_identifiers = DeliveryPointGoodStockIdentifier.objects.filter(delivery_point_stock=stock)
-
-        # if a stock identifiers list is available,
-        # manual identifier is not permitted
-        if stock_identifiers and not self.good_stock_identifier:
-            raise Exception(_("Selezionare il codice identificativo "
-                              "dalla lista"))
-
         # check if there is an existent delivery
         # (same good, same id, same campaign)
         existent_delivery = GoodDelivery.objects.filter(Q(good_stock_identifier=stock_identifier) &
@@ -237,7 +227,7 @@ class GoodDelivery(TimeStampedModel):
         # we can exclude it from deliveries list
         if self.pk:
             existent_delivery = existent_delivery.exclude(pk=self.pk)
-        existent_delivery = existent_delivery.first()
+        # existent_delivery = existent_delivery.first()
         # if there is a delivery with same good code
         # (same good, same id, same campaign)
         # save operation is not permitted!
@@ -282,29 +272,34 @@ class GoodDelivery(TimeStampedModel):
         return True
 
     def can_be_deleted(self):
-        return self.is_waiting()
+        if self.delivery_date: return False
+        if self.disabled_date: return False
+        return True
 
     def can_be_marked_by_operator(self):
         # marked as delivered by operator
         # without user confirmation
-        return not self.campaign.require_agreement and self.is_waiting()
+        return not self.campaign.require_agreement and self.delivered_by and self.is_waiting()
 
     def can_be_marked_by_user(self):
         # marked as delivered by user action
+        if not self.delivery_by: return False
         if not self.campaign.is_in_progress(): return False
-        if not good_delivery.campaign.require_agreement: return False
+        if not self.campaign.require_agreement: return False
         return good_delivery.is_waiting()
 
     @property
     def state(self):
-        if self.is_waiting():
-            return _('waiting')
-        elif self.disabled_date:
-            return _('disabled')
+        if self.disabled_date:
+            return _('disabilitata')
         elif self.return_date:
-            return _('returned')
+            return _('restituito')
         elif self.delivery_date:
-            return _('delivered')
+            return _('consegnato')
+        elif not self.delivered_by:
+            return _('da definire')
+        elif self.is_waiting():
+            return _('in attesa')
         else:
             return _('unknown')
 

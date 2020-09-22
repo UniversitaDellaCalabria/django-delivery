@@ -145,7 +145,7 @@
 </div>
 {% endif %}
 
-{% if good_delivery.is_waiting %}
+{% if good_delivery.can_be_deleted %}
 <button type="button"
    class="btn btn-outline-danger"
    data-toggle="modal"
@@ -184,7 +184,7 @@
 </div>
 {% endif %}
 
-{% if good_delivery.is_waiting %}
+{% if good_delivery.delivered_by and good_delivery.is_waiting %}
 <a role="button" class="btn btn-success pull-right"
    href="{% url 'good_delivery:operator_good_delivery_send_token' campaign.pk good_delivery.pk %}">
         <svg class="icon icon-xs icon-white">
