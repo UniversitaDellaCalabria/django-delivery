@@ -10,10 +10,16 @@
 
 {% block top_buttons %}
 <a role="button" class="btn btn-outline-secondary"
-   href="">
+   href="{% url 'good_delivery:operator_campaign_detail' campaign.pk %}">
     <svg class="icon icon-xs">
         <use xlink:href="{% static 'svg/sprite.svg' %}#it-arrow-left"></use>
-    </svg> {% trans "Torna alla Dashboard" %}
+    </svg> {% trans "Torna a" %} {{ campaign }}
+</a>
+<a role="button" class="btn btn-outline-secondary"
+   href="{% url 'good_delivery:operator_new_delivery_preload' campaign.pk %}">
+    <svg class="icon icon-xs">
+        <use xlink:href="{% static 'svg/sprite.svg' %}#it-arrow-left"></use>
+    </svg> {% trans "Torna a selezione utente" %}
 </a>
 {% endblock top_buttons %}
 

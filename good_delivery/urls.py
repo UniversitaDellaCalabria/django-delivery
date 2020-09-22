@@ -22,8 +22,9 @@ urlpatterns = [
     path(f'{op_prefix_camp}/<int:campaign_id>/', operator_campaign_detail, name='operator_campaign_detail'),
 
     # path(f'{op_prefix_camp}/<int:campaign_id>/<int:user_delivery_point_id>/', operator_user_reservation_detail, name='operator_user_reservation_detail'),
-    path(f'{op_prefix_camp}/<int:campaign_id>/<int:user_delivery_point_id>/new/', operator_new_delivery_preload, name='operator_new_delivery_preload'),
-    path(f'{op_prefix_camp}/<int:campaign_id>/<int:user_delivery_point_id>/new/<int:good_id>/', operator_new_delivery, name='operator_new_delivery'),
+    path(f'{op_prefix_camp}/<int:campaign_id>/new/', operator_new_delivery_preload, name='operator_new_delivery_preload'),
+    path(f'{op_prefix_camp}/<int:campaign_id>/new/<int:user_id>/<int:good_stock_id>/', operator_new_delivery, name='operator_new_delivery'),
+    path(f'{op_prefix_camp}/<int:campaign_id>/<int:good_delivery_id>/another/', operator_another_delivery, name='operator_another_delivery'),
 
     path(f'{op_prefix_camp}/<int:campaign_id>/<int:delivery_id>/', operator_good_delivery_detail, name='operator_good_delivery_detail'),
     path(f'{op_prefix_camp}/<int:campaign_id>/<int:delivery_id>/deliver/', operator_good_delivery_deliver, name='operator_good_delivery_deliver'),

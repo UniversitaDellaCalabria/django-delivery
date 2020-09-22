@@ -78,6 +78,15 @@ $(function() {
                 targets: [ 4 ],
                 className: "desktop",
                 orderable: false,
+                render: function ( data, type, row ) {
+                    if(data)return data;
+                    return "-";
+                }
+            },
+            {
+                targets: [ 5 ],
+                className: "desktop",
+                orderable: false,
             },
         ];
 

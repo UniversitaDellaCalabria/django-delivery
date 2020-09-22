@@ -1,0 +1,42 @@
+{% load i18n %}
+{% load static %}
+
+<div class="col-12 col-lg-4 category-box">
+    <!--start card-->
+    <div class="card-wrapper card-space">
+      <div class="card card-bg no-after">
+        <div class="card-body">
+            <span class="badge badge-success mb-2">
+                {% trans "In corso" %}
+            </span>
+            <a class="read-more" href="{% url 'good_delivery:operator_campaign_detail' campaign_id=campaign.pk %}">
+                <h5 class="card-title">{{ campaign.name }}</h5>
+            </a>
+          <p class="card-text">
+              <b>{% trans "Data inizio" %}:</b> {{ campaign.date_start }}
+              <br>
+              <b>{% trans "Data fine" %}:</b> {{ campaign.date_end }}
+              <br>
+              <b>{% trans 'Liberatoria obbligatoria' %}:</b>
+              <svg class="icon icon-xs">
+              {% if campaign.requre_agreement %}
+                <use xlink:href="{% static 'svg/sprite.svg' %}#it-check"></use>
+              {% else %}
+                <use xlink:href="{% static 'svg/sprite.svg' %}#it-close"></use>
+              {% endif %}
+              </svg>
+              <br>
+              <b>{% trans 'Prenotazione obbligatoria' %}:</b>
+              <svg class="icon icon-xs">
+              {% if campaign.require_user_reservation %}
+                <use xlink:href="{% static 'svg/sprite.svg' %}#it-check"></use>
+              {% else %}
+                <use xlink:href="{% static 'svg/sprite.svg' %}#it-close"></use>
+              {% endif %}
+              </svg>
+          </p>
+        </div>
+      </div>
+    </div>
+    <!--end card-->
+  </div>

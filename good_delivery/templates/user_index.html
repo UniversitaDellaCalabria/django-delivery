@@ -68,12 +68,6 @@
                                         <p>{% trans "Desideri confermare la procedura di consegna " %}
                                            <b>{{ delivery }}</b> ?
                                         </p>
-                                        {% if good_delivery.good_stock_identifier %}
-                                        <br>
-                                        <p>{% trans "Assicurati che l'ID stock sia esatto " %}
-                                           <b>{{ good_delivery.good_stock_identifier.good_identifier }}</b>
-                                        </p>
-                                        {% endif %}
                                         {% if good_delivery.good_identifier %}
                                         <br>
                                         <p>{% trans "Assicurati che l'ID sia esatto " %}

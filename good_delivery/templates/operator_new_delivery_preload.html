@@ -3,39 +3,34 @@
 {% load i18n %}
 {% load static %}
 
+
 {% block menu_links %}
 {% include 'operator_menu.html' %}
 {% endblock menu_links %}
 
 {% block top_buttons %}
 <a role="button" class="btn btn-outline-secondary"
-   href="">
+   href="{% url 'good_delivery:operator_campaign_detail' campaign.pk %}">
     <svg class="icon icon-xs">
         <use xlink:href="{% static 'svg/sprite.svg' %}#it-arrow-left"></use>
-    </svg> {% trans "Torna alla Dashboard" %}
+    </svg> {% trans "Torna a" %} {{ campaign }}
 </a>
 {% endblock top_buttons %}
 
 {% block page_content %}
-<b><label for="good">{% trans "Bene" %}</label></b>
-<div class="bootstrap-select-wrapper">
-    <select id="good"
-            name="good"
-            title="{% trans 'Seleziona il bene da assegnare' %}"
-            data-live-search="true" data-live-search-placeholder="Cerca...">
-        <option value="">{% trans "Scegli un'opzione" %}</option>
-        {% for good in goods %}
-        <option value="{{ good.pk }}">{{ good }}</option>
-        {% endfor %}
-    </select>
+<div class="pb-4">
+    <form method="post" enctype="multipart/form-data">
+        {% include 'form_template.html' %}
+        {% block form_buttons %}
+        <input class="btn btn-success btn-block"
+               type="submit"
+               value="{% trans 'Procedi' %}">
+        {% endblock form_buttons %}
+    </form>
 </div>
 {% endblock page_content %}
 
 {% block extra_scripts %}
-<script type="text/javascript">
-$('#good').on('change', function(event) {
-    if($(this).val())
-        window.location.href = window.location.href + $(this).val();
-});
-</script>
+{{ block.super }}
+{{ form.media }}
 {% endblock extra_scripts %}

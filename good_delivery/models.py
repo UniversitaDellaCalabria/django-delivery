@@ -45,6 +45,7 @@ class DeliveryCampaign(TimeStampedModel):
     date_end = models.DateTimeField()
     require_agreement = models.BooleanField(default=True)
     require_user_reservation = models.BooleanField(default=True)
+    new_delivery_if_disabled = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)
     note_operator = models.TextField(help_text=_('Notes to operators'),
                                      blank=True, null=True)
@@ -125,7 +126,7 @@ class Good(TimeStampedModel):
         verbose_name_plural = _('Beni/Servizi')
 
     def __str__(self):
-        return '{} - {}'.format(self.category, self.name)
+        return '[{}] {}'.format(self.category, self.name)
 
 
 class DeliveryPointGoodStock(TimeStampedModel):
@@ -203,14 +204,14 @@ class GoodDelivery(TimeStampedModel):
         verbose_name = _('Consegna prodotto')
         verbose_name_plural = _('Consegne prodotti')
 
-    def save_BACKUP(self, *args, **kwargs):
+    def save(self, *args, **kwargs):
         # good identifiers
         stock_identifier = self.good_stock_identifier
         manual_identifier = self.good_identifier
-
         # only one identifier is permitted
-        if stock_identifier and manual_identifier:
-            raise Exception(_("Al più un identificatore"))
+        if stock_identifier:
+            if not manual_identifier or manual_identifier != stock_identifier.good_identifier:
+                raise Exception(_("Identificatori non coincidenti"))
 
         good = self.good
         stock = DeliveryPointGoodStock.objects.filter(delivery_point=self.delivery_point,

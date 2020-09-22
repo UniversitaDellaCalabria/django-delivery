@@ -9,58 +9,30 @@
 {% endblock menu_links %}
 
 {% block top_buttons %}
-<a role="button" class="btn btn-outline-secondary"
-   href="{% url 'good_delivery:operator_active_campaigns' %}">
-    <svg class="icon icon-xs">
-        <use xlink:href="{% static 'svg/sprite.svg' %}#it-arrow-left"></use>
-    </svg> {% trans "Torna alla Dashboard" %}
-</a>
+<div>
+    <a role="button" class="btn btn-outline-secondary"
+       href="{% url 'good_delivery:operator_active_campaigns' %}">
+        <svg class="icon icon-xs">
+            <use xlink:href="{% static 'svg/sprite.svg' %}#it-arrow-left"></use>
+        </svg> {% trans "Torna alle campagne" %}
+    </a>
+    {% if not campaign.require_user_reservation %}
+    <a role="button" class="btn btn-success pull-right"
+       href="{% url 'good_delivery:operator_new_delivery_preload' campaign.pk %}">
+        <svg class="icon icon-xs icon-white">
+            <use xlink:href="{% static 'svg/sprite.svg' %}#it-plus-circle"></use>
+        </svg> {% trans "Nuova consegna" %}
+    </a>
+    {% endif %}
+</div>
 {% endblock top_buttons %}
 
 {% block over_content %}
-
     {% if campaign.note_operator %}
-    <p>
-        {{ campaign.note_operator }}
-    </p>
+    <p>{{ campaign.note_operator }}</p>
     {% endif %}
-    <div class="col-12 col-lg-4 category-box">
-    <!--start card-->
-    <div class="card-wrapper card-space">
-      <div class="card card-bg no-after">
-        <div class="card-body">
-            {% if campaign.is_in_progress %}
-                <span class="badge badge-success mb-2">
-                    {% trans "In corso" %}
-                </span>
-            {% else %}
-                <span class="badge badge-danger mb-2">
-                    {% trans "Non in corso" %}
-                </span>
-            {% endif %}
-        <a class="read-more" href="{% url 'good_delivery:operator_campaign_detail' campaign_id=campaign.pk %}">
-            <h5 class="card-title">{{ campaign.name }}</h5>
-        </a>
-          <p class="card-text">
-              <b>{% trans "Data inizio" %}:</b> {{ campaign.date_start }}
-              <br>
-              <b>{% trans "Data fine" %}:</b> {{ campaign.date_end }}
-              <br>
-              <b>{% trans 'Liberatoria obbligatoria' %}:</b>
-              <svg class="icon icon-xs">
-              {% if campaign.requre_agreement %}
-                <use xlink:href="{% static 'svg/sprite.svg' %}#it-check"></use>
-              {% else %}
-                <use xlink:href="{% static 'svg/sprite.svg' %}#it-close"></use>
-              {% endif %}
-              </svg>
-          </p>
-        </div>
-      </div>
-    </div>
-    <!--end card-->
-    </div>
 
+    {% include "campaign_detail.html" %}
 {% endblock over_content %}
 
 {% block page_content %}

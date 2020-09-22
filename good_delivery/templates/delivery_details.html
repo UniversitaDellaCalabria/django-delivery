@@ -25,11 +25,7 @@
 
 <h5 class="card-title">{{ good_delivery.good }}</h5>
 
-{% if good_delivery.good_stock_identifier %}
-<p class="card-text">
-    <b>ID: {{ good_delivery.good_stock_identifier.good_identifier }}</b>
-</p>
-{% elif good_delivery.good_identifier %}
+{% if good_delivery.good_identifier %}
 <p class="card-text">
     <b>ID: {{ good_delivery.good_identifier }}</b>
 </p>

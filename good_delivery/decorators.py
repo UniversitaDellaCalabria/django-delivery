@@ -40,9 +40,21 @@ def campaign_not_require_reservation(func_to_decorate):
     def new_func(*original_args, **original_kwargs):
         request = original_args[0]
         campaign = original_kwargs['campaign']
-        if campaign:
+        if campaign.require_user_reservation:
             return custom_message(request, _("La campagna richiede la prenotazione"))
         return func_to_decorate(*original_args, **original_kwargs)
+    return new_func
+
+
+def campaign_permits_new_delivery_if_disabled(func_to_decorate):
+    """
+    """
+    def new_func(*original_args, **original_kwargs):
+        request = original_args[0]
+        campaign = original_kwargs['campaign']
+        if campaign.new_delivery_if_disabled:
+            return func_to_decorate(*original_args, **original_kwargs)
+        return custom_message(request, _("La campagna non permette di creare nuove consegne"))
     return new_func
 
 
