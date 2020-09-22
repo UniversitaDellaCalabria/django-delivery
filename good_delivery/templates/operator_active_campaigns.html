@@ -13,7 +13,7 @@
     <div class="pb-3">
         <div class="form-group">
             <input type="text"
-                   id="categoriesFilter"
+                   id="campaignsFilter"
                    placeholder="{% trans 'Filtra per parole chiave...' %}">
             <span class="autocomplete-icon" aria-hidden="true">
                 <svg class="icon icon-sm">
@@ -22,7 +22,7 @@
             </span>
         </div>
 
-        <div class="row" id="categories-grid">
+        <div class="row" id="campaigns-grid">
             {% for campaign in campaigns %}
                 {% include "campaign_detail.html" %}
             {% endfor %}
@@ -30,3 +30,16 @@
     </div>
 </div>
 {% endblock container_inner %}
+
+{% block extra_scripts %}
+<script>
+$(document).ready(function(){
+    $("#campaignsFilter").on("keyup", function() {
+        var value = $(this).val().toLowerCase();
+        $("#campaigns-grid .category-box").filter(function() {
+            $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+        });
+    });
+});
+</script>
+{% endblock extra_scripts %}
