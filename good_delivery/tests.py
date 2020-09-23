@@ -22,7 +22,8 @@ campaign_data = dict(name='banane',
                      date_start=timezone.localtime(),
                      date_end=timezone.localtime() + timezone.timedelta(hours=3),
                      is_active=True,
-                     require_agreement=True)
+                     require_agreement=True,
+                     new_delivery_if_disabled=True)
 
 
 class GoodDeliveryTest(TestCase):
@@ -40,7 +41,9 @@ class GoodDeliveryTest(TestCase):
 
 
     def _campaign_food(self):
-        campaign = DeliveryCampaign.objects.create(**campaing_data)
+        data = campaign_data.copy()
+        data['operator_can_create'] = True
+        campaign = DeliveryCampaign.objects.create(**data)
         devpoint = DeliveryPoint.objects.create(campaign=campaign,
                                                 name='ufficio_frutta')
         op_devpoint = OperatorDeliveryPoint.objects.create(delivery_point=devpoint,
@@ -48,7 +51,7 @@ class GoodDeliveryTest(TestCase):
         good_devpoint = DeliveryPointGoodStock.objects.create(delivery_point=devpoint,
                                                               good=self.good_food,
                                                               max_number=0)
-        return good_devpoint
+        return op_devpoint, good_devpoint
         
         
     def _campaign_gear(self):
@@ -81,7 +84,14 @@ class GoodDeliveryTest(TestCase):
         url = reverse('good_delivery:operator_active_campaigns')
         home = self.client.get(url, follow=True)
         assert b'Prenotazioni da gestire' in home.content
-    
+
+    def _get_csrfmiddlewaretoken(self, context):
+        """
+        context = self.client.get().context
+        returns a POSTable data dict
+        """
+        csrfmiddlewaretoken = context.get('csrf_token').__str__()
+        return {'csrfmiddlewaretoken': csrfmiddlewaretoken} 
     
     def test_op_create_delivery(self):
         """
@@ -98,6 +108,31 @@ class GoodDeliveryTest(TestCase):
         req = self.client.get(url)
         
         assert req.status_code == 403
+
+
+    def test_op_create_delivery_food(self):
+        """
+        delivery without booking
+        """
+        self.client.force_login(self.operator)
+        op_devpoint, good_devpoint_stock = self._campaign_food()
+        
+        url_kwargs = dict(campaign_id=op_devpoint.delivery_point.campaign.pk,
+                          user_id=self.user.pk,
+                          good_stock_id=good_devpoint_stock.pk)
+        url = reverse('good_delivery:operator_new_delivery', 
+                      kwargs=url_kwargs)
+        req = self.client.get(url, follow=True)
+        
+        # POST
+        csrf_data = self._get_csrfmiddlewaretoken(req.context)
+        # first try, failed csrf
+        data = dict()
+        data.update(csrf_data)
+        req = self.client.post(url, data=data, follow=True)
+        
+        assert b'Inserimento effettuato' in req.content
+        assert req.status_code == 200
         
         
     def _get_operator_good_delivery_detail(self):
@@ -110,19 +145,10 @@ class GoodDeliveryTest(TestCase):
         return url, campaign_booking, good_devpoint_stock
 
 
-    def _get_csrfmiddlewaretoken(self, context):
-        """
-        context = self.client.get().context
-        returns a POSTable data dict
-        """
-        csrfmiddlewaretoken = context.get('csrf_token').__str__()
-        return {'csrfmiddlewaretoken': csrfmiddlewaretoken} 
-
-
     def test_op_update_booked_delivery(self):
         url, campaign_booking, good_devpoint_stock = \
             self._get_operator_good_delivery_detail()
-        req = self.client.get(url)
+        req = self.client.get(url, follow=True)
         assert req.status_code == 200
         assert b'Attesa ritiro' in req.content
         
@@ -131,7 +157,8 @@ class GoodDeliveryTest(TestCase):
         assert form.is_valid()
         
         csrf_data = self._get_csrfmiddlewaretoken(req.context)
-        # first try, failed csrf
+        # first try, failed csrf - MUST FAIL
+        # WARNING:django.security.csrf:Forbidden (CSRF token missing or incorrect.)
         req = self.client.post(url, data={})
         assert req.status_code == 403
       

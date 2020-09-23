@@ -139,7 +139,7 @@ def operator_new_delivery(request, campaign_id, user_id, good_stock_id,
     if request.POST:
         # stock max number check
         actual_stock_deliveries = GoodDelivery.objects.filter(good=stock.good).count()
-        if stock.max_number>0 and actual_stock_deliveries==stock.max_number:
+        if stock.max_number > 0 and actual_stock_deliveries == stock.max_number:
             messages.add_message(request, messages.ERROR,
                                  _("Raggiunto il numero max di consegne "
                                    "per questo stock: {}").format(stock.max_number))
@@ -160,9 +160,14 @@ def operator_new_delivery(request, campaign_id, user_id, good_stock_id,
             # manual identifier is not permitted
             stock_identifiers = DeliveryPointGoodStockIdentifier.objects.filter(delivery_point_stock=stock)
             if stock_identifiers and not good_stock_identifier:
-                raise Exception(_("Selezionare il codice identificativo "
-                                  "dalla lista"))
-
+                messages.add_message(request, messages.ERROR,
+                                     _("Selezionare il codice identificativo "
+                                       "dalla lista"))
+                return redirect('good_delivery:operator_new_delivery',
+                                campaign_id=campaign_id,
+                                user_id=user_id,
+                                good_stock_id=good_stock_id)
+            
             good_delivery = GoodDelivery(campaign=campaign,
                                          delivery_point=stock.delivery_point,
                                          delivered_to=user,
