@@ -124,10 +124,8 @@ class GoodDeliveryTest(TestCase):
         assert b'Attesa ritiro' in req.content
         
         # test form
-        form = GoodDeliveryForm(data={}, 
-                                stock=good_devpoint_stock)
+        form = GoodDeliveryForm(data={}, stock=good_devpoint_stock)
         assert form.is_valid()
-        print(req.content.decode())
         
         csrf_data = self._get_csrfmiddlewaretoken(req.context)
         # first try, failed csrf
@@ -135,7 +133,6 @@ class GoodDeliveryTest(TestCase):
         assert req.status_code == 403
       
         req = self.client.post(url, data=csrf_data, follow=True)
-        
         assert b'Modifica effettuata correttamente' in req.content
     
     def test_op_delivery_campaign_expired(self):
@@ -165,7 +162,6 @@ class GoodDeliveryTest(TestCase):
         campaign_booking.save()
         assert not campaign_booking.is_waiting()
         req = self.client.post(url, data=csrf_data, follow=True)
-        print(req.content.decode())
         assert b'La consegna non' in req.content
     
     # def test_altro(self):
