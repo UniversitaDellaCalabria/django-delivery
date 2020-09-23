@@ -21,8 +21,8 @@ _user = dict(username='utonto', email='thatmail@utonti.org')
 campaign_data = dict(name='banane',
                      date_start=timezone.localtime(),
                      date_end=timezone.localtime() + timezone.timedelta(hours=3),
-                     is_active=1,
-                     require_agreement=1)
+                     is_active=True,
+                     require_agreement=True)
 
 
 class GoodDeliveryTest(TestCase):
@@ -99,6 +99,7 @@ class GoodDeliveryTest(TestCase):
         
         assert req.status_code == 403
         
+        
     def _get_operator_good_delivery_detail(self):
         self.client.force_login(self.operator)
         campaign_booking, good_devpoint_stock = self._campaign_gear()
@@ -108,6 +109,7 @@ class GoodDeliveryTest(TestCase):
                        kwargs=url_kwargs)
         return url, campaign_booking, good_devpoint_stock
 
+
     def _get_csrfmiddlewaretoken(self, context):
         """
         context = self.client.get().context
@@ -115,6 +117,7 @@ class GoodDeliveryTest(TestCase):
         """
         csrfmiddlewaretoken = context.get('csrf_token').__str__()
         return {'csrfmiddlewaretoken': csrfmiddlewaretoken} 
+
 
     def test_op_update_booked_delivery(self):
         url, campaign_booking, good_devpoint_stock = \
@@ -134,6 +137,14 @@ class GoodDeliveryTest(TestCase):
       
         req = self.client.post(url, data=csrf_data, follow=True)
         assert b'Modifica effettuata correttamente' in req.content
+        
+        url_kwargs = dict(campaign_id=good_devpoint_stock.delivery_point.campaign.pk,
+                  delivery_id=campaign_booking.pk)
+        url = reverse('good_delivery:operator_good_delivery_send_token', 
+              kwargs=url_kwargs)
+        req = self.client.get(url, follow=True)
+        assert b'Link di attivazione inviato' in req.content
+        
     
     def test_op_delivery_campaign_expired(self):
         url, campaign_booking, good_devpoint_stock = \
@@ -151,6 +162,7 @@ class GoodDeliveryTest(TestCase):
         req = self.client.post(url, data=csrf_data, follow=True)
         assert b'Campagna non in corso' in req.content
     
+    
     def test_op_delivery_not_waiting(self):
         url, campaign_booking, good_devpoint_stock = \
             self._get_operator_good_delivery_detail()
@@ -164,18 +176,42 @@ class GoodDeliveryTest(TestCase):
         req = self.client.post(url, data=csrf_data, follow=True)
         assert b'La consegna non' in req.content
 
+
     def test_op_delivery_disable(self):
         _, campaign_booking, good_devpoint_stock = \
             self._get_operator_good_delivery_detail()
         url_kwargs = dict(campaign_id=campaign_booking.campaign.pk,
                           delivery_id=campaign_booking.pk)
         url = reverse('good_delivery:operator_good_delivery_disable', 
-                       kwargs=url_kwargs)
+                      kwargs=url_kwargs)
         
         req = self.client.get(url, follow=True)
         assert GoodDelivery.objects.get(pk=campaign_booking.pk).disabled_date
         assert b'Disabilitazione completata' in req.content
         
+        url = reverse('good_delivery:operator_good_delivery_send_token', 
+                      kwargs=url_kwargs)
+        req = self.client.get(url, follow=True)
+        assert b'Consegna bloccata' in req.content
+
+
+    def test_op_delivery_delete(self):
+        _, campaign_booking, good_devpoint_stock = \
+            self._get_operator_good_delivery_detail()
+        url_kwargs = dict(campaign_id=campaign_booking.campaign.pk,
+                          delivery_id=campaign_booking.pk)
+        url = reverse('good_delivery:operator_good_delivery_delete', 
+                      kwargs=url_kwargs)
+        
+        req = self.client.get(url, follow=True)
+        assert not GoodDelivery.objects.filter(pk=campaign_booking.pk)
+        assert b'consegna eliminata' in req.content
+        
+        url = reverse('good_delivery:operator_good_delivery_send_token', 
+                      kwargs=url_kwargs)
+        req = self.client.get(url, follow=True)
+        assert req.status_code == 404
+
     # def test_altro(self):
         # breakpoint()
         # print(req.content.decode())
