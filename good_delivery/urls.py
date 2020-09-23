@@ -38,5 +38,5 @@ urlpatterns = [
 # Datatables URLs
 urlpatterns += [
     # User json
-    path('{}/<int:campaign_id>/campaign_users.json', campaign_users, name='campaign_users_json'),
+    path(f'{prefix}/<int:campaign_id>/campaign_users.json', campaign_users, name='campaign_users_json'),
 ]
