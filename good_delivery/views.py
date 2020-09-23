@@ -345,7 +345,7 @@ def operator_good_delivery_deliver(request, campaign_id, delivery_id,
         messages.add_message(request, messages.ERROR,
                              _("Consegna disabilitata"))
     else:
-        good_delivery.delivery_date = timezone.now()
+        good_delivery.delivery_date = timezone.localtime()
         good_delivery.delivered_by = request.user
         good_delivery.save(update_fields=['delivery_date',
                                           'delivered_by',
@@ -376,7 +376,7 @@ def operator_good_delivery_return(request, campaign_id, delivery_id,
         messages.add_message(request, messages.ERROR,
                              _("Bene già restituito"))
     else:
-        good_delivery.return_date = timezone.now()
+        good_delivery.return_date = timezone.localtime()
         good_delivery.returned_to = request.user
         good_delivery.save(update_fields=['return_date',
                                           'returned_to',
@@ -404,7 +404,7 @@ def operator_good_delivery_disable(request, campaign_id, delivery_id,
         messages.add_message(request, messages.ERROR,
                              _("Consegna già disabilitata"))
     else:
-        good_delivery.disabled_date = timezone.now()
+        good_delivery.disabled_date = timezone.localtime()
         good_delivery.disabled_by = request.user
         good_delivery.save(update_fields=['disabled_date',
                                           'disabled_by',
@@ -465,7 +465,7 @@ def user_use_token(request):
         else:
             # success!
             msg = _("Hai confermato correttamente la consegna")
-            good_delivery.delivery_date = timezone.now()
+            good_delivery.delivery_date = timezone.localtime()
             good_delivery.save(update_fields=['delivery_date', 'modified'])
             return custom_message(request=request,
                                   message=msg,

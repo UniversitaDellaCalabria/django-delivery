@@ -58,7 +58,7 @@ class DeliveryCampaign(TimeStampedModel):
 
     # @property
     def is_in_progress(self):
-        # return self.date_start <= timezone.now() and 
+        # return self.date_start <= timezone.localtime() and 
         return self.date_end > timezone.localtime()
 
     def __str__(self):
