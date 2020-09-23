@@ -9,6 +9,8 @@ A stock of available products is defined for each delivery point, each of which 
 
 Users entitled to collect the goods are associated with a single delivery point.
 
+![Alt text](gallery/1.png) 
+
 Management and flow description
 -------------------------------
 
@@ -20,7 +22,6 @@ Management and flow description
  - definition of stock of goods associated with delivery points (DeliveryPointGoodStock);
  - possible definition of lists of identification codes of goods associated with stocks (DeliveryPointGoodStockIdentifier);
  - operator user association for each delivery point (OperatorDeliveryPoint);
- - populating the list of reserved users, associating each of them to a specific delivery point (UserDeliveryPoint);
 
 Flow of goods delivery operations in presence (step by step):
 
