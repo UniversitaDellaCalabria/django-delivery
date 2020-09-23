@@ -163,7 +163,19 @@ class GoodDeliveryTest(TestCase):
         assert not campaign_booking.is_waiting()
         req = self.client.post(url, data=csrf_data, follow=True)
         assert b'La consegna non' in req.content
-    
+
+    def test_op_delivery_disable(self):
+        _, campaign_booking, good_devpoint_stock = \
+            self._get_operator_good_delivery_detail()
+        url_kwargs = dict(campaign_id=campaign_booking.campaign.pk,
+                          delivery_id=campaign_booking.pk)
+        url = reverse('good_delivery:operator_good_delivery_disable', 
+                       kwargs=url_kwargs)
+        
+        req = self.client.get(url, follow=True)
+        assert GoodDelivery.objects.get(pk=campaign_booking.pk).disabled_date
+        assert b'Disabilitazione completata' in req.content
+        
     # def test_altro(self):
         # breakpoint()
         # print(req.content.decode())
