@@ -51,4 +51,7 @@ setup(
         'django-unical-bootstrap-italia>=1.0.2',
         'cryptojwt>=1.3.0'
     ],
+    tests_require=[
+        'pytest-django>=3.9.0',
+    ]
 )
