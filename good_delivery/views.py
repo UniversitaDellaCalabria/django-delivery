@@ -99,6 +99,8 @@ def operator_new_delivery_preload(request, campaign_id, campaign,
         if form.is_valid():
             stock = form.cleaned_data['good_stock']
             user = form.cleaned_data['user']
+            messages.add_message(request, messages.SUCCESS,
+                     _("{} inserito con successo.").format(user))
             return redirect('good_delivery:operator_new_delivery',
                             campaign_id=campaign_id,
                             user_id=user.pk,

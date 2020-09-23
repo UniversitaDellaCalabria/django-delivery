@@ -291,13 +291,16 @@ class GoodDelivery(TimeStampedModel):
         # marked as delivered by operator
         # without user confirmation
         return not self.campaign.require_agreement and self.delivered_by and self.is_waiting()
-
-    def can_be_marked_by_user(self):
+    
+    # not used
+    # def can_be_marked_by_user(self):
+        # """
         # marked as delivered by user action
-        if not self.delivered_by: return False
-        if not self.campaign.is_in_progress(): return False
-        if not self.campaign.require_agreement: return False
-        return self.is_waiting()
+        # """
+        # if not self.delivered_by: return False
+        # if not self.campaign.is_in_progress(): return False
+        # if not self.campaign.require_agreement: return False
+        # return self.is_waiting()
 
     @property
     def state(self):

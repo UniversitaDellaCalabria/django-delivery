@@ -145,6 +145,17 @@ class GoodDeliveryTest(TestCase):
         req = self.client.get(url, follow=True)
         assert b'Link di attivazione inviato' in req.content
         
+        gd = GoodDelivery.objects.get(pk=campaign_booking.pk)
+        assert gd.state == 'in attesa'
+        
+        
+        # user access
+        self.client.force_login(self.user)
+        
+        url = reverse('good_delivery:user_index')
+        home = self.client.get(url)
+        assert b'In corso' in home.content
+        
     
     def test_op_delivery_campaign_expired(self):
         url, campaign_booking, good_devpoint_stock = \
@@ -186,7 +197,9 @@ class GoodDeliveryTest(TestCase):
                       kwargs=url_kwargs)
         
         req = self.client.get(url, follow=True)
-        assert GoodDelivery.objects.get(pk=campaign_booking.pk).disabled_date
+        gd = GoodDelivery.objects.get(pk=campaign_booking.pk)
+        assert gd.disabled_date
+        assert gd.state == 'disabilitata'
         assert b'Disabilitazione completata' in req.content
         
         url = reverse('good_delivery:operator_good_delivery_send_token', 
@@ -211,6 +224,32 @@ class GoodDeliveryTest(TestCase):
                       kwargs=url_kwargs)
         req = self.client.get(url, follow=True)
         assert req.status_code == 404
+
+    def test_op_delivery_preload(self):
+        """
+        if booking required will be not available
+        """
+        _, campaign_booking, good_devpoint_stock = \
+            self._get_operator_good_delivery_detail()
+        url_kwargs = dict(campaign_id=campaign_booking.campaign.pk)
+        url = reverse('good_delivery:operator_new_delivery_preload', 
+                      kwargs=url_kwargs)
+        req = self.client.get(url, follow=True)
+        assert req.status_code == 403
+        
+        campaign_booking.campaign.operator_can_create = True
+        campaign_booking.campaign.save()
+        req = self.client.get(url, follow=True)
+        assert b'Nuova consegna' in req.content
+
+        csrf_data = self._get_csrfmiddlewaretoken(req.context)
+        # first try, failed csrf
+        data = dict()
+        data.update(csrf_data)
+        data['good_stock'] = 1
+        data['user'] = 2
+        req = self.client.post(url, data=data, follow=True)
+        assert b'inserito con successo' in req.content
 
     # def test_altro(self):
         # breakpoint()
