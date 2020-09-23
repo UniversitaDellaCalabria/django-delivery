@@ -18,7 +18,9 @@ def campaign_is_active(func_to_decorate):
         if campaign:
             original_kwargs['campaign'] = campaign
             return func_to_decorate(*original_args, **original_kwargs)
-        return custom_message(request, _("Accesso negato a questa campagna"))
+        return custom_message(request, 
+                              _("Accesso negato a questa campagna"),
+                              status=403)
     return new_func
 
 
@@ -42,7 +44,9 @@ def operator_can_create(func_to_decorate):
         campaign = original_kwargs['campaign']
         if campaign.operator_can_create:
             return func_to_decorate(*original_args, **original_kwargs)
-        return custom_message(request, _("La campagna richiede la prenotazione"))
+        return custom_message(request, 
+                              _("La campagna richiede la prenotazione"),
+                              status=403)
     return new_func
 
 

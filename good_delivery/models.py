@@ -167,8 +167,10 @@ class GoodDelivery(TimeStampedModel):
     """
     assegnazione di un prodotto a un utente, da parte di un operatore
     """
+    # autofilled from delivery_point on save()
     campaign = models.ForeignKey(DeliveryCampaign,
-                                 on_delete=models.CASCADE)
+                                 on_delete=models.CASCADE,
+                                 blank=True, null=True)
     delivery_point = models.ForeignKey(DeliveryPoint,
                                        on_delete=models.PROTECT)
     delivered_to = models.ForeignKey(get_user_model(),
@@ -203,40 +205,48 @@ class GoodDelivery(TimeStampedModel):
     class Meta:
         verbose_name = _('Consegna prodotto')
         verbose_name_plural = _('Consegne prodotti')
-
-    def save(self, *args, **kwargs):
+    
+    def validate_stock_identifier(self):
         # good identifiers
-        stock_identifier = self.good_stock_identifier
-        manual_identifier = self.good_identifier
+        stock_id = self.good_stock_identifier
+        manual_id = self.good_identifier
         # only one identifier is permitted
-        if stock_identifier:
-            if not manual_identifier or manual_identifier != stock_identifier.good_identifier:
+        if stock_id:
+            if not manual_id or manual_id != stock_id.good_identifier:
                 raise Exception(_("Identificatori non coincidenti"))
-
-        good = self.good
+    
+    def check_collisions(self):
+        """
+            if operator is editing a delivery (self.pk exists)
+            we can exclude it from deliveries list
+        """
         # check if there is an existent delivery
         # (same good, same id, same campaign)
-        existent_delivery = GoodDelivery.objects.filter(Q(good_stock_identifier=stock_identifier) &
+        existent_delivery = GoodDelivery.objects.filter(Q(good_stock_identifier=self.good_stock_identifier) &
                                                         Q(good_stock_identifier__isnull=False) |
-                                                        Q(good_identifier=manual_identifier) &
+                                                        Q(good_identifier=self.good_identifier) &
                                                         Q(good_identifier__isnull=False),
-                                                        good=good,
+                                                        good=self.good,
                                                         campaign=self.campaign)
                                                         # return_date__isnull=True)
-        # if operator is editing a delivery (self.pk exists)
-        # we can exclude it from deliveries list
         if self.pk:
             existent_delivery = existent_delivery.exclude(pk=self.pk)
-        # existent_delivery = existent_delivery.first()
-        # if there is a delivery with same good code
-        # (same good, same id, same campaign)
-        # save operation is not permitted!
+            # existent_delivery = existent_delivery.first()
+            # if there is a delivery with same good code
+            # (same good, same id, same campaign)
+            # save operation is not permitted!
+
         if existent_delivery:
             raise Exception(_("Esiste già una consegna di questo prodotto, "
                               "per questa campagna, "
                               "con questo codice identificativo"))
-
+    
+    def save(self, *args, **kwargs):
+        self.campaign = self.campaign or self.delivery_point.campaign
+        self.validate_stock_identifier()
+        self.check_collisions()
         super(GoodDelivery, self).save(*args, **kwargs)
+
 
     def log_action(self, msg, action, user):
         LogEntry.objects.log_action(user_id         = user.pk,
