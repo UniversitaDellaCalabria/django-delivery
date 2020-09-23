@@ -284,12 +284,13 @@ def operator_good_delivery_detail(request, campaign_id, delivery_id,
 
     logs = LogEntry.objects.filter(content_type_id=ContentType.objects.get_for_model(good_delivery).pk,
                                    object_id=good_delivery.pk)
-
+    
     if request.POST:
-        if not campaign.is_in_progress():
-            messages.add_message(request, messages.ERROR,
-                             _("La campagna non è attualmente in corso"))
-            return redirect('good_delivery:operator_active_campaigns')
+        # già coperto dal decoratore
+        # if not campaign.is_in_progress():
+            # messages.add_message(request, messages.ERROR,
+                             # _("La campagna non è attualmente in corso"))
+            # return redirect('good_delivery:operator_active_campaigns')
 
         if not good_delivery.is_waiting():
             messages.add_message(request, messages.ERROR,

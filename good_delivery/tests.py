@@ -93,19 +93,32 @@ class GoodDeliveryTest(TestCase):
         url_kwargs = dict(campaign_id=good_devpoint_stock.delivery_point.campaign.pk,
                           user_id=self.user.pk,
                           good_stock_id=good_devpoint_stock.pk)
-        url = reverse('good_delivery:operator_new_delivery', kwargs=url_kwargs)
+        url = reverse('good_delivery:operator_new_delivery', 
+                      kwargs=url_kwargs)
         req = self.client.get(url)
         
         assert req.status_code == 403
         
-        
-    def test_op_update_booked_delivery(self):
+    def _get_operator_good_delivery_detail(self):
         self.client.force_login(self.operator)
         campaign_booking, good_devpoint_stock = self._campaign_gear()
         url_kwargs = dict(campaign_id=good_devpoint_stock.delivery_point.campaign.pk,
                           delivery_id=campaign_booking.pk)
         url = reverse('good_delivery:operator_good_delivery_detail', 
                        kwargs=url_kwargs)
+        return url, campaign_booking, good_devpoint_stock
+
+    def _get_csrfmiddlewaretoken(self, context):
+        """
+        context = self.client.get().context
+        returns a POSTable data dict
+        """
+        csrfmiddlewaretoken = context.get('csrf_token').__str__()
+        return {'csrfmiddlewaretoken': csrfmiddlewaretoken} 
+
+    def test_op_update_booked_delivery(self):
+        url, campaign_booking, good_devpoint_stock = \
+            self._get_operator_good_delivery_detail()
         req = self.client.get(url)
         assert req.status_code == 200
         assert b'Attesa ritiro' in req.content
@@ -114,10 +127,49 @@ class GoodDeliveryTest(TestCase):
         form = GoodDeliveryForm(data={}, 
                                 stock=good_devpoint_stock)
         assert form.is_valid()
+        print(req.content.decode())
         
+        csrf_data = self._get_csrfmiddlewaretoken(req.context)
+        # first try, failed csrf
+        req = self.client.post(url, data={})
+        assert req.status_code == 403
+      
+        req = self.client.post(url, data=csrf_data, follow=True)
+        
+        assert b'Modifica effettuata correttamente' in req.content
     
-    def test_altro(self):
-        pass
+    def test_op_delivery_campaign_expired(self):
+        url, campaign_booking, good_devpoint_stock = \
+            self._get_operator_good_delivery_detail()
+        
+        req = self.client.get(url)
+        csrf_data = self._get_csrfmiddlewaretoken(req.context)
+        
+        # test campaign not in progress
+        campaign_booking.campaign.date_end = timezone.localtime() - \
+                                             timezone.timedelta(days=1024)
+        campaign_booking.campaign.save()
+        assert not campaign_booking.campaign.is_in_progress()
+        
+        req = self.client.post(url, data=csrf_data, follow=True)
+        assert b'Campagna non in corso' in req.content
+    
+    def test_op_delivery_not_waiting(self):
+        url, campaign_booking, good_devpoint_stock = \
+            self._get_operator_good_delivery_detail()
+        
+        req = self.client.get(url)
+        csrf_data = self._get_csrfmiddlewaretoken(req.context)
+        
+        campaign_booking.disabled_date = timezone.localtime()
+        campaign_booking.save()
+        assert not campaign_booking.is_waiting()
+        req = self.client.post(url, data=csrf_data, follow=True)
+        print(req.content.decode())
+        assert b'La consegna non' in req.content
+    
+    # def test_altro(self):
+        # breakpoint()
         # print(req.content.decode())
         
         
