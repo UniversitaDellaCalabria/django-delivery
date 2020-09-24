@@ -260,7 +260,7 @@ class GoodDelivery(TimeStampedModel):
         logger.info(msg)
 
     def get_year(self):
-        return self.delivery_date.year
+        return self.create.year
 
     def build_jwt(self):
         data = {'id': self.pk,

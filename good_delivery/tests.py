@@ -8,6 +8,9 @@ from django.utils import timezone
 
 from . forms import *
 from . models import *
+from . templatetags.good_delivery_tags import (current_date,
+                                               markdown,
+                                               user_from_pk)
 
 
 logger = logging.getLogger(__name__)
@@ -279,6 +282,23 @@ class GoodDeliveryTest(TestCase):
         data['user'] = 2
         req = self.client.post(url, data=data, follow=True)
         assert b'inserito con successo' in req.content
+
+
+    def test_good_delivery_tags(self):
+        logger.info('test tags')        
+        logger.info(current_date())
+        logger.info(markdown('*hello*\n- a\n- b'))
+        logger.info(user_from_pk(1))
+
+
+    def test_good_delivery_attachment(self):
+        campaign_booking, good_devpoint_stock = self._campaign_gear()
+        gda = GoodDeliveryAttachment.objects.create(good_delivery=campaign_booking)
+        gda.get_folder()
+        # breakpoint()
+        # print(req.content.decode())
+
+        
 
     # def test_altro(self):
         # breakpoint()

@@ -13,7 +13,7 @@ register = template.Library()
 
 @register.simple_tag
 def current_date():
-    return timezone.now()
+    return timezone.localtime()
 
 
 @register.filter()
