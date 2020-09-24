@@ -189,7 +189,10 @@ def operator_new_delivery(request, campaign_id, user_id, good_stock_id,
                                          good_stock_identifier=good_stock_identifier,
                                          good_identifier=good_identifier,
                                          notes=notes)
-            good_delivery.save()
+            try:
+                good_delivery.save()
+            except Exception as e:
+                return custom_message(request, e, 403)
 
             msg = _("Inserimento effettuato con successo")
             messages.add_message(request, messages.SUCCESS, msg)
@@ -268,7 +271,10 @@ def operator_another_delivery(request, campaign_id, good_delivery_id,
                                          good_stock_identifier=good_stock_identifier,
                                          good_identifier=good_identifier,
                                          notes=notes)
-            good_delivery.save()
+            try:
+                good_delivery.save()
+            except Exception as e:
+                return custom_message(request, e, 403)
 
             msg = _("Inserimento effettuato con successo")
             messages.add_message(request, messages.SUCCESS, msg)
@@ -330,7 +336,11 @@ def operator_good_delivery_detail(request, campaign_id, delivery_id,
                                 campaign_id=campaign_id,
                                 delivery_id=good_delivery.pk)
 
-            form.save()
+            try:
+                form.save()
+            except Exception as e:
+                return custom_message(request, e, 403)
+
             messages.add_message(request, messages.SUCCESS,
                                  _("Modifica effettuata correttamente"))
             return redirect('good_delivery:operator_good_delivery_detail',
