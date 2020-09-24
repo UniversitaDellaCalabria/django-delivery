@@ -58,7 +58,7 @@ class DeliveryCampaign(TimeStampedModel):
 
     # @property
     def is_in_progress(self):
-        # return self.date_start <= timezone.localtime() and 
+        # return self.date_start <= timezone.localtime() and
         return self.date_end > timezone.localtime()
 
     def __str__(self):
@@ -177,6 +177,7 @@ class GoodDelivery(TimeStampedModel):
     delivered_to = models.ForeignKey(get_user_model(),
                                      on_delete=models.PROTECT)
     good = models.ForeignKey(Good, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
     good_stock_identifier = models.ForeignKey(DeliveryPointGoodStockIdentifier,
                                               blank=True, null=True,
                                               on_delete=models.CASCADE)
@@ -206,7 +207,7 @@ class GoodDelivery(TimeStampedModel):
     class Meta:
         verbose_name = _('Consegna prodotto')
         verbose_name_plural = _('Consegne prodotti')
-    
+
     def validate_stock_identifier(self):
         # good identifiers
         stock_id = self.good_stock_identifier
@@ -215,7 +216,7 @@ class GoodDelivery(TimeStampedModel):
         if stock_id:
             if not manual_id or manual_id != stock_id.good_identifier:
                 raise Exception(_("Identificatori non coincidenti"))
-    
+
     def check_collisions(self):
         """
             if operator is editing a delivery (self.pk exists)
@@ -241,7 +242,7 @@ class GoodDelivery(TimeStampedModel):
             raise Exception(_("Esiste già una consegna di questo prodotto, "
                               "per questa campagna, "
                               "con questo codice identificativo"))
-    
+
     def save(self, *args, **kwargs):
         self.campaign = self.campaign or self.delivery_point.campaign
         self.validate_stock_identifier()
@@ -285,22 +286,30 @@ class GoodDelivery(TimeStampedModel):
     def can_be_deleted(self):
         if self.delivery_date: return False
         if self.disabled_date: return False
+        user_deliveries = GoodDelivery.objects.filter(campaign=self.campaign,
+                                                      delivered_to=self.delivered_to,
+                                                      good=self.good,
+                                                      delivery_point=delivery_point).count()
+        # if good_delivery has been prefilled
+        # (not created by operator)
+        # operators can't delete it
+        if not self.campaign.operator_can_create and user_deliveries==1:
+            return False
         return True
 
     def can_be_marked_by_operator(self):
         # marked as delivered by operator
         # without user confirmation
         return not self.campaign.require_agreement and self.delivered_by and self.is_waiting()
-    
-    # not used
-    # def can_be_marked_by_user(self):
-        # """
-        # marked as delivered by user action
-        # """
-        # if not self.delivered_by: return False
-        # if not self.campaign.is_in_progress(): return False
-        # if not self.campaign.require_agreement: return False
-        # return self.is_waiting()
+
+    def can_be_marked_by_user(self):
+        """
+        marked as delivered by user action
+        """
+        if not self.delivered_by: return False
+        if not self.campaign.is_in_progress(): return False
+        if not self.campaign.require_agreement: return False
+        return self.is_waiting()
 
     @property
     def state(self):

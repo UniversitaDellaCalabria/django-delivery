@@ -28,9 +28,11 @@ class GoodDeliveryPreloadForm(forms.Form):
 class GoodDeliveryForm(forms.ModelForm):
     class Meta:
         model = GoodDelivery
-        fields = ('good_stock_identifier', 'good_identifier', 'notes', )
+        fields = ('good_stock_identifier', 'good_identifier',
+                  'quantity', 'notes', )
         labels = {'good_stock_identifier': _('Identificativo da stock'),
                   'good_identifier': _('Identificativo manuale'),
+                  'quantity': _('Quantità'),
                   'notes': _('Note')}
         help_texts = {'good_identifier': _('Se presente una lista di codici, '
                                            'conferma qui il codice scelto. '

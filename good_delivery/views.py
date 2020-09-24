@@ -39,6 +39,30 @@ def _generate_good_delivery_token_email(request, good_delivery, msg=''):
                          body=settings.NEW_DELIVERY_WITH_TOKEN_CREATED,
                          params=mail_params)
 
+def _get_stock_errors(stock, good_stock_identifier,
+                      good_identifier, quantity):
+    # quantity must be > 0
+    if quantity == 0:
+        return _("La quantità non può essere 0")
+
+    # only 1 good is identified by unique code
+    if good_identifier and quantity>1:
+        return _("La quantità associata a un codice identificativo "
+                 "non può essere maggiore di 1")
+
+    # stock max number check
+    actual_stock_deliveries = GoodDelivery.objects.filter(good=stock.good).count()
+    if stock.max_number > 0 and stock.max_number-actual_stock_deliveries<quantity:
+        return _("Raggiunto il numero max di consegne per questo stock: "
+                 "{}").format(stock.max_number)
+
+    # if present, a id code must be choosen
+    stock_identifiers = DeliveryPointGoodStockIdentifier.objects.filter(delivery_point_stock=stock)
+    if stock_identifiers and not good_stock_identifier:
+        return _("Selezionare il codice identificativo dalla lista")
+
+    return False
+
 @login_required
 def user_index(request):
     title =_("Home page utente")
@@ -137,37 +161,26 @@ def operator_new_delivery(request, campaign_id, user_id, good_stock_id,
          'title': title,}
 
     if request.POST:
-        # stock max number check
-        actual_stock_deliveries = GoodDelivery.objects.filter(good=stock.good).count()
-        if stock.max_number > 0 and actual_stock_deliveries == stock.max_number:
-            messages.add_message(request, messages.ERROR,
-                                 _("Raggiunto il numero max di consegne "
-                                   "per questo stock: {}").format(stock.max_number))
-            return redirect('good_delivery:operator_new_delivery',
-                            campaign_id=campaign_id,
-                            user_id=user_id,
-                            good_stock_id=good_stock_id)
-
         form = GoodDeliveryForm(data=request.POST, stock=stock)
         d['form'] = form
 
         if form.is_valid():
             good_stock_identifier = form.cleaned_data['good_stock_identifier']
             good_identifier = form.cleaned_data['good_identifier']
+            quantity = form.cleaned_data['quantity']
             notes = form.cleaned_data['notes']
 
-            # if a stock identifiers list is available,
-            # manual identifier is not permitted
-            stock_identifiers = DeliveryPointGoodStockIdentifier.objects.filter(delivery_point_stock=stock)
-            if stock_identifiers and not good_stock_identifier:
-                messages.add_message(request, messages.ERROR,
-                                     _("Selezionare il codice identificativo "
-                                       "dalla lista"))
+            error_msg = _get_stock_errors(stock=stock,
+                                          good_identifier=good_identifier,
+                                          good_stock_identifier=good_stock_identifier,
+                                          quantity=quantity)
+            if error_msg:
+                messages.add_message(request, messages.ERROR, error_msg)
                 return redirect('good_delivery:operator_new_delivery',
                                 campaign_id=campaign_id,
                                 user_id=user_id,
                                 good_stock_id=good_stock_id)
-            
+
             good_delivery = GoodDelivery(campaign=campaign,
                                          delivery_point=stock.delivery_point,
                                          delivered_to=user,
@@ -228,30 +241,24 @@ def operator_another_delivery(request, campaign_id, good_delivery_id,
          'title': title,}
 
     if request.POST:
-        # stock max number check
-        actual_stock_deliveries = GoodDelivery.objects.filter(good=good).count()
-        if stock.max_number>0 and actual_stock_deliveries==stock.max_number:
-            messages.add_message(request, messages.ERROR,
-                                 _("Raggiunto il numero max di consegne "
-                                   "per questo stock: {}").format(stock.max_number))
-            return redirect('good_delivery:operator_good_delivery_detail',
-                            campaign_id=campaign_id,
-                            delivery_id=old_good_delivery.pk)
-
         form = GoodDeliveryForm(data=request.POST, stock=stock)
         d['form'] = form
 
         if form.is_valid():
             good_stock_identifier = form.cleaned_data['good_stock_identifier']
             good_identifier = form.cleaned_data['good_identifier']
+            quantity = form.cleaned_data['quantity']
             notes = form.cleaned_data['notes']
 
-            # if a stock identifiers list is available,
-            # manual identifier is not permitted
-            stock_identifiers = DeliveryPointGoodStockIdentifier.objects.filter(delivery_point_stock=stock)
-            if stock_identifiers and not good_stock_identifier:
-                raise Exception(_("Selezionare il codice identificativo "
-                                  "dalla lista"))
+            error_msg = _get_stock_errors(stock=stock,
+                                          good_identifier=good_identifier,
+                                          good_stock_identifier=good_stock_identifier,
+                                          quantity=quantity)
+            if error_msg:
+                messages.add_message(request, messages.ERROR, error_msg)
+                return redirect('good_delivery:operator_good_delivery_detail',
+                                campaign_id=campaign_id,
+                                delivery_id=old_good_delivery.pk)
 
             good_delivery = GoodDelivery(campaign=campaign,
                                          delivery_point=delivery_point,
@@ -291,14 +298,8 @@ def operator_good_delivery_detail(request, campaign_id, delivery_id,
 
     logs = LogEntry.objects.filter(content_type_id=ContentType.objects.get_for_model(good_delivery).pk,
                                    object_id=good_delivery.pk)
-    
-    if request.POST:
-        # già coperto dal decoratore
-        # if not campaign.is_in_progress():
-            # messages.add_message(request, messages.ERROR,
-                             # _("La campagna non è attualmente in corso"))
-            # return redirect('good_delivery:operator_active_campaigns')
 
+    if request.POST:
         if not good_delivery.is_waiting():
             messages.add_message(request, messages.ERROR,
                              _("La consegna non può più subire modifiche"))
@@ -314,6 +315,21 @@ def operator_good_delivery_detail(request, campaign_id, delivery_id,
                                 data=request.POST,
                                 stock=stock)
         if form.is_valid():
+            good_stock_identifier = form.cleaned_data['good_stock_identifier']
+            good_identifier = form.cleaned_data['good_identifier']
+            quantity = form.cleaned_data['quantity']
+            notes = form.cleaned_data['notes']
+
+            error_msg = _get_stock_errors(stock=stock,
+                                          good_identifier=good_identifier,
+                                          good_stock_identifier=good_stock_identifier,
+                                          quantity=quantity)
+            if error_msg:
+                messages.add_message(request, messages.ERROR, error_msg)
+                return redirect('good_delivery:operator_good_delivery_detail',
+                                campaign_id=campaign_id,
+                                delivery_id=good_delivery.pk)
+
             form.save()
             messages.add_message(request, messages.SUCCESS,
                                  _("Modifica effettuata correttamente"))
