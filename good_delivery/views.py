@@ -38,6 +38,7 @@ def _generate_good_delivery_token_email(request, good_delivery, msg=''):
                          recipients=[good_delivery.delivered_to],
                          body=settings.NEW_DELIVERY_WITH_TOKEN_CREATED,
                          params=mail_params)
+        return token
 
 def _get_stock_errors(stock, good_stock_identifier,
                       good_identifier, quantity):
@@ -408,7 +409,7 @@ def operator_good_delivery_return(request, campaign_id, delivery_id,
                              _("Consegna non ancora effettuata"))
     elif good_delivery.return_date:
         messages.add_message(request, messages.ERROR,
-                             _("Bene già restituito"))
+                             _("Bene precedentemente restituito"))
     else:
         good_delivery.return_date = timezone.localtime()
         good_delivery.returned_to = request.user
@@ -504,8 +505,9 @@ def user_use_token(request):
             return custom_message(request=request,
                                   message=msg,
                                   msg_type='success')
-        return custom_message(request=request, message=msg, status=500)
-    except:
+        return custom_message(request=request, message=msg, status=401)
+    except Exception as e:
+        logger.exception(e)
         return custom_message(request=request,
                               message=_("Invalid token"),
                               status=500)
