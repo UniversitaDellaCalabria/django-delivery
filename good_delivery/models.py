@@ -289,7 +289,7 @@ class GoodDelivery(TimeStampedModel):
         user_deliveries = GoodDelivery.objects.filter(campaign=self.campaign,
                                                       delivered_to=self.delivered_to,
                                                       good=self.good,
-                                                      delivery_point=delivery_point).count()
+                                                      delivery_point=self.delivery_point).count()
         # if good_delivery has been prefilled
         # (not created by operator)
         # operators can't delete it
