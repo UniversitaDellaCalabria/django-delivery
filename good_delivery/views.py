@@ -224,7 +224,8 @@ def operator_another_delivery(request, campaign_id, good_delivery_id,
                                                    delivery_point__in=delivery_points,
                                                    disabled_date__isnull=True)
     if other_deliveries:
-        return custom_message(request, _("Ci sono già processi di consegna attivi"))
+        return custom_message(request, _("Processi di consegna attivi "
+                                         "già presenti a sistema"))
 
     user = old_good_delivery.delivered_to
     good = old_good_delivery.good

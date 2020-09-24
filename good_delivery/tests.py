@@ -295,9 +295,56 @@ class GoodDeliveryTest(TestCase):
         campaign_booking, good_devpoint_stock = self._campaign_gear()
         gda = GoodDeliveryAttachment.objects.create(good_delivery=campaign_booking)
         gda.get_folder()
+
+
+    def test_operator_another_delivery(self):
+        _, campaign_booking, good_devpoint_stock = \
+            self._get_operator_good_delivery_detail()
+        url_kwargs = dict(campaign_id=campaign_booking.campaign.pk,
+                          good_delivery_id=campaign_booking.pk)
+        url = reverse('good_delivery:operator_another_delivery',
+                      kwargs=url_kwargs)
+        req = self.client.get(url, follow=True)
+        assert b'Processi di consegna attivi' in req.content
+        
+        # disable
+        gd = GoodDelivery.objects.get(pk=campaign_booking.pk)
+        gd.disabled_date = timezone.localtime()
+        gd.save()
+        
+        req = self.client.get(url, follow=True)
+        # POST
+        csrf_data = self._get_csrfmiddlewaretoken(req.context)
+        # first try, failed csrf
+        data = {'quantity': 1}
+        data.update(csrf_data)
+        req = self.client.post(url, data=data, follow=True)
+
+        assert b'Inserimento effettuato' in req.content
+        assert req.status_code == 200
+
+
+    def test_operator_good_delivery_return(self):
+        _, campaign_booking, good_devpoint_stock = \
+            self._get_operator_good_delivery_detail()
+        url_kwargs = dict(campaign_id=campaign_booking.campaign.pk,
+                          delivery_id=campaign_booking.pk)
+        url = reverse('good_delivery:operator_good_delivery_return',
+                      kwargs=url_kwargs)
+        
+        # this covers the check
+        req = self.client.get(url, follow=True)
+        assert b'Consegna non ancora effettuata' in req.content
+        
+        gd = GoodDelivery.objects.get(pk=campaign_booking.pk)
+        gd.delivery_date = timezone.localtime()
+        gd.save()
+        
+        req = self.client.get(url, follow=True)
+        assert b'Restituzione completata' in req.content
+        
         # breakpoint()
         # print(req.content.decode())
-
         
 
     # def test_altro(self):
