@@ -31,6 +31,10 @@
 </p>
 {% endif %}
 
+<p class="card-text">
+    <b>{% trans "Quantità" %}:</b> {{ good_delivery.quantity }}
+</p>
+
 {% if good_delivery.notes %}
 <p class="card-text">
     {{ good_delivery.notes }}
