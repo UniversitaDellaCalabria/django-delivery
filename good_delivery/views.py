@@ -473,6 +473,7 @@ def operator_good_delivery_delete(request, campaign_id, delivery_id,
     return redirect('good_delivery:operator_campaign_detail',
                     campaign_id=campaign_id)
 
+@login_required
 def user_use_token(request):
     title =_("Accettazione condizioni")
     try:
