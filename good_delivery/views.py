@@ -485,7 +485,7 @@ def user_use_token(request):
         pk = decrypted.get('id','')
         user_id = decrypted.get('user','')
         delivery_point_id = decrypted.get('delivery_point','')
-        modified = decrypted.get('modified','')
+        modified = decrypted.get('modified', None)
         good_delivery = get_object_or_404(GoodDelivery,
                                           pk=pk,
                                           delivered_to__pk=user_id,
