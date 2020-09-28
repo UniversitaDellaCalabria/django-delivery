@@ -6,6 +6,7 @@ from . models import *
 
 @admin.register(DeliveryCampaign)
 class DeliveryCampaignAdmin(admin.ModelAdmin):
+    prepopulated_fields = {'slug': ('name',)}
     list_display = ('name', 'date_start', 'date_end',
                     'require_agreement', 'is_active')
     list_filter = ('date_start', 'date_end',

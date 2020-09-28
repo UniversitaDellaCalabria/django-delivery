@@ -144,7 +144,7 @@ class GoodDeliveryTest(TestCase):
         self.client.force_login(self.operator)
         campaign_booking, good_devpoint_stock = self._campaign_gear()
         url_kwargs = dict(campaign_id=good_devpoint_stock.delivery_point.campaign.pk,
-                          delivery_id=campaign_booking.pk)
+                          good_delivery_id=campaign_booking.pk)
         url = reverse('good_delivery:operator_good_delivery_detail',
                        kwargs=url_kwargs)
         return url, campaign_booking, good_devpoint_stock
@@ -173,7 +173,7 @@ class GoodDeliveryTest(TestCase):
         assert b'Modifica effettuata correttamente' in req.content
 
         url_kwargs = dict(campaign_id=good_devpoint_stock.delivery_point.campaign.pk,
-                  delivery_id=campaign_booking.pk)
+                          good_delivery_id=campaign_booking.pk)
         url = reverse('good_delivery:operator_good_delivery_send_token',
               kwargs=url_kwargs)
         req = self.client.get(url, follow=True)
@@ -187,7 +187,7 @@ class GoodDeliveryTest(TestCase):
         url = reverse('good_delivery:user_index')
         home = self.client.get(url)
         assert b'In corso' in home.content
-        
+
 
     def test_op_delivery_campaign_expired(self):
         url, campaign_booking, good_devpoint_stock = \
@@ -224,7 +224,7 @@ class GoodDeliveryTest(TestCase):
         _, campaign_booking, good_devpoint_stock = \
             self._get_operator_good_delivery_detail()
         url_kwargs = dict(campaign_id=campaign_booking.campaign.pk,
-                          delivery_id=campaign_booking.pk)
+                          good_delivery_id=campaign_booking.pk)
         url = reverse('good_delivery:operator_good_delivery_disable',
                       kwargs=url_kwargs)
 
@@ -244,7 +244,7 @@ class GoodDeliveryTest(TestCase):
         _, campaign_booking, good_devpoint_stock = \
             self._get_operator_good_delivery_detail()
         url_kwargs = dict(campaign_id=campaign_booking.campaign.pk,
-                          delivery_id=campaign_booking.pk)
+                          good_delivery_id=campaign_booking.pk)
         url = reverse('good_delivery:operator_good_delivery_delete',
                       kwargs=url_kwargs)
 
@@ -285,7 +285,7 @@ class GoodDeliveryTest(TestCase):
 
 
     def test_good_delivery_tags(self):
-        logger.info('test tags')        
+        logger.info('test tags')
         logger.info(current_date())
         logger.info(markdown('*hello*\n- a\n- b'))
         logger.info(user_from_pk(1))
@@ -306,12 +306,12 @@ class GoodDeliveryTest(TestCase):
                       kwargs=url_kwargs)
         req = self.client.get(url, follow=True)
         assert b'Processi di consegna attivi' in req.content
-        
+
         # disable
         gd = GoodDelivery.objects.get(pk=campaign_booking.pk)
         gd.disabled_date = timezone.localtime()
         gd.save()
-        
+
         req = self.client.get(url, follow=True)
         # POST
         csrf_data = self._get_csrfmiddlewaretoken(req.context)
@@ -328,47 +328,47 @@ class GoodDeliveryTest(TestCase):
         _, campaign_booking, good_devpoint_stock = \
             self._get_operator_good_delivery_detail()
         url_kwargs = dict(campaign_id=campaign_booking.campaign.pk,
-                          delivery_id=campaign_booking.pk)
+                          good_delivery_id=campaign_booking.pk)
         url = reverse('good_delivery:operator_good_delivery_return',
                       kwargs=url_kwargs)
-        
+
         # this covers the check
         req = self.client.get(url, follow=True)
         assert b'Consegna non ancora effettuata' in req.content
 
-        gd = GoodDelivery.objects.get(pk=campaign_booking.pk)        
+        gd = GoodDelivery.objects.get(pk=campaign_booking.pk)
         gd.delivery_date = timezone.localtime()
         gd.save()
-        
+
         req = self.client.get(url, follow=True)
         assert b'Restituzione completata' in req.content
-        
+
         gd.return_date = timezone.localtime()
         gd.save()
         req = self.client.get(url, follow=True)
         assert b'Bene precedentemente restituito' in req.content
-        
+
     def test_user_use_token(self):
         url, campaign_booking, good_devpoint_stock = \
             self._get_operator_good_delivery_detail()
-            
+
         # user access
         self.client.force_login(self.user)
         url = reverse('good_delivery:user_index')
         home = self.client.get(url)
         assert b'In corso' in home.content
-                
+
         # user uses token
         req_factory = RequestFactory()
         request = req_factory.get(url)
         gd = GoodDelivery.objects.get(pk=campaign_booking.pk)
         token = _generate_good_delivery_token_email(request, gd)
-                
+
         url = reverse('good_delivery:user_use_token')
         req = self.client.get(url, data={'token': token})
         assert req.status_code == 401
         assert b'Consegna non completata' in req.content
-        
+
         gd.delivered_by = self.operator
         gd.save()
 

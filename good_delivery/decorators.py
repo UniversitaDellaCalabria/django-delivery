@@ -13,12 +13,12 @@ def campaign_is_active(func_to_decorate):
     def new_func(*original_args, **original_kwargs):
         request = original_args[0]
         campaign_id = original_kwargs['campaign_id']
-        campaign = DeliveryCampaign.objects.filter(pk=campaign_id,
+        campaign = DeliveryCampaign.objects.filter(slug=campaign_id,
                                                    is_active=True).first()
         if campaign:
             original_kwargs['campaign'] = campaign
             return func_to_decorate(*original_args, **original_kwargs)
-        return custom_message(request, 
+        return custom_message(request,
                               _("Accesso negato a questa campagna"),
                               status=403)
     return new_func
@@ -44,7 +44,7 @@ def operator_can_create(func_to_decorate):
         campaign = original_kwargs['campaign']
         if campaign.operator_can_create:
             return func_to_decorate(*original_args, **original_kwargs)
-        return custom_message(request, 
+        return custom_message(request,
                               _("La campagna richiede la prenotazione"),
                               status=403)
     return new_func
@@ -98,8 +98,55 @@ def is_campaign_operator(func_to_decorate):
             delivery_points = set()
             for odp in operator_delivery_points:
                 delivery_points.add(odp.delivery_point)
-            original_kwargs['delivery_points'] = delivery_points
+            original_kwargs['delivery_points'] = tuple(delivery_points)
             return func_to_decorate(*original_args, **original_kwargs)
         return custom_message(request,
                               _("Non sei un operatore abilitato per questa campagna"))
+    return new_func
+
+
+def is_delivery_point_operator(func_to_decorate):
+    """
+    """
+    def new_func(*original_args, **original_kwargs):
+        request = original_args[0]
+        campaign = original_kwargs['campaign']
+        delivery_point_id = original_kwargs['delivery_point_id']
+        operator = OperatorDeliveryPoint.objects.filter(operator=request.user,
+                                                        is_active=True,
+                                                        delivery_point__is_active=True,
+                                                        delivery_point__campaign=campaign,
+                                                        delivery_point__pk=delivery_point_id).first()
+        if operator:
+            original_kwargs['delivery_point'] = operator.delivery_point
+            original_kwargs['multi_tenant'] = operator.multi_tenant
+            return func_to_decorate(*original_args, **original_kwargs)
+        return custom_message(request,
+                              _("Non sei un operatore abilitato "
+                                "per questo punto di consegna"))
+    return new_func
+
+
+def can_manage_good_delivery(func_to_decorate):
+    """
+    """
+    def new_func(*original_args, **original_kwargs):
+        request = original_args[0]
+        campaign = original_kwargs['campaign']
+        good_delivery_id = original_kwargs['good_delivery_id']
+        multi_tenant = original_kwargs['multi_tenant']
+        delivery_point = original_kwargs['delivery_point']
+
+        if multi_tenant:
+            good_delivery = get_object_or_404(GoodDelivery,
+                                              choosen_delivery_point__campaign=campaign,
+                                              pk=good_delivery_id)
+        else:
+            good_delivery = get_object_or_404(GoodDelivery,
+                                              Q(choosen_delivery_point=delivery_point) |
+                                              Q(delivery_point=delivery_point),
+                                              pk=good_delivery_id)
+
+        original_kwargs['good_delivery'] = good_delivery
+        return func_to_decorate(*original_args, **original_kwargs)
     return new_func

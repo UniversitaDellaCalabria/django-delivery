@@ -41,6 +41,10 @@ $(function() {
             url: "{{ ajax_url }}",
             method: "post",
             data: function(args) {
+                if(!args['search'].value)
+                    args['search'].value = '{"text":"",'+
+                                           '"delivery_point":"'+
+                                           $('#search_delivery_point').val()+'"}';
                 return{
                     "args": JSON.stringify(args),
                     //{% for k,v in request.GET.items %}
@@ -78,23 +82,27 @@ $(function() {
                 targets: [ 4 ],
                 className: "desktop",
                 orderable: false,
+            },
+            {
+                targets: [ 5 ],
+                className: "desktop",
+                orderable: false,
                 render: function ( data, type, row ) {
                     if(data)return data;
                     return "-";
                 }
             },
             {
-                targets: [ 5 ],
-                className: "desktop",
-                orderable: false,
-            },
-            {
                 targets: [ 6 ],
                 className: "desktop",
                 orderable: false,
             },
+            {
+                targets: [ 7 ],
+                className: "desktop",
+                orderable: false,
+            },
         ];
-
 
     var datatable = $('.datatable-responsive-serverside').DataTable({
         dom: dom,
@@ -116,21 +124,27 @@ $(function() {
         columnDefs: columnDefs,
         language: language,
         ajax: ajax,
-        "initComplete": function() {
+        initComplete: function() {
             if(datatable.state()['search']['search']) {
                 json_search = JSON.parse(datatable.state()['search']['search']);
                 $('#search_box').val(json_search['text']);
+                $('#search_delivery_point').val(json_search['delivery_point']).change();
             }
         }
     });
 
-    $('#search_box').on('change keyup', function () {
+    $('#search_box, #search_delivery_point').on('change keyup', function () {
         var text = $('#search_box').val();
-        var args = '{"text": "'+text+'"}';
+        var delivery_point = $('#search_delivery_point').val();
+        if (typeof delivery_point === 'undefined'){
+            delivery_point = "";
+        }
+        var args = '{"text": "'+text+'", '+
+                   '"delivery_point": "'+delivery_point+'"}';
         datatable.search(args).draw();
     } );
 
-
 });
+
 
 </script>

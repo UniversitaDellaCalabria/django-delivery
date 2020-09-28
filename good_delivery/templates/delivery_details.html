@@ -1,13 +1,17 @@
 {% load i18n %}
 {% load good_delivery_tags %}
 
-{% if good_delivery.delivery_date %}
+{% if not good_delivery.delivery_point %}
+    <span class="badge badge-secondary mb-2">
+        {% trans "Da definire" %}
+    </span>
+{% elif good_delivery.delivery_date %}
     <span class="badge badge-success mb-2">
         {% trans "Consegnato" %}
     </span>
 {% else %}
     <span class="badge badge-secondary mb-2">
-        {% trans "Attesa ritiro" %}
+        {% trans "In attesa di ritiro" %}
     </span>
 {% endif %}
 
@@ -28,36 +32,34 @@
 {% if good_delivery.good_identifier %}
 <p class="card-text">
     <b>ID: {{ good_delivery.good_identifier }}</b>
+    {% if good_delivery.notes %}
+        <br>
+        {{ good_delivery.notes }}
+    {% endif %}
 </p>
 {% endif %}
 
 <p class="card-text">
     <b>{% trans "Quantità" %}:</b> {{ good_delivery.quantity }}
-</p>
-
-{% if good_delivery.notes %}
-<p class="card-text">
-    {{ good_delivery.notes }}
-</p>
-{% endif %}
-
-<p class="card-text">
+    <br>
     <b>{% trans "Data inserimento" %}:</b> {{ good_delivery.create }}
 </p>
 
 {% if good_delivery.delivery_date %}
 <p class="card-text">
     <b>{% trans "Consegnato il" %}:</b> {{ good_delivery.delivery_date }}
-    {% if good_delivery.delivered_by %}
-        <br>
-        <b>{% trans "Operatore" %}:</b> {{ good_delivery.delivered_by }}
-    {% endif %}
+    <br>
+    <b>{% trans "Punto di consegna" %}:</b> {{ good_delivery.delivery_point }}
+    <br>
+    <b>{% trans "Operatore" %}:</b> {{ good_delivery.delivered_by }}
 </p>
 {% endif %}
 
 {% if good_delivery.disabled_date %}
 <p class="card-text">
-    <b>{% trans "Disabilitata il" %}:</b> {{ good_delivery.disabled_date }}
+    <b>{% trans "Disabilitato il" %}:</b> {{ good_delivery.disabled_date }}
+    <br>
+    <b>{% trans "Punto di consegna" %}:</b> {{ good_delivery.disabled_point }}
     <br>
     <b>{% trans "Operatore" %}:</b> {{ good_delivery.disabled_by }}
 </p>
@@ -66,6 +68,8 @@
 {% if good_delivery.return_date %}
 <p class="card-text">
     <b>{% trans "Restituito il" %}:</b> {{ good_delivery.return_date }}
+    <br>
+    <b>{% trans "Punto di consegna" %}:</b> {{ good_delivery.returned_point }}
     <br>
     <b>{% trans "Operatore" %}:</b> {{ good_delivery.returned_to }}
 </p>

@@ -5,6 +5,7 @@ from django.conf import settings
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
+from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models import Q
 from django.templatetags.static import static
@@ -40,7 +41,18 @@ class DeliveryCampaign(TimeStampedModel):
     bando di consegna beni
     """
     name = models.CharField(max_length=255,
-                            help_text=_('Campagna di consegne'))
+                            help_text=_('Campagna di consegne'),
+                            unique=True)
+    slug = models.SlugField(max_length=255,
+                            blank=False, null=False, unique=True,
+                            validators=[
+                                RegexValidator(
+                                    regex='^(?=.*[a-zA-Z])',
+                                    message=_("Lo slug deve contenere "
+                                              "almeno un carattere alfabetico"),
+                                    code='invalid_slug'
+                                ),
+                            ])
     date_start = models.DateTimeField()
     date_end = models.DateTimeField()
     require_agreement = models.BooleanField(default=True)
@@ -91,6 +103,7 @@ class OperatorDeliveryPoint(TimeStampedModel):
                                  on_delete=models.CASCADE)
     delivery_point = models.ForeignKey(DeliveryPoint,
                                        on_delete=models.CASCADE)
+    multi_tenant = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
 
     class Meta:
@@ -172,8 +185,9 @@ class GoodDelivery(TimeStampedModel):
     campaign = models.ForeignKey(DeliveryCampaign,
                                  on_delete=models.CASCADE,
                                  blank=True, null=True)
-    delivery_point = models.ForeignKey(DeliveryPoint,
-                                       on_delete=models.PROTECT)
+    choosen_delivery_point = models.ForeignKey(DeliveryPoint,
+                                               on_delete=models.PROTECT,
+                                               related_name="choosen_delivered_point")
     delivered_to = models.ForeignKey(get_user_model(),
                                      on_delete=models.PROTECT)
     good = models.ForeignKey(Good, on_delete=models.CASCADE)
@@ -184,18 +198,30 @@ class GoodDelivery(TimeStampedModel):
     # se non è presente un identificativo in stock
     # ma l'operatore deve specificarlo per check
     good_identifier = models.CharField(max_length=255, blank=True, null=True)
+    delivery_point = models.ForeignKey(DeliveryPoint,
+                                       on_delete=models.PROTECT,
+                                       blank=True, null=True,
+                                       related_name="delivered_point")
     delivery_date = models.DateTimeField(_('Data di consegna'),
                                          blank=True, null=True)
     delivered_by = models.ForeignKey(get_user_model(),
                                      on_delete=models.PROTECT,
                                      blank=True, null=True,
-                                     related_name="deliveder_by")
+                                     related_name="delivered_by")
+    disabled_point = models.ForeignKey(DeliveryPoint,
+                                       on_delete=models.PROTECT,
+                                       blank=True, null=True,
+                                       related_name="disabled_point")
     disabled_date = models.DateTimeField(_('Data di disabilitazione'),
                                          blank=True, null=True)
     disabled_by = models.ForeignKey(get_user_model(),
                                     on_delete=models.PROTECT,
                                     blank=True, null=True,
                                     related_name="disabled_by")
+    returned_point = models.ForeignKey(DeliveryPoint,
+                                       on_delete=models.PROTECT,
+                                       blank=True, null=True,
+                                       related_name="returned_point")
     return_date = models.DateTimeField(_('Data di restituzione'),
                                        blank=True, null=True)
     returned_to = models.ForeignKey(get_user_model(),
@@ -207,6 +233,35 @@ class GoodDelivery(TimeStampedModel):
     class Meta:
         verbose_name = _('Consegna prodotto')
         verbose_name_plural = _('Consegne prodotti')
+
+    def get_stock(self):
+        stock = DeliveryPointGoodStock.objects.filter(delivery_point=self.delivery_point,
+                                                      good=self.good).first()
+        return stock
+
+    def check_quantity(self):
+        if self.quantity == 0:
+            raise Exception(_("La quantità non può essere 0"))
+
+    def check_stock_max(self):
+        # only 1 good is identified by unique code
+        if self.good_identifier and self.quantity>1:
+            raise Exception(_("La quantità associata a un codice identificativo "
+                              "non può essere maggiore di 1"))
+
+        # stock max number check
+        if not self.pk:
+            stock = self.get_stock()
+            actual_stock_deliveries = GoodDelivery.objects.filter(good=self.good).count()
+            if stock.max_number > 0 and stock.max_number-actual_stock_deliveries<self.quantity:
+                raise Exception(_("Raggiunto il numero max di consegne per questo stock: "
+                                  "{}").format(stock.max_number))
+
+    def check_identification_code(self):
+        stock = self.get_stock()
+        stock_identifiers = DeliveryPointGoodStockIdentifier.objects.filter(delivery_point_stock=stock)
+        if stock_identifiers and not self.good_stock_identifier:
+            raise Exception(_("Selezionare il codice identificativo dalla lista"))
 
     def validate_stock_identifier(self):
         # good identifiers
@@ -245,7 +300,11 @@ class GoodDelivery(TimeStampedModel):
 
     def save(self, *args, **kwargs):
         self.campaign = self.campaign or self.delivery_point.campaign
-        self.validate_stock_identifier()
+        self.check_quantity()
+        if self.delivery_point:
+            self.check_stock_max()
+            self.check_identification_code()
+            self.validate_stock_identifier()
         self.check_collisions()
         super(GoodDelivery, self).save(*args, **kwargs)
 
@@ -264,7 +323,9 @@ class GoodDelivery(TimeStampedModel):
 
     def build_jwt(self):
         data = {'id': self.pk,
-                'user': self.delivered_to.pk}
+                'user': self.delivered_to.pk,
+                'delivery_point': self.delivery_point.pk,
+                'modified': self.modified}
         encrypted_data = encrypt_to_jwe(json.dumps(data).encode())
         return encrypted_data
 
@@ -306,7 +367,7 @@ class GoodDelivery(TimeStampedModel):
         """
         marked as delivered by user action
         """
-        if not self.delivered_by: return False
+        if not self.delivery_point: return False
         if not self.campaign.is_in_progress(): return False
         if not self.campaign.require_agreement: return False
         return self.is_waiting()
@@ -319,7 +380,7 @@ class GoodDelivery(TimeStampedModel):
             return _('restituito')
         elif self.delivery_date:
             return _('consegnato')
-        elif not self.delivered_by:
+        elif not self.delivery_point:
             return _('da definire')
         elif self.is_waiting():
             return _('in attesa')
@@ -330,12 +391,6 @@ class GoodDelivery(TimeStampedModel):
         return '{} - {}'.format(self.delivered_to, self.good)
 
     # TODO save()
-
-    # gestione errori di consegna prodotti (codici errati)
-    # ----------------------------------------------------
-    # se returned=True allora il prodotto è stato riconsegnato
-    # non è possibile assegnare lo stesso codice a più utenti,
-    # a me no che questo non sia stato riconsegnato
 
     # check relazioni user e product con DeliveryPoint
     # ----------------------------------------------

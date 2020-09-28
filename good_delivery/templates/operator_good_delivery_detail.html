@@ -13,17 +13,23 @@
    href="{% url 'good_delivery:operator_active_campaigns' %}">
     <svg class="icon icon-xs">
         <use xlink:href="{% static 'svg/sprite.svg' %}#it-arrow-left"></use>
-    </svg> {% trans "Torna alle campagne" %}
+    </svg> {% trans "Home" %}
 </a>
 <a role="button" class="btn btn-outline-secondary"
-   href="{% url 'good_delivery:operator_campaign_detail' campaign.pk %}">
+   href="{% url 'good_delivery:operator_campaign_detail' campaign.slug %}">
     <svg class="icon icon-xs">
         <use xlink:href="{% static 'svg/sprite.svg' %}#it-arrow-left"></use>
-    </svg> {% trans "Torna a" %} {{ campaign }}
+    </svg> {{ campaign }}
+</a>
+<a role="button" class="btn btn-outline-secondary"
+   href="{% url 'good_delivery:operator_delivery_point_detail' campaign.slug delivery_point.pk %}">
+    <svg class="icon icon-xs">
+        <use xlink:href="{% static 'svg/sprite.svg' %}#it-arrow-left"></use>
+    </svg> {{ delivery_point }}
 </a>
 {% if campaign.new_delivery_if_disabled and good_delivery.disabled_date %}
 <a role="button" class="btn btn-success pull-right"
-       href="{% url 'good_delivery:operator_another_delivery' campaign.pk good_delivery.pk %}">
+       href="{% url 'good_delivery:operator_another_delivery' campaign.slug delivery_point.pk good_delivery.pk %}">
         <svg class="icon icon-xs icon-white">
             <use xlink:href="{% static 'svg/sprite.svg' %}#it-plus-circle"></use>
         </svg> {% trans "Nuova consegna" %}
@@ -60,7 +66,7 @@
             </div>
             <div class="modal-footer">
                 <a role="button" class="btn btn-success"
-                   href="{% url 'good_delivery:operator_good_delivery_deliver' campaign.pk good_delivery.pk %}">
+                   href="{% url 'good_delivery:operator_good_delivery_deliver' campaign.pk delivery_point.pk good_delivery.pk %}">
                     {% trans "Si, confermo" %}
                 </a>
             </div>
@@ -83,7 +89,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">
-                    {% trans "Completa procedura di consegna" %}
+                    {% trans "Restituzione bene" %}
                 </h5>
                 <button class="close" type="button"
                         data-dismiss="modal" aria-label="Close">
@@ -93,11 +99,14 @@
                 </button>
             </div>
             <div class="modal-body">
-                <p>{% trans "Desideri restituire il bene?" %}</p>
+                <p>
+                    {% trans "Desideri effettuare la restituzione il bene" %}
+                    <b>{{ good_delivery }}</b> ?
+                </p>
             </div>
             <div class="modal-footer">
-                <a role="button" class="btn btn-success"
-                   href="{% url 'good_delivery:operator_good_delivery_return' campaign.pk good_delivery.pk %}">
+                <a role="button" class="btn btn-warning"
+                   href="{% url 'good_delivery:operator_good_delivery_return' campaign.slug delivery_point.pk good_delivery.pk %}">
                     {% trans "Si, confermo" %}
                 </a>
             </div>
@@ -136,7 +145,7 @@
             </div>
             <div class="modal-footer">
                 <a role="button" class="btn btn-info"
-                   href="{% url 'good_delivery:operator_good_delivery_disable' campaign.pk good_delivery.pk %}">
+                   href="{% url 'good_delivery:operator_good_delivery_disable' campaign.slug delivery_point.pk good_delivery.pk %}">
                     {% trans "Si, confermo" %}
                 </a>
             </div>
@@ -175,7 +184,7 @@
             </div>
             <div class="modal-footer">
                 <a role="button" class="btn btn-danger"
-                   href="{% url 'good_delivery:operator_good_delivery_delete' campaign.pk good_delivery.pk %}">
+                   href="{% url 'good_delivery:operator_good_delivery_delete' campaign.slug delivery_point.pk good_delivery.pk %}">
                     {% trans "Si, confermo" %}
                 </a>
             </div>
@@ -186,7 +195,7 @@
 
 {% if good_delivery.delivered_by and good_delivery.is_waiting %}
 <a role="button" class="btn btn-success pull-right"
-   href="{% url 'good_delivery:operator_good_delivery_send_token' campaign.pk good_delivery.pk %}">
+   href="{% url 'good_delivery:operator_good_delivery_send_token' campaign.slug delivery_point.pk good_delivery.pk %}">
         <svg class="icon icon-xs icon-white">
             <use xlink:href="{% static 'svg/sprite.svg' %}#it-link"></use>
         </svg> {% trans "Invia link attivazione" %}
@@ -213,14 +222,14 @@
                             <svg class="icon icon-xs icon-white">
                                 <use xlink:href="{% static 'svg/sprite.svg' %}#it-check"></use>
                             </svg>
-                            {% trans "Modifica l'assegnazione" %}
+                            {% trans "Modifica" %}
                     </button>
                     <div class="modal fade" tabindex="-1" role="dialog" id="action">
                         <div class="modal-dialog modal-dialog-centered" role="document">
                             <div class="modal-content">
                                 <div class="modal-header">
                                     <h5 class="modal-title">
-                                        {% trans "Modifica assegnazione bene" %}
+                                        {% trans "Modifica consegna" %}
                                     </h5>
                                     <button class="close" type="button"
                                             data-dismiss="modal" aria-label="Close">

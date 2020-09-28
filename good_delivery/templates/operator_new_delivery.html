@@ -10,17 +10,19 @@
 
 {% block top_buttons %}
 <a role="button" class="btn btn-outline-secondary"
-   href="{% url 'good_delivery:operator_campaign_detail' campaign.pk %}">
+   href="{% url 'good_delivery:operator_delivery_point_detail' campaign.slug delivery_point.pk %}">
     <svg class="icon icon-xs">
         <use xlink:href="{% static 'svg/sprite.svg' %}#it-arrow-left"></use>
-    </svg> {% trans "Torna a" %} {{ campaign }}
+    </svg> {{ delivery_point }}
 </a>
+{% if campaign.operator_can_create %}
 <a role="button" class="btn btn-outline-secondary"
-   href="{% url 'good_delivery:operator_new_delivery_preload' campaign.pk %}">
+   href="{% url 'good_delivery:operator_new_delivery_preload' campaign.slug delivery_point.pk %}">
     <svg class="icon icon-xs">
         <use xlink:href="{% static 'svg/sprite.svg' %}#it-arrow-left"></use>
     </svg> {% trans "Torna a selezione utente" %}
 </a>
+{% endif %}
 {% endblock top_buttons %}
 
 {% block page_content %}

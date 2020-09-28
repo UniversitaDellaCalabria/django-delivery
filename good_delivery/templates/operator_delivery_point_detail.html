@@ -1,0 +1,48 @@
+{% extends "base_page_schema.html" %}
+
+{% load i18n %}
+{% load static %}
+{% load good_delivery_tags %}
+
+{% block menu_links %}
+{% include 'operator_menu.html' %}
+{% endblock menu_links %}
+
+{% block top_buttons %}
+<div>
+    <a role="button" class="btn btn-outline-secondary"
+       href="{% url 'good_delivery:operator_active_campaigns' %}">
+        <svg class="icon icon-xs">
+            <use xlink:href="{% static 'svg/sprite.svg' %}#it-arrow-left"></use>
+        </svg> {% trans "Home" %}
+    </a>
+    <a role="button" class="btn btn-outline-secondary"
+       href="{% url 'good_delivery:operator_campaign_detail' campaign.slug %}">
+        <svg class="icon icon-xs">
+            <use xlink:href="{% static 'svg/sprite.svg' %}#it-arrow-left"></use>
+        </svg> {{ campaign }}
+    </a>
+    {% if campaign.operator_can_create %}
+    <a role="button" class="btn btn-success pull-right"
+       href="{% url 'good_delivery:operator_new_delivery_preload' campaign.slug delivery_point.pk %}">
+        <svg class="icon icon-xs icon-white">
+            <use xlink:href="{% static 'svg/sprite.svg' %}#it-plus-circle"></use>
+        </svg> {% trans "Nuova consegna" %}
+    </a>
+    {% endif %}
+</div>
+{% endblock top_buttons %}
+
+{% block page_content %}
+    {% include 'datatables/table.html' %}
+{% endblock page_content %}
+
+{% block extra_scripts %}
+    {% url 'good_delivery:delivery_point_deliveries_json' campaign_id=campaign.slug delivery_point_id=delivery_point.pk as ajax_url %}
+    {% include 'datatables/datatable_script.html' with ajax_url=ajax_url %}
+{% endblock extra_scripts %}
+
+
+
+
+

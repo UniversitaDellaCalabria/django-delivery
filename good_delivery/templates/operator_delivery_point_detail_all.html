@@ -1,0 +1,16 @@
+{% extends "operator_delivery_point_detail.html" %}
+
+{% load i18n %}
+{% load static %}
+{% load good_delivery_tags %}
+
+
+{% block extra_scripts %}
+    {% url 'good_delivery:campaign_deliveries_json' campaign_id=campaign.slug delivery_point_id=delivery_point.pk as ajax_url %}
+    {% include 'datatables/datatable_script.html' with ajax_url=ajax_url %}
+{% endblock extra_scripts %}
+
+
+
+
+
