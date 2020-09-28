@@ -62,8 +62,7 @@ def user_index(request):
     """
     title =_("Home page utente")
     good_deliveries = GoodDelivery.objects.filter(delivered_to=request.user,
-                                                  campaign__is_active=True,
-                                                  delivery_point__is_active=True)
+                                                  campaign__is_active=True)
     template = "user_index.html"
     d = {'good_deliveries': good_deliveries,
          'title': title,}
@@ -310,12 +309,46 @@ def operator_another_delivery(request, campaign_id, delivery_point_id,
 def operator_good_delivery_detail(request, campaign_id, delivery_point_id,
                                   good_delivery_id, campaign, delivery_point,
                                   multi_tenant, good_delivery):
+    good_delivery_items = GoodDeliveryItem.objects.filter(good_delivery=good_delivery)
+    stocks = DeliveryPointGoodStock.objects.filter(delivery_point=delivery_point)
+    if not good_delivery_items:
+        if request.POST:
+            post_dict = dict(request.POST.items())
+            post_dict.pop('csrfmiddlewaretoken')
+            for k,v in post_dict.items():
+                stock = stocks.get(pk=k)
+                good_delivery_item = GoodDeliveryItem(good_delivery=good_delivery,
+                                                      quantity=v,
+                                                      good=stock.good)
+                good_delivery_item.save()
+            return redirect('good_delivery:operator_good_delivery_detail',
+                            campaign_id=campaign_id,
+                            delivery_point_id=delivery_point_id,
+                            good_delivery_id=good_delivery_id)
+
+
+        template = "operator_good_delivery_preload.html"
+        d = {'campaign': campaign,
+             'delivery_point': delivery_point,
+             'good_delivery': good_delivery,
+             'is_operator': True,
+             'stocks': stocks,
+             'sub_title': good_delivery.choosen_delivery_point,
+             'title': "titolo",}
+        return render(request, template, d)
+
     template = "operator_good_delivery_detail.html"
     title = good_delivery
-    stock = get_object_or_404(DeliveryPointGoodStock,
-                              good=good_delivery.good,
-                              delivery_point=delivery_point)
-    form = GoodDeliveryForm(instance=good_delivery, stock=stock)
+
+    good_forms = []
+    for stock in stocks:
+        # if DeliveryPointGoodStockIdentifier.objects.filter(delivery_point_stock=stock):
+        form = GoodDeliveryItemForm(stock=stock)
+        good_forms.append((stock.good,form))
+    # stock = get_object_or_404(DeliveryPointGoodStock,
+                              # good=good_delivery.good,
+                              # delivery_point=delivery_point)
+    # form = GoodDeliveryForm(instance=good_delivery, stock=stock)
 
     logs = LogEntry.objects.filter(content_type_id=ContentType.objects.get_for_model(good_delivery).pk,
                                    object_id=good_delivery.pk)
@@ -355,7 +388,7 @@ def operator_good_delivery_detail(request, campaign_id, delivery_point_id,
                             good_delivery_id=good_delivery_id)
     d = {'campaign': campaign,
          'delivery_point': delivery_point,
-         'form': form,
+         'good_forms': good_forms,
          'good_delivery': good_delivery,
          'is_operator': True,
          'logs': logs,

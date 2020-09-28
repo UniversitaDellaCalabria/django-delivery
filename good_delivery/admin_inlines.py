@@ -17,7 +17,7 @@ class DeliveryCampaignAgreementInline(admin.TabularInline):
 class GoodInline(admin.TabularInline):
     model = Good
     extra = 0
-    
+
 
 class DeliveryPointGoodStockIdentifierInline(admin.TabularInline):
     model = DeliveryPointGoodStockIdentifier
@@ -26,4 +26,9 @@ class DeliveryPointGoodStockIdentifierInline(admin.TabularInline):
 
 class DeliveryPointGoodStockInline(admin.TabularInline):
     model = DeliveryPointGoodStock
+    extra = 0
+
+
+class GoodDeliveryItemInline(admin.TabularInline):
+    model = GoodDeliveryItem
     extra = 0

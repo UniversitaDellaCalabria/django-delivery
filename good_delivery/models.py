@@ -190,14 +190,6 @@ class GoodDelivery(TimeStampedModel):
                                                related_name="choosen_delivered_point")
     delivered_to = models.ForeignKey(get_user_model(),
                                      on_delete=models.PROTECT)
-    good = models.ForeignKey(Good, on_delete=models.CASCADE)
-    quantity = models.PositiveIntegerField(default=1)
-    good_stock_identifier = models.ForeignKey(DeliveryPointGoodStockIdentifier,
-                                              blank=True, null=True,
-                                              on_delete=models.CASCADE)
-    # se non è presente un identificativo in stock
-    # ma l'operatore deve specificarlo per check
-    good_identifier = models.CharField(max_length=255, blank=True, null=True)
     delivery_point = models.ForeignKey(DeliveryPoint,
                                        on_delete=models.PROTECT,
                                        blank=True, null=True,
@@ -218,16 +210,6 @@ class GoodDelivery(TimeStampedModel):
                                     on_delete=models.PROTECT,
                                     blank=True, null=True,
                                     related_name="disabled_by")
-    returned_point = models.ForeignKey(DeliveryPoint,
-                                       on_delete=models.PROTECT,
-                                       blank=True, null=True,
-                                       related_name="returned_point")
-    return_date = models.DateTimeField(_('Data di restituzione'),
-                                       blank=True, null=True)
-    returned_to = models.ForeignKey(get_user_model(),
-                                    on_delete=models.PROTECT,
-                                    blank=True, null=True,
-                                    related_name="returned_to")
     notes = models.TextField(null=True, blank=True)
 
     class Meta:
@@ -298,15 +280,15 @@ class GoodDelivery(TimeStampedModel):
                               "per questa campagna, "
                               "con questo codice identificativo"))
 
-    def save(self, *args, **kwargs):
-        self.campaign = self.campaign or self.delivery_point.campaign
-        self.check_quantity()
-        if self.delivery_point:
-            self.check_stock_max()
-            self.check_identification_code()
-            self.validate_stock_identifier()
-        self.check_collisions()
-        super(GoodDelivery, self).save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+        # self.campaign = self.campaign or self.delivery_point.campaign
+        # self.check_quantity()
+        # if self.delivery_point:
+            # self.check_stock_max()
+            # self.check_identification_code()
+            # self.validate_stock_identifier()
+        # self.check_collisions()
+        # super(GoodDelivery, self).save(*args, **kwargs)
 
 
     def log_action(self, msg, action, user):
@@ -331,7 +313,7 @@ class GoodDelivery(TimeStampedModel):
 
     def is_waiting(self):
         if self.delivery_date: return False
-        if self.return_date: return False
+        # if self.return_date: return False
         if self.disabled_date: return False
         return True
 
@@ -349,7 +331,6 @@ class GoodDelivery(TimeStampedModel):
         if self.disabled_date: return False
         user_deliveries = GoodDelivery.objects.filter(campaign=self.campaign,
                                                       delivered_to=self.delivered_to,
-                                                      good=self.good,
                                                       delivery_point=self.delivery_point).count()
         # if good_delivery has been prefilled
         # (not created by operator)
@@ -376,8 +357,6 @@ class GoodDelivery(TimeStampedModel):
     def state(self):
         if self.disabled_date:
             return _('disabilitata')
-        elif self.return_date:
-            return _('restituito')
         elif self.delivery_date:
             return _('consegnato')
         elif not self.delivery_point:
@@ -388,7 +367,7 @@ class GoodDelivery(TimeStampedModel):
             return _('unknown')
 
     def __str__(self):
-        return '{} - {}'.format(self.delivered_to, self.good)
+        return '{} - {}'.format(self.campaign, self.delivered_to)
 
     # TODO save()
 
@@ -396,6 +375,38 @@ class GoodDelivery(TimeStampedModel):
     # ----------------------------------------------
     # per verificare la consistenza dei dati e l'effettiva
     # corrispondenza e validità dell'operazione
+
+
+class GoodDeliveryItem(TimeStampedModel):
+    """
+    """
+    good_delivery = models.ForeignKey(GoodDelivery,
+                                      on_delete=models.CASCADE)
+    good = models.ForeignKey(Good, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    good_stock_identifier = models.ForeignKey(DeliveryPointGoodStockIdentifier,
+                                              blank=True, null=True,
+                                              on_delete=models.CASCADE)
+    # se non è presente un identificativo in stock
+    # ma l'operatore deve specificarlo per check
+    good_identifier = models.CharField(max_length=255, blank=True, null=True)
+    returned_point = models.ForeignKey(DeliveryPoint,
+                                       on_delete=models.PROTECT,
+                                       blank=True, null=True,
+                                       related_name="returned_point")
+    return_date = models.DateTimeField(_('Data di restituzione'),
+                                       blank=True, null=True)
+    returned_to = models.ForeignKey(get_user_model(),
+                                    on_delete=models.PROTECT,
+                                    blank=True, null=True,
+                                    related_name="returned_to")
+
+    class Meta:
+        verbose_name = _('Oggetto consegnato')
+        verbose_name_plural = _('Oggetti consegnati')
+
+    def __str__(self):
+        return '{}'.format(self.good)
 
 
 class Agreement(TimeStampedModel):

@@ -210,7 +210,14 @@
 
     <div class="pb-4">
         <form method="post" enctype="multipart/form-data">
-            {% include 'form_template.html' %}
+
+            {% for good_form in good_forms %}
+                <div class="pb-4">
+                    <h4>{{ good_form.0 }}</h4>
+                    {{ good_form.1.as_p }}
+                </div>
+
+            {% endfor %}
 
             {% if good_delivery.is_waiting %}
                 {% block form_buttons %}

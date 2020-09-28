@@ -83,25 +83,6 @@ $(function() {
                 className: "desktop",
                 orderable: false,
             },
-            {
-                targets: [ 5 ],
-                className: "desktop",
-                orderable: false,
-                render: function ( data, type, row ) {
-                    if(data)return data;
-                    return "-";
-                }
-            },
-            {
-                targets: [ 6 ],
-                className: "desktop",
-                orderable: false,
-            },
-            {
-                targets: [ 7 ],
-                className: "desktop",
-                orderable: false,
-            },
         ];
 
     var datatable = $('.datatable-responsive-serverside').DataTable({

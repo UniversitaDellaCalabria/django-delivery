@@ -1,0 +1,62 @@
+{% extends "base_page_schema.html" %}
+
+{% load i18n %}
+{% load static %}
+{% load good_delivery_tags %}
+
+{% block menu_links %}
+{% include 'operator_menu.html' %}
+{% endblock menu_links %}
+
+{% block top_buttons %}
+<a role="button" class="btn btn-outline-secondary"
+   href="{% url 'good_delivery:operator_active_campaigns' %}">
+    <svg class="icon icon-xs">
+        <use xlink:href="{% static 'svg/sprite.svg' %}#it-arrow-left"></use>
+    </svg> {% trans "Home" %}
+</a>
+<a role="button" class="btn btn-outline-secondary"
+   href="{% url 'good_delivery:operator_campaign_detail' campaign.slug %}">
+    <svg class="icon icon-xs">
+        <use xlink:href="{% static 'svg/sprite.svg' %}#it-arrow-left"></use>
+    </svg> {{ campaign }}
+</a>
+<a role="button" class="btn btn-outline-secondary"
+   href="{% url 'good_delivery:operator_delivery_point_detail' campaign.slug delivery_point.pk %}">
+    <svg class="icon icon-xs">
+        <use xlink:href="{% static 'svg/sprite.svg' %}#it-arrow-left"></use>
+    </svg> {{ delivery_point }}
+</a>
+{% endblock top_buttons %}
+
+{% block page_content %}
+    <form method="post" enctype="multipart/form-data">
+
+        {% for stock in stocks %}
+        <div style="padding: 0 0 1rem">
+            <b><label for="{{ stock.pk }}">{{ stock.good }}</label></b>
+            <input type="number"
+                   name="{{ stock.pk }}"
+                   value="1"
+                   required=""
+                   id="{{ stock.pk }}">
+            <small class="form-text text-muted">
+                Il campo Oggetto è impostato con la denominazione
+            </small>
+        </div>
+        {% endfor %}
+
+        {% csrf_token %}
+
+        {% block form_buttons %}
+        <input class="btn btn-success btn-block"
+               type="submit"
+               value="{% trans 'Procedi' %}">
+        {% endblock form_buttons %}
+    </form>
+{% endblock page_content %}
+
+{% block extra_scripts %}
+{{ block.super }}
+{{ form.media }}
+{% endblock extra_scripts %}

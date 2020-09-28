@@ -63,6 +63,7 @@ class GoodDeliveryAdmin(admin.ModelAdmin):
     list_display = ('delivered_to', 'create', 'modified')
     list_filter = ('delivered_to',)
     search_fields = ('delivered_to',)
+    inlines = [GoodDeliveryItemInline,]
 
 @admin.register(Agreement)
 class AgreementAdmin(admin.ModelAdmin):
