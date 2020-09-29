@@ -9,26 +9,29 @@
 {% endblock menu_links %}
 
 {% block top_buttons %}
-<a role="button" class="btn btn-outline-secondary"
-   href="{% url 'good_delivery:operator_active_campaigns' %}">
-    <svg class="icon icon-xs">
-        <use xlink:href="{% static 'svg/sprite.svg' %}#it-arrow-left"></use>
-    </svg> {% trans "Home" %}
-</a>
-<a role="button" class="btn btn-outline-secondary"
-   href="{% url 'good_delivery:operator_campaign_detail' campaign.slug %}">
-    <svg class="icon icon-xs">
-        <use xlink:href="{% static 'svg/sprite.svg' %}#it-arrow-left"></use>
-    </svg> {{ campaign }}
-</a>
-<a role="button" class="btn btn-outline-secondary"
-   href="{% url 'good_delivery:operator_delivery_point_detail' campaign.slug delivery_point.pk %}">
-    <svg class="icon icon-xs">
-        <use xlink:href="{% static 'svg/sprite.svg' %}#it-arrow-left"></use>
-    </svg> {{ delivery_point }}
-</a>
+<div class="pb-4">
+    <a role="button" class="btn btn-outline-secondary"
+       href="{% url 'good_delivery:operator_active_campaigns' %}">
+        <svg class="icon icon-xs">
+            <use xlink:href="{% static 'svg/sprite.svg' %}#it-arrow-left"></use>
+        </svg> {% trans "Home" %}
+    </a>
+    <a role="button" class="btn btn-outline-secondary"
+       href="{% url 'good_delivery:operator_campaign_detail' campaign.slug %}">
+        <svg class="icon icon-xs">
+            <use xlink:href="{% static 'svg/sprite.svg' %}#it-arrow-left"></use>
+        </svg> {{ campaign }}
+    </a>
+    <a role="button" class="btn btn-outline-secondary"
+       href="{% url 'good_delivery:operator_delivery_point_detail' campaign.slug delivery_point.pk %}">
+        <svg class="icon icon-xs">
+            <use xlink:href="{% static 'svg/sprite.svg' %}#it-arrow-left"></use>
+        </svg> {{ delivery_point }}
+    </a>
+</div>
+
 {% if campaign.new_delivery_if_disabled and good_delivery.disabled_date %}
-<a role="button" class="btn btn-success pull-right"
+<a role="button" class="btn btn-success"
        href="{% url 'good_delivery:operator_another_delivery' campaign.slug delivery_point.pk good_delivery.pk %}">
         <svg class="icon icon-xs icon-white">
             <use xlink:href="{% static 'svg/sprite.svg' %}#it-plus-circle"></use>
@@ -66,7 +69,7 @@
             </div>
             <div class="modal-footer">
                 <a role="button" class="btn btn-success"
-                   href="{% url 'good_delivery:operator_good_delivery_deliver' campaign.pk delivery_point.pk good_delivery.pk %}">
+                   href="{% url 'good_delivery:operator_good_delivery_deliver' campaign.slug delivery_point.pk good_delivery.pk %}">
                     {% trans "Si, confermo" %}
                 </a>
             </div>
@@ -75,21 +78,21 @@
 </div>
 {% endif %}
 
-{% if good_delivery.can_be_returned %}
+{% if good_delivery.is_waiting %}
 <button type="button"
-   class="btn btn-outline-warning"
+   class="btn btn-outline-secondary"
    data-toggle="modal"
-   data-target="#returnGood">
-    <svg class="icon icon-xs icon-warning">
-        <use xlink:href="{% static 'svg/sprite.svg' %}#it-exchange-circle"></use>
-    </svg> {% trans "Marca come restituito" %}
+   data-target="#resetDelivery">
+    <svg class="icon icon-xs icon-info">
+        <use xlink:href="{% static 'svg/sprite.svg' %}#it-restore"></use>
+    </svg> {% trans "Reset" %}
 </button>
-<div class="modal fade" tabindex="-1" role="dialog" id="returnGood">
+<div class="modal fade" tabindex="-1" role="dialog" id="resetDelivery">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">
-                    {% trans "Restituzione bene" %}
+                    {% trans "Reset quantità inserite" %}
                 </h5>
                 <button class="close" type="button"
                         data-dismiss="modal" aria-label="Close">
@@ -99,14 +102,14 @@
                 </button>
             </div>
             <div class="modal-body">
-                <p>
-                    {% trans "Desideri effettuare la restituzione il bene" %}
-                    <b>{{ good_delivery }}</b> ?
+                <p>{% trans "Desideri resettare le quantità dei beni per " %}
+                   <b>{{ good_delivery }}</b> ?
                 </p>
+                <p>Questa scelta distruggerà l'attuale contenuto del carrello.</p>
             </div>
             <div class="modal-footer">
-                <a role="button" class="btn btn-warning"
-                   href="{% url 'good_delivery:operator_good_delivery_return' campaign.slug delivery_point.pk good_delivery.pk %}">
+                <a role="button" class="btn btn-secondary"
+                   href="{% url 'good_delivery:operator_good_delivery_reset' campaign.slug delivery_point.pk good_delivery.pk %}">
                     {% trans "Si, confermo" %}
                 </a>
             </div>
@@ -206,20 +209,83 @@
 {% block page_content %}
     {% include "delivery_details.html" %}
 
+    {% if goods_without_id %}
     <hr />
-
+    <ul>
+    {% for good_without_id in goods_without_id %}
+    <li>
+        <b>{{ good_without_id.good }}</b>
+        <p>{% trans "Quantità" %}: {{ good_without_id.quantity }}</p>
+    </li>
+    {% endfor %}
+    </ul>
+    {% endif %}
+    {% if good_forms %}
+    <hr />
     <div class="pb-4">
         <form method="post" enctype="multipart/form-data">
 
             {% for good_form in good_forms %}
                 <div class="pb-4">
-                    <h4>{{ good_form.0 }}</h4>
-                    {{ good_form.1.as_p }}
+                    <h4>{{ good_form.instance }}</h4>
+                    {{ good_form.as_p }}
+
+                    {% if good_form.instance.return_date %}
+                    <span class="badge badge-warning mb-2">
+                        {% trans "Restituito" %}
+                        -
+                        {{ good_form.instance.return_date }}
+                        -
+                        {{ good_form.instance.returned_to }}
+                    </span>
+                    {% elif good_form.instance.can_be_returned %}
+                    <button type="button"
+                       class="btn btn-outline-warning btn-block"
+                       data-toggle="modal"
+                       data-target="#returnGood_{{ good_form.instance.pk }}">
+                        <svg class="icon icon-xs icon-warning">
+                            <use xlink:href="{% static 'svg/sprite.svg' %}#it-exchange-circle"></use>
+                        </svg> {% trans "Marca come restituito" %}
+                    </button>
+                    <div class="modal fade" tabindex="-1" role="dialog" id="returnGood_{{ good_form.instance.pk }}">
+                        <div class="modal-dialog modal-dialog-centered" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">
+                                        {% trans "Restituzione bene" %}
+                                    </h5>
+                                    <button class="close" type="button"
+                                            data-dismiss="modal" aria-label="Close">
+                                       <svg class="icon">
+                                          <use xlink:href="{% static 'svg/sprite.svg' %}#it-close"></use>
+                                       </svg>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>
+                                        {% trans "Desideri effettuare la restituzione il bene" %}
+                                        <b>{{ good_form.instance }}</b>
+                                        {% trans "con identificativo" %}
+                                        <b>{{ good_form.instance.good_identifier }}</b>?
+                                    </p>
+                                </div>
+                                <div class="modal-footer">
+                                    <a role="button" class="btn btn-warning"
+                                       href="{% url 'good_delivery:operator_good_delivery_item_return' campaign.slug delivery_point.pk good_delivery.pk good_form.instance.pk %}">
+                                        {% trans "Si, confermo" %}
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
                 </div>
 
             {% endfor %}
 
             {% if good_delivery.is_waiting %}
+                {% csrf_token %}
                 {% block form_buttons %}
                 <div>
                     <button type="button"
@@ -261,7 +327,7 @@
             {% endif %}
         </form>
     </div>
-
+    {% endif %}
     {% if logs %}
     <div id="collapseDiv1-lft" class="collapse-div collapse-left-icon" role="tablist">
         <div class="collapse-header" id="heading2-lft">

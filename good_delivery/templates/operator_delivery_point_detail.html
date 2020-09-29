@@ -24,7 +24,7 @@
     </a>
     {% if campaign.operator_can_create %}
     <a role="button" class="btn btn-success pull-right"
-       href="{% url 'good_delivery:operator_new_delivery_preload' campaign.slug delivery_point.pk %}">
+       href="{% url 'good_delivery:operator_new_delivery' campaign.slug delivery_point.pk %}">
         <svg class="icon icon-xs icon-white">
             <use xlink:href="{% static 'svg/sprite.svg' %}#it-plus-circle"></use>
         </svg> {% trans "Nuova consegna" %}

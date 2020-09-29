@@ -155,6 +155,22 @@ class DeliveryPointGoodStock(TimeStampedModel):
         verbose_name = _('Stock beni centro di consegna')
         verbose_name_plural = _('Stock beni centri di consegna')
 
+    def get_available_items(self):
+        delivered_items = GoodDeliveryItem.objects.filter(good_delivery__delivery_point=self.delivery_point,
+                                                          good=self.good)
+
+        identifiers = DeliveryPointGoodStockIdentifier.objects.filter(delivery_point_stock=self)
+        if identifiers:
+            delivered_items = delivered_items.filter(good_stock_identifier__in=identifiers)
+            return identifiers.count() - delivered_items.count()
+
+        delivered_quantity = 0
+        for delivered_item in delivered_items:
+            delivered_quantity += delivered.item.quantity
+        if self.max_number > 0:
+            return self.max_number - delivered_quantity
+        return True
+
     def __str__(self):
         return '{} - {}'.format(self.delivery_point, self.good)
 
@@ -210,6 +226,10 @@ class GoodDelivery(TimeStampedModel):
                                     on_delete=models.PROTECT,
                                     blank=True, null=True,
                                     related_name="disabled_by")
+    document_type = models.CharField(max_length=255,
+                                     blank=True, null=True)
+    document_number = models.CharField(max_length=255,
+                                       blank=True, null=True)
     notes = models.TextField(null=True, blank=True)
 
     class Meta:
@@ -221,75 +241,9 @@ class GoodDelivery(TimeStampedModel):
                                                       good=self.good).first()
         return stock
 
-    def check_quantity(self):
-        if self.quantity == 0:
-            raise Exception(_("La quantità non può essere 0"))
-
-    def check_stock_max(self):
-        # only 1 good is identified by unique code
-        if self.good_identifier and self.quantity>1:
-            raise Exception(_("La quantità associata a un codice identificativo "
-                              "non può essere maggiore di 1"))
-
-        # stock max number check
-        if not self.pk:
-            stock = self.get_stock()
-            actual_stock_deliveries = GoodDelivery.objects.filter(good=self.good).count()
-            if stock.max_number > 0 and stock.max_number-actual_stock_deliveries<self.quantity:
-                raise Exception(_("Raggiunto il numero max di consegne per questo stock: "
-                                  "{}").format(stock.max_number))
-
-    def check_identification_code(self):
-        stock = self.get_stock()
-        stock_identifiers = DeliveryPointGoodStockIdentifier.objects.filter(delivery_point_stock=stock)
-        if stock_identifiers and not self.good_stock_identifier:
-            raise Exception(_("Selezionare il codice identificativo dalla lista"))
-
-    def validate_stock_identifier(self):
-        # good identifiers
-        stock_id = self.good_stock_identifier
-        manual_id = self.good_identifier
-        # only one identifier is permitted
-        if stock_id:
-            if not manual_id or manual_id != stock_id.good_identifier:
-                raise Exception(_("Identificatori non coincidenti"))
-
-    def check_collisions(self):
-        """
-            if operator is editing a delivery (self.pk exists)
-            we can exclude it from deliveries list
-        """
-        # check if there is an existent delivery
-        # (same good, same id, same campaign)
-        existent_delivery = GoodDelivery.objects.filter(Q(good_stock_identifier=self.good_stock_identifier) &
-                                                        Q(good_stock_identifier__isnull=False) |
-                                                        Q(good_identifier=self.good_identifier) &
-                                                        Q(good_identifier__isnull=False),
-                                                        good=self.good,
-                                                        campaign=self.campaign)
-                                                        # return_date__isnull=True)
-        if self.pk:
-            existent_delivery = existent_delivery.exclude(pk=self.pk)
-            # existent_delivery = existent_delivery.first()
-            # if there is a delivery with same good code
-            # (same good, same id, same campaign)
-            # save operation is not permitted!
-
-        if existent_delivery:
-            raise Exception(_("Esiste già una consegna di questo prodotto, "
-                              "per questa campagna, "
-                              "con questo codice identificativo"))
-
-    # def save(self, *args, **kwargs):
-        # self.campaign = self.campaign or self.delivery_point.campaign
-        # self.check_quantity()
-        # if self.delivery_point:
-            # self.check_stock_max()
-            # self.check_identification_code()
-            # self.validate_stock_identifier()
-        # self.check_collisions()
-        # super(GoodDelivery, self).save(*args, **kwargs)
-
+    def get_items(self):
+        items = GoodDeliveryItem.objects.filter(good_delivery=self)
+        return items
 
     def log_action(self, msg, action, user):
         LogEntry.objects.log_action(user_id         = user.pk,
@@ -307,7 +261,7 @@ class GoodDelivery(TimeStampedModel):
         data = {'id': self.pk,
                 'user': self.delivered_to.pk,
                 'delivery_point': self.delivery_point.pk,
-                'modified': self.modified}
+                'modified': self.modified.isoformat()}
         encrypted_data = encrypt_to_jwe(json.dumps(data).encode())
         return encrypted_data
 
@@ -315,12 +269,7 @@ class GoodDelivery(TimeStampedModel):
         if self.delivery_date: return False
         # if self.return_date: return False
         if self.disabled_date: return False
-        return True
-
-    def can_be_returned(self):
-        if not self.delivery_date: return False
-        if self.return_date: return False
-        return True
+        return self.get_items()
 
     def can_be_disabled(self):
         if self.disabled_date: return False
@@ -404,6 +353,11 @@ class GoodDeliveryItem(TimeStampedModel):
     class Meta:
         verbose_name = _('Oggetto consegnato')
         verbose_name_plural = _('Oggetti consegnati')
+
+    def can_be_returned(self):
+        if not self.good_delivery.delivery_date: return False
+        if self.return_date: return False
+        return True
 
     def __str__(self):
         return '{}'.format(self.good)

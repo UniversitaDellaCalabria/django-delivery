@@ -4,16 +4,17 @@ import logging
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
+from django.utils.html import strip_tags
 from django.utils.translation import gettext as _
 
 from . decorators import *
 from . forms import *
 from . jwts import *
 from . models import *
-from . utils import custom_message, send_custom_mail
+from . utils import *
 
 
 logger = logging.getLogger(__name__)
@@ -149,23 +150,25 @@ def operator_delivery_point_detail(request, campaign_id, delivery_point_id,
 @campaign_is_in_progress
 @operator_can_create
 @is_delivery_point_operator
-def operator_new_delivery_preload(request, campaign_id, delivery_point_id,
-                                  campaign, delivery_point, multi_tenant):
-    template = "operator_new_delivery_preload.html"
-    stocks = DeliveryPointGoodStock.objects.filter(delivery_point=delivery_point)
-    form = GoodDeliveryPreloadForm(stocks=stocks)
+def operator_new_delivery(request, campaign_id, delivery_point_id,
+                          campaign, delivery_point, multi_tenant):
+    template = "operator_new_delivery.html"
+    form = GoodDeliveryPreloadForm()
 
     if request.POST:
-        form = GoodDeliveryPreloadForm(data=request.POST, stocks=stocks)
+        form = GoodDeliveryPreloadForm(data=request.POST)
         if form.is_valid():
-            stock = form.cleaned_data['good_stock']
             user = form.cleaned_data['user']
+            good_delivery = GoodDelivery(delivered_to=user,
+                                         campaign=campaign,
+                                         choosen_delivery_point=delivery_point)
+            good_delivery.save()
             messages.add_message(request, messages.SUCCESS,
                      _("{} inserito con successo.").format(user))
-            return redirect('good_delivery:operator_new_delivery',
+            return redirect('good_delivery:operator_good_delivery_detail',
                             campaign_id=campaign_id,
-                            user_id=user.pk,
-                            good_stock_id=form.cleaned_data['good_stock'].pk)
+                            delivery_point_id=delivery_point_id,
+                            good_delivery_id=good_delivery.pk)
 
     title = _("Nuova consegna (seleziona prodotto)")
     d = {'campaign': campaign,
@@ -174,60 +177,6 @@ def operator_new_delivery_preload(request, campaign_id, delivery_point_id,
          'sub_title': campaign,
          'title': title}
 
-    return render(request, template, d)
-
-@login_required
-@campaign_is_active
-@campaign_is_in_progress
-@operator_can_create
-@is_delivery_point_operator
-def operator_new_delivery(request, campaign_id, delivery_point_id,
-                          user_id, good_stock_id, campaign, delivery_point,
-                          multi_tenant):
-    template = "operator_new_delivery.html"
-    user = get_object_or_404(get_user_model(), pk=user_id)
-    stock = get_object_or_404(DeliveryPointGoodStock,
-                              pk=good_stock_id,
-                              delivery_point=delivery_point)
-    form = GoodDeliveryForm(stock=stock)
-    title = _("Nuova consegna")
-
-    d = {'campaign': campaign,
-         'form': form,
-         'good': stock.good,
-         'is_operator': True,
-         'title': title,}
-
-    if request.POST:
-        form = GoodDeliveryForm(data=request.POST, stock=stock)
-        d['form'] = form
-
-        if form.is_valid():
-            good_stock_identifier = form.cleaned_data['good_stock_identifier']
-            good_identifier = form.cleaned_data['good_identifier']
-            quantity = form.cleaned_data['quantity']
-            notes = form.cleaned_data['notes']
-
-            good_delivery = GoodDelivery(campaign=campaign,
-                                         choosen_delivery_point=delivery_point,
-                                         delivery_point=delivery_point,
-                                         delivered_to=user,
-                                         delivered_by=request.user,
-                                         good=stock.good,
-                                         good_stock_identifier=good_stock_identifier,
-                                         good_identifier=good_identifier,
-                                         notes=notes)
-            try:
-                good_delivery.save()
-            except Exception as e:
-                return custom_message(request, e, 403)
-
-            msg = _("Inserimento effettuato con successo")
-            messages.add_message(request, messages.SUCCESS, msg)
-            _generate_good_delivery_token_email(request, good_delivery, msg)
-
-            return redirect('good_delivery:operator_campaign_detail',
-                            campaign_id=campaign_id)
     return render(request, template, d)
 
 @login_required
@@ -246,60 +195,20 @@ def operator_another_delivery(request, campaign_id, delivery_point_id,
     other_deliveries = GoodDelivery.objects.filter(create__gte=good_delivery.create,
                                                    delivery_point__campaign=campaign,
                                                    delivered_to=good_delivery.delivered_to,
-                                                   good=good_delivery.good,
                                                    delivery_point=delivery_point,
                                                    disabled_date__isnull=True)
     if other_deliveries:
         return custom_message(request, _("Processi di consegna attivi "
                                          "già presenti a sistema"))
 
-    user = good_delivery.delivered_to
-    good = good_delivery.good
-    stock = get_object_or_404(DeliveryPointGoodStock,
-                              delivery_point=delivery_point)
-
-    form = GoodDeliveryForm(stock=stock)
-    title = _("Nuova consegna da disabilitata")
-
-    d = {'campaign': campaign,
-         'delivery_point': delivery_point,
-         'form': form,
-         'good': good,
-         'is_operator': True,
-         'title': title,}
-
-    if request.POST:
-        form = GoodDeliveryForm(data=request.POST, stock=stock)
-        d['form'] = form
-
-        if form.is_valid():
-            good_stock_identifier = form.cleaned_data['good_stock_identifier']
-            good_identifier = form.cleaned_data['good_identifier']
-            quantity = form.cleaned_data['quantity']
-            notes = form.cleaned_data['notes']
-
-            new_good_delivery = GoodDelivery(campaign=campaign,
-                                             choosen_delivery_point=delivery_point,
-                                             delivery_point=delivery_point,
-                                             delivered_to=user,
-                                             delivered_by=request.user,
-                                             good=good,
-                                             good_stock_identifier=good_stock_identifier,
-                                             good_identifier=good_identifier,
-                                             notes=notes)
-            try:
-                new_good_delivery.save()
-            except Exception as e:
-                return custom_message(request, e, 403)
-
-            msg = _("Inserimento effettuato con successo")
-            messages.add_message(request, messages.SUCCESS, msg)
-            _generate_good_delivery_token_email(request, new_good_delivery, msg)
-
-            return redirect('good_delivery:operator_delivery_point_detail',
-                            campaign_id=campaign_id,
-                            delivery_point_id=delivery_point_id)
-    return render(request, template, d)
+    new_delivery = GoodDelivery(choosen_delivery_point=good_delivery.choosen_delivery_point,
+                                delivered_to=good_delivery.delivered_to,
+                                campaign=good_delivery.campaign)
+    new_delivery.save()
+    return redirect('good_delivery:operator_good_delivery_detail',
+                    campaign_id=campaign_id,
+                    delivery_point_id=delivery_point_id,
+                    good_delivery_id=new_delivery.pk)
 
 @login_required
 @campaign_is_active
@@ -309,23 +218,57 @@ def operator_another_delivery(request, campaign_id, delivery_point_id,
 def operator_good_delivery_detail(request, campaign_id, delivery_point_id,
                                   good_delivery_id, campaign, delivery_point,
                                   multi_tenant, good_delivery):
+    # add single items to good_delivery
     good_delivery_items = GoodDeliveryItem.objects.filter(good_delivery=good_delivery)
-    stocks = DeliveryPointGoodStock.objects.filter(delivery_point=delivery_point)
     if not good_delivery_items:
+        stocks = DeliveryPointGoodStock.objects.filter(delivery_point=delivery_point)
         if request.POST:
             post_dict = dict(request.POST.items())
             post_dict.pop('csrfmiddlewaretoken')
+            document_type = post_dict.pop('document_type')
+            document_number = post_dict.pop('document_number')
+            notes = post_dict.pop('notes')
             for k,v in post_dict.items():
                 stock = stocks.get(pk=k)
-                good_delivery_item = GoodDeliveryItem(good_delivery=good_delivery,
-                                                      quantity=v,
-                                                      good=stock.good)
-                good_delivery_item.save()
+                # check availability
+                available_items = stock.get_available_items()
+                if type(available_items)==int and int(v)>available_items:
+                    messages.add_message(request, messages.ERROR,
+                                         _("La quantità residua nello "
+                                           "stock <b>{}</b> è di "
+                                           "<b>{}</b> unità").format(stock,
+                                                                     available_items))
+                else:
+                    has_identifier = DeliveryPointGoodStockIdentifier.objects.filter(delivery_point_stock=stock).first()
+                    # if stock provides a list of identification codes
+                    # then quantity must be 1 for each item
+                    # and user has to select an ID number for every one
+                    if has_identifier:
+                        i = 1
+                        while i<=int(v):
+                            good_delivery_item = GoodDeliveryItem(good_delivery=good_delivery,
+                                                                  quantity=1,
+                                                                  good=stock.good)
+                            good_delivery_item.save()
+                            i+=1
+                    # else (e.g. glasses of water, bananas...)
+                    # quantity is choosen by user
+                    else:
+                        good_delivery_item = GoodDeliveryItem(good_delivery=good_delivery,
+                                                              quantity=v,
+                                                              good=stock.good)
+                        good_delivery_item.save()
+                    # set operator data in good delivery
+                    good_delivery.delivery_point = delivery_point
+                    good_delivery.delivered_by = request.user
+                    good_delivery.document_type = document_type
+                    good_delivery.document_number = document_number
+                    good_delivery.notes = notes
+                    good_delivery.save()
             return redirect('good_delivery:operator_good_delivery_detail',
                             campaign_id=campaign_id,
                             delivery_point_id=delivery_point_id,
                             good_delivery_id=good_delivery_id)
-
 
         template = "operator_good_delivery_preload.html"
         d = {'campaign': campaign,
@@ -333,66 +276,96 @@ def operator_good_delivery_detail(request, campaign_id, delivery_point_id,
              'good_delivery': good_delivery,
              'is_operator': True,
              'stocks': stocks,
-             'sub_title': good_delivery.choosen_delivery_point,
+             'sub_title': delivery_point,
              'title': "titolo",}
         return render(request, template, d)
+
+    # end add single items to good_delivery
 
     template = "operator_good_delivery_detail.html"
     title = good_delivery
 
+    # build one form for each single item (with ID code)
     good_forms = []
-    for stock in stocks:
-        # if DeliveryPointGoodStockIdentifier.objects.filter(delivery_point_stock=stock):
-        form = GoodDeliveryItemForm(stock=stock)
-        good_forms.append((stock.good,form))
-    # stock = get_object_or_404(DeliveryPointGoodStock,
-                              # good=good_delivery.good,
-                              # delivery_point=delivery_point)
-    # form = GoodDeliveryForm(instance=good_delivery, stock=stock)
-
+    goods_without_id = []
+    prefix_index = 1
+    for item in good_delivery_items:
+        stock = DeliveryPointGoodStock.objects.filter(delivery_point=delivery_point,
+                                                      good=item.good).first()
+        has_identifier = DeliveryPointGoodStockIdentifier.objects.filter(delivery_point_stock=stock).first()
+        if has_identifier:
+            form = GoodDeliveryItemForm(instance=item,
+                                        stock=stock,
+                                        prefix="form{}".format(prefix_index))
+            good_forms.append(form)
+            prefix_index+=1
+        else:
+            goods_without_id.append(item)
     logs = LogEntry.objects.filter(content_type_id=ContentType.objects.get_for_model(good_delivery).pk,
                                    object_id=good_delivery.pk)
 
     if request.POST:
+        if good_delivery.delivery_point != delivery_point:
+            messages.add_message(request, messages.ERROR,
+                                 _("Il punto di consegna attuale non "
+                                   "è quello abilitato a completare la consegna"))
+            return redirect('good_delivery:operator_good_delivery_detail',
+                                campaign_id=campaign_id,
+                                delivery_point_id=delivery_point_id,
+                                good_delivery_id=good_delivery_id)
         if not good_delivery.is_waiting():
             messages.add_message(request, messages.ERROR,
                              _("La consegna non può più subire modifiche"))
             return redirect('good_delivery:operator_good_delivery_detail',
                             campaign_id=campaign_id,
                             delivery_id=good_delivery.pk)
-
-        form = GoodDeliveryForm(instance=good_delivery,
-                                data=request.POST,
-                                stock=stock)
-        if form.is_valid():
-            good_stock_identifier = form.cleaned_data['good_stock_identifier']
-            good_identifier = form.cleaned_data['good_identifier']
-            quantity = form.cleaned_data['quantity']
-            notes = form.cleaned_data['notes']
-
-            try:
-                good_delivery.delivered_by = request.user
-                good_delivery.delivery_point = delivery_point
-                good_delivery.save(update_fields=['delivery_point',
-                                                  'delivered_by',
-                                                  'modified'])
-                form.save()
-            except Exception as e:
-                return custom_message(request, e, 403)
-
-            messages.add_message(request, messages.SUCCESS,
-                                 _("Modifica effettuata correttamente"))
+        prefix_index = 1
+        filled_forms = []
+        for f in good_forms:
+            stock = DeliveryPointGoodStock.objects.filter(delivery_point=delivery_point,
+                                                          good=f.instance.good).first()
+            form = GoodDeliveryItemForm(instance=f.instance,
+                                        data=request.POST,
+                                        stock=stock,
+                                        prefix="form{}".format(prefix_index))
+            filled_forms.append(form)
+            prefix_index+=1
+        good_forms = filled_forms
+        if all([f.is_valid() for f in good_forms]):
+            for f in good_forms:
+                f.save()
+            duplicates = GoodDeliveryItem.objects.values('good_stock_identifier').annotate(name_count=Count('good_stock_identifier')).filter(name_count__gt=1)
+            if duplicates:
+                for duplicate in duplicates:
+                    duplicate_items = GoodDeliveryItem.objects.filter(good_stock_identifier=duplicate['good_stock_identifier'],
+                                                                      good_delivery=good_delivery)
+                    for duplicate_item in duplicate_items:
+                        duplicate_item.good_stock_identifier = None
+                        duplicate_item.save()
+                messages.add_message(request, messages.ERROR,
+                                     _("Non è consentito l'inserimento "
+                                       "di identificativi duplicati"))
+            else:
+                messages.add_message(request, messages.SUCCESS,
+                                     _("Modifica effettuata correttamente"))
             return redirect('good_delivery:operator_good_delivery_detail',
                             campaign_id=campaign_id,
                             delivery_point_id=delivery_point_id,
                             good_delivery_id=good_delivery_id)
+        else:
+            for f in good_forms:
+                for k,v in get_labeled_errors(f).items():
+                    messages.add_message(request, messages.ERROR,
+                                         "<b>{}</b>: {}".format(k, strip_tags(v)))
+
     d = {'campaign': campaign,
          'delivery_point': delivery_point,
-         'good_forms': good_forms,
          'good_delivery': good_delivery,
+         'good_forms': good_forms,
+         'goods_without_id': goods_without_id,
          'is_operator': True,
          'logs': logs,
-         'sub_title': good_delivery.choosen_delivery_point,
+         'sub_title': delivery_point,
          'title': title,}
     return render(request, template, d)
 
@@ -410,9 +383,6 @@ def operator_good_delivery_deliver(request, campaign_id, delivery_point_id,
     elif good_delivery.delivery_date:
         messages.add_message(request, messages.ERROR,
                              _("Consegna già effettuata"))
-    elif good_delivery.return_date:
-        messages.add_message(request, messages.ERROR,
-                             _("Bene già restituito"))
     elif good_delivery.disabled_date:
         messages.add_message(request, messages.ERROR,
                              _("Consegna disabilitata"))
@@ -435,32 +405,33 @@ def operator_good_delivery_deliver(request, campaign_id, delivery_point_id,
 @campaign_is_active
 @campaign_is_in_progress
 @is_delivery_point_operator
-@can_manage_good_delivery
-def operator_good_delivery_return(request, campaign_id, delivery_point_id,
-                                  good_delivery_id,campaign, delivery_point,
-                                  multi_tenant, good_delivery):
-    if not good_delivery.delivery_date:
+# @can_manage_good_delivery
+def operator_good_delivery_reset(request, campaign_id, delivery_point_id,
+                                 good_delivery_id, campaign, delivery_point,
+                                 multi_tenant):
+    good_delivery = get_object_or_404(GoodDelivery,
+                                      pk=good_delivery_id,
+                                      delivery_point=delivery_point)
+    if not good_delivery.is_waiting():
         messages.add_message(request, messages.ERROR,
-                             _("Consegna non ancora effettuata"))
-    elif good_delivery.return_date:
-        messages.add_message(request, messages.ERROR,
-                             _("Bene precedentemente restituito"))
+                             _("Impossibile effettuare la modifica"))
     else:
-        good_delivery.returned_point = delivery_point
-        good_delivery.return_date = timezone.localtime()
-        good_delivery.returned_to = request.user
-        good_delivery.save(update_fields=['returned_point',
-                                          'return_date',
-                                          'returned_to',
-                                          'modified'])
-
-        msg = _("{} restituito").format(good_delivery)
+        items = good_delivery.get_items()
+        items.delete()
+        good_delivery.delivered_by = None
+        good_delivery.delivery_point = None
+        good_delivery.document_type = None
+        good_delivery.document_number = None
+        good_delivery.notes = None
+        good_delivery.save()
+        msg = _("{} reset complete").format(good_delivery)
         good_delivery.log_action(msg, CHANGE, request.user)
-
         messages.add_message(request, messages.SUCCESS,
-                                 _("Restituzione completata"))
-    return redirect('good_delivery:operator_campaign_detail',
-                    campaign_id=campaign_id)
+                                 _("Reset completato"))
+    return redirect('good_delivery:operator_good_delivery_detail',
+                    campaign_id=campaign_id,
+                    delivery_point_id=delivery_point_id,
+                    good_delivery_id=good_delivery_id)
 
 @login_required
 @campaign_is_active
@@ -531,8 +502,8 @@ def user_use_token(request):
             msg = _("Campagna non attiva")
         elif good_delivery.disabled_date:
             msg = _("Consegna disabilitata. Impossibile completare l'operazione")
-        elif good_delivery.return_date:
-            msg = _("Prodotto restituito")
+        # elif good_delivery.return_date:
+            # msg = _("Prodotto restituito")
         elif not good_delivery.delivered_by:
             msg = _("Consegna non completata dall'operatore")
         elif good_delivery.delivery_date:
@@ -569,9 +540,51 @@ def operator_good_delivery_send_token(request, campaign_id, delivery_point_id,
         _generate_good_delivery_token_email(request, good_delivery)
         messages.add_message(request, messages.SUCCESS,
                              _("Link di attivazione inviato a {}").format(good_delivery.delivered_to.email))
-    return redirect('good_delivery:operator_campaign_detail',
-                    campaign_id=campaign_id)
+    return redirect('good_delivery:operator_good_delivery_detail',
+                    campaign_id=campaign_id,
+                    delivery_point_id=delivery_point_id,
+                    good_delivery_id=good_delivery_id)
 
+@login_required
+@campaign_is_active
+@campaign_is_in_progress
+@is_delivery_point_operator
+@can_manage_good_delivery
+def operator_good_delivery_item_return(request, campaign_id, delivery_point_id,
+                                  good_delivery_id, good_delivery_item_id,
+                                  campaign, delivery_point,
+                                  multi_tenant, good_delivery):
+    if not good_delivery.delivery_date:
+        messages.add_message(request, messages.ERROR,
+                             _("Consegna non ancora effettuata"))
+        redirect('good_delivery:operator_good_delivery_detail',
+                    campaign_id=campaign_id,
+                    delivery_point=delivery_point_id,
+                    good_delivery_id=good_delivery_id)
+
+    good_delivery_item = get_object_or_404(GoodDeliveryItem,
+                                           pk=good_delivery_item_id,
+                                           good_delivery=good_delivery)
+
+    if good_delivery_item.return_date:
+        messages.add_message(request, messages.ERROR,
+                             _("Bene precedentemente restituito"))
+
+    else:
+        good_delivery_item.returned_point = delivery_point
+        good_delivery_item.return_date = timezone.localtime()
+        good_delivery_item.returned_to = request.user
+        good_delivery_item.save()
+
+        msg = _("{} restituito").format(good_delivery_item)
+        good_delivery.log_action(msg, CHANGE, request.user)
+
+        messages.add_message(request, messages.SUCCESS,
+                                 _("Restituzione completata"))
+    return redirect('good_delivery:operator_good_delivery_detail',
+                    campaign_id=campaign_id,
+                    delivery_point_id=delivery_point_id,
+                    good_delivery_id=good_delivery_id)
 
 
 # ENABLE METHOD DISABLED

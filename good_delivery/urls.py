@@ -22,16 +22,18 @@ urlpatterns = [
     path(f'{op_prefix_camp}/<str:campaign_id>/', operator_campaign_detail, name='operator_campaign_detail'),
     path(f'{op_prefix_camp}/<str:campaign_id>/<int:delivery_point_id>/', operator_delivery_point_detail, name='operator_delivery_point_detail'),
 
-    path(f'{op_prefix_camp}/<str:campaign_id>/<int:delivery_point_id>/new/', operator_new_delivery_preload, name='operator_new_delivery_preload'),
-    path(f'{op_prefix_camp}/<str:campaign_id>/<int:delivery_point_id>/new/<int:user_id>/<int:good_stock_id>/', operator_new_delivery, name='operator_new_delivery'),
+    path(f'{op_prefix_camp}/<str:campaign_id>/<int:delivery_point_id>/new/', operator_new_delivery, name='operator_new_delivery'),
     path(f'{op_prefix_camp}/<str:campaign_id>/<int:delivery_point_id>/<int:good_delivery_id>/another/', operator_another_delivery, name='operator_another_delivery'),
 
     path(f'{op_prefix_camp}/<str:campaign_id>/<int:delivery_point_id>/<int:good_delivery_id>/', operator_good_delivery_detail, name='operator_good_delivery_detail'),
     path(f'{op_prefix_camp}/<str:campaign_id>/<int:delivery_point_id>/<int:good_delivery_id>/deliver/', operator_good_delivery_deliver, name='operator_good_delivery_deliver'),
-    path(f'{op_prefix_camp}/<str:campaign_id>/<int:delivery_point_id>/<int:good_delivery_id>/return/', operator_good_delivery_return, name='operator_good_delivery_return'),
+    path(f'{op_prefix_camp}/<str:campaign_id>/<int:delivery_point_id>/<int:good_delivery_id>/reset/', operator_good_delivery_reset, name='operator_good_delivery_reset'),
     path(f'{op_prefix_camp}/<str:campaign_id>/<int:delivery_point_id>/<int:good_delivery_id>/disable/', operator_good_delivery_disable, name='operator_good_delivery_disable'),
     path(f'{op_prefix_camp}/<str:campaign_id>/<int:delivery_point_id>/<int:good_delivery_id>/delete/', operator_good_delivery_delete, name='operator_good_delivery_delete'),
     path(f'{op_prefix_camp}/<str:campaign_id>/<int:delivery_point_id>/<int:good_delivery_id>/send-token/', operator_good_delivery_send_token, name='operator_good_delivery_send_token'),
+
+    path(f'{op_prefix_camp}/<str:campaign_id>/<int:delivery_point_id>/<int:good_delivery_id>/<int:good_delivery_item_id>/return/', operator_good_delivery_item_return, name='operator_good_delivery_item_return'),
+
     # path(f'{op_prefix_camp}/<str:campaign_id>/<int:user_delivery_point_id>/<int:good_delivery_id>/enable/', good_delivery_enable, name='good_delivery_enable'),
 ]
 

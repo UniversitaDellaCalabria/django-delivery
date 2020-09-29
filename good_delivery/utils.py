@@ -30,3 +30,10 @@ def send_custom_mail(subject, recipients, body, params={}):
                            recipient_list=recipients_list,
                            fail_silently=False)
         return result
+
+def get_labeled_errors(form):
+    d = {}
+    for field_name in form.errors:
+        field = form.fields[field_name]
+        d[field.label] = form.errors[field_name]
+    return d

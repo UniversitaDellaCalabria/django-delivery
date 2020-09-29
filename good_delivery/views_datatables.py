@@ -29,7 +29,7 @@ class UsersDeliveryPointDTD(DjangoDatatablesServerProc):
             params = json.loads(self.search_key)
             text = params['text']
             delivery_point = params['delivery_point']
-            if delivery_point:
+            if delivery_point and type(delivery_point)==int:
                 self.aqs = self.aqs.filter(Q(choosen_delivery_point__pk=delivery_point) |
                                            Q(delivery_point__pk=delivery_point))
             if text:
@@ -52,8 +52,6 @@ def delivery_point_deliveries(request, campaign_id, delivery_point_id,
     :return: JsonResponse
     """
     columns = _columns
-    # deliveries = GoodDelivery.objects.filter(Q(choosen_delivery_point=delivery_point) |
-                                             # Q(delivery_point=delivery_point))
     if multi_tenant:
         deliveries = GoodDelivery.objects.filter(Q(choosen_delivery_point__campaign=campaign) |
                                                  Q(delivery_point__campaign=campaign))

@@ -46,6 +46,40 @@
         </div>
         {% endfor %}
 
+        <hr>
+
+        <h4 class="pb-4">{% trans "Documento d'identità" %}</h4>
+        <div style="padding: 0 0 1rem">
+            <b>
+                <label for="document_type">
+                    {% trans "Tipo documento" %}
+                </label>
+            </b>
+            <input type="text"
+                   name="document_type"
+                   id="id_document_type">
+        </div>
+
+        <div style="padding: 0 0 1rem">
+            <b>
+                <label for="document_number">
+                    {% trans "Numero documento" %}
+                </label>
+            </b>
+            <input type="text"
+                   name="document_number"
+                   id="id_document_number">
+        </div>
+
+        <div style="padding: 0 0 1rem">
+            <b>
+                <label for="notes">
+                    {% trans "Note" %}
+                </label>
+            </b>
+            <textarea name="notes"
+                      cols="40" rows="2" id="id_notes"></textarea>
+        </div>
         {% csrf_token %}
 
         {% block form_buttons %}

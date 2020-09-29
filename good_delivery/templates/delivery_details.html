@@ -27,21 +27,9 @@
     </span>
 {% endif %}
 
-<h5 class="card-title">{{ good_delivery.good }}</h5>
-
-{% if good_delivery.good_identifier %}
-<p class="card-text">
-    <b>ID: {{ good_delivery.good_identifier }}</b>
-    {% if good_delivery.notes %}
-        <br>
-        {{ good_delivery.notes }}
-    {% endif %}
-</p>
-{% endif %}
+<h5 class="card-title">{{ good_delivery }}</h5>
 
 <p class="card-text">
-    <b>{% trans "Quantità" %}:</b> {{ good_delivery.quantity }}
-    <br>
     <b>{% trans "Data inserimento" %}:</b> {{ good_delivery.create }}
 </p>
 
@@ -62,15 +50,5 @@
     <b>{% trans "Punto di consegna" %}:</b> {{ good_delivery.disabled_point }}
     <br>
     <b>{% trans "Operatore" %}:</b> {{ good_delivery.disabled_by }}
-</p>
-{% endif %}
-
-{% if good_delivery.return_date %}
-<p class="card-text">
-    <b>{% trans "Restituito il" %}:</b> {{ good_delivery.return_date }}
-    <br>
-    <b>{% trans "Punto di consegna" %}:</b> {{ good_delivery.returned_point }}
-    <br>
-    <b>{% trans "Operatore" %}:</b> {{ good_delivery.returned_to }}
 </p>
 {% endif %}

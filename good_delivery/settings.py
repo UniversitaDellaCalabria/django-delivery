@@ -1,6 +1,9 @@
 from django.utils.translation import gettext_lazy as _
 
 
+REQUIRE_IDENTITY_DOCUMENT = True
+
+
 # E-mail messages
 MSG_HEADER = _("""Gentile {user},
 questo messaggio è stato inviato da {hostname}.
