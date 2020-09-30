@@ -1,5 +1,6 @@
-{% load i18n %}
 {% load good_delivery_tags %}
+{% load i18n %}
+{% load static %}
 
 {% if not good_delivery.delivery_point %}
     <span class="badge badge-secondary mb-2">
@@ -50,6 +51,49 @@
                 <br>
             {% endif %}
             {% trans "Quantità" %}: {{ item.quantity }}
+
+            {% if campaign and item.can_be_returned %}
+            <br>
+            <button type="button"
+               class="btn btn-outline-warning btn-xs mt-1 mb-4"
+               data-toggle="modal"
+               data-target="#returnGood_{{ item.pk }}">
+                <svg class="icon icon-xs icon-warning">
+                    <use xlink:href="{% static 'svg/sprite.svg' %}#it-exchange-circle"></use>
+                </svg> {% trans "Marca come restituito" %}
+            </button>
+            <div class="modal fade" tabindex="-1" role="dialog" id="returnGood_{{ item.pk }}">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">
+                                {% trans "Restituzione bene" %}
+                            </h5>
+                            <button class="close" type="button"
+                                    data-dismiss="modal" aria-label="Close">
+                               <svg class="icon">
+                                  <use xlink:href="{% static 'svg/sprite.svg' %}#it-close"></use>
+                               </svg>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <p>
+                                {% trans "Desideri effettuare la restituzione il bene" %}
+                                <b>{{ item }}</b>
+                                {% trans "con identificativo" %}
+                                <b>{{ item.good_identifier }}</b>?
+                            </p>
+                        </div>
+                        <div class="modal-footer">
+                            <a role="button" class="btn btn-warning"
+                               href="{% url 'good_delivery:operator_good_delivery_item_return' campaign.slug delivery_point.pk good_delivery.pk item.pk %}">
+                                {% trans "Si, confermo" %}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
         </li>
     {% endfor %}
     </ul>

@@ -355,6 +355,7 @@ class GoodDeliveryItem(TimeStampedModel):
 
     def can_be_returned(self):
         if not self.good_delivery.delivery_date: return False
+        if not self.good_identifier: return False
         if self.return_date: return False
         return True
 
