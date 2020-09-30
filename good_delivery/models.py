@@ -56,6 +56,7 @@ class DeliveryCampaign(TimeStampedModel):
     date_start = models.DateTimeField()
     date_end = models.DateTimeField()
     require_agreement = models.BooleanField(default=True)
+    identity_document_required = models.BooleanField(default=False)
     operator_can_create = models.BooleanField(default=True)
     new_delivery_if_disabled = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)

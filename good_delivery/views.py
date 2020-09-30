@@ -316,10 +316,7 @@ def operator_good_delivery_add_items(request, campaign_id, delivery_point_id,
         notes = post_dict.pop('notes')
 
         # identity document required?
-        require_identity_document = getattr(settings,
-                                            "REQUIRE_IDENTITY_DOCUMENT",
-                                            REQUIRE_IDENTITY_DOCUMENT)
-        if require_identity_document:
+        if campaign.identity_document_required:
             document_type = post_dict.pop('document_type')
             document_number = post_dict.pop('document_number')
 
@@ -382,7 +379,7 @@ def operator_good_delivery_add_items(request, campaign_id, delivery_point_id,
                 # set operator data in good delivery
                 good_delivery.delivery_point = delivery_point
                 good_delivery.delivered_by = request.user
-                if require_identity_document:
+                if campaign.identity_document_required:
                     good_delivery.document_type = document_type
                     good_delivery.document_number = document_number
                 good_delivery.notes = notes

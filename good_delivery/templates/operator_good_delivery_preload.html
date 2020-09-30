@@ -48,8 +48,7 @@
 
         <hr>
 
-        {% settings_value "REQUIRE_IDENTITY_DOCUMENT" as require_identity_document %}
-        {% if require_identity_document %}
+        {% if campaign.identity_document_required %}
         <h4 class="pb-4">{% trans "Documento d'identità" %}</h4>
         <div style="padding: 0 0 1rem">
             <b>
