@@ -254,22 +254,23 @@ class GoodDeliveryTest(TestCase):
         assert b'Consegna bloccata' in req.content
 
 
-    # def test_op_delivery_delete(self):
-        # _, campaign_booking, good_devpoint_stock = \
-            # self._get_operator_good_delivery_detail()
-        # url_kwargs = dict(campaign_id=campaign_booking.campaign.slug,
-                          # good_delivery_id=campaign_booking.pk)
-        # url = reverse('good_delivery:operator_good_delivery_delete',
-                      # kwargs=url_kwargs)
+    def test_op_delivery_delete(self):
+        _, campaign_booking, good_devpoint_stock = \
+            self._get_operator_good_delivery_detail()
+        url_kwargs = dict(campaign_id=campaign_booking.campaign.slug,
+                          delivery_point_id=good_devpoint_stock.delivery_point.pk,
+                          good_delivery_id=campaign_booking.pk)
+        url = reverse('good_delivery:operator_good_delivery_delete',
+                      kwargs=url_kwargs)
 
-        # req = self.client.get(url, follow=True)
-        # assert not GoodDelivery.objects.filter(pk=campaign_booking.pk)
-        # assert b'consegna eliminata' in req.content
+        req = self.client.get(url, follow=True)
+        assert GoodDelivery.objects.filter(pk=campaign_booking.pk)
+        assert b'Eliminazione non consentita' in req.content
 
-        # url = reverse('good_delivery:operator_good_delivery_send_token',
-                      # kwargs=url_kwargs)
-        # req = self.client.get(url, follow=True)
-        # assert req.status_code == 404
+        url = reverse('good_delivery:operator_good_delivery_send_token',
+                      kwargs=url_kwargs)
+        req = self.client.get(url, follow=True)
+        assert 'La consegna non può più subire modifiche' in req.content.decode()
 
 
     # def test_op_delivery_preload(self):
