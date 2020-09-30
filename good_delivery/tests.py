@@ -219,18 +219,18 @@ class GoodDeliveryTest(TestCase):
         assert b'Campagna non in corso' in req.content
 
 
-    # def test_op_delivery_not_waiting(self):
-        # url, campaign_booking, good_devpoint_stock = \
-            # self._get_operator_good_delivery_detail()
+    def test_op_delivery_not_waiting(self):
+        url, campaign_booking, good_devpoint_stock = \
+            self._get_operator_good_delivery_detail()
 
-        # req = self.client.get(url)
-        # csrf_data = self._get_csrfmiddlewaretoken(req.context)
+        req = self.client.get(url, follow=True)
+        csrf_data = self._get_csrfmiddlewaretoken(req.context)
 
-        # campaign_booking.disabled_date = timezone.localtime()
-        # campaign_booking.save()
-        # assert not campaign_booking.is_waiting()
-        # req = self.client.post(url, data=csrf_data, follow=True)
-        # assert b'La consegna non' in req.content
+        campaign_booking.disabled_date = timezone.localtime()
+        campaign_booking.save()
+        assert not campaign_booking.is_waiting()
+        req = self.client.post(url, data=csrf_data, follow=True)
+        assert b'La consegna non' in req.content
 
 
     # def test_op_delivery_disable(self):

@@ -293,9 +293,12 @@ def operator_good_delivery_add_items(request, campaign_id, delivery_point_id,
 
     :return: redirect
     """
+    if not good_delivery.is_waiting():
+            messages.add_message(request, messages.ERROR,
+                                 _("La consegna non può più subire modifiche"))
     # actual good delivery items
     good_delivery_items = GoodDeliveryItem.objects.filter(good_delivery=good_delivery)
-
+    
     # if there are items, then redirect to good delivery detail page
     if good_delivery_items:
         return redirect('good_delivery:operator_good_delivery_detail',
@@ -458,7 +461,6 @@ def operator_good_delivery_detail(request, campaign_id, delivery_point_id,
             prefix_index+=1
     logs = LogEntry.objects.filter(content_type_id=ContentType.objects.get_for_model(good_delivery).pk,
                                    object_id=good_delivery.pk)
-
     if request.POST:
         if good_delivery.delivery_point != delivery_point:
             messages.add_message(request, messages.ERROR,
