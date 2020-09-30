@@ -189,8 +189,7 @@ class DeliveryPointGoodStockIdentifier(TimeStampedModel):
         verbose_name_plural = _('Identificativi beni in stock')
 
     def __str__(self):
-        return '{} - {}'.format(self.delivery_point_stock,
-                                self.good_identifier)
+        return self.good_identifier
 
 
 class GoodDelivery(TimeStampedModel):
