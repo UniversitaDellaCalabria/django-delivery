@@ -93,7 +93,7 @@ def operator_active_campaigns(request, my_delivery_points):
          'title': title,}
     if len(active_campaigns) == 1:
         return redirect(reverse('good_delivery:operator_campaign_detail',
-                                args=[active_campaigns[0].slug]))
+                                kwargs=dict(campaign_id=active_campaigns[0].slug)))
     else:
         return render(request, template, d)
 

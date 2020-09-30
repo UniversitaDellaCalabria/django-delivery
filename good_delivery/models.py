@@ -45,6 +45,7 @@ class DeliveryCampaign(TimeStampedModel):
                             unique=True)
     slug = models.SlugField(max_length=255,
                             blank=False, null=False, unique=True,
+                            default=name,
                             validators=[
                                 RegexValidator(
                                     regex='^(?=.*[a-zA-Z])',
