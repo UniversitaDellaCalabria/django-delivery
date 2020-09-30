@@ -1,6 +1,7 @@
 import json
 import logging
 
+from django.conf import settings
 from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
@@ -14,6 +15,7 @@ from . decorators import *
 from . forms import *
 from . jwts import *
 from . models import *
+from . settings import *
 from . utils import *
 
 
@@ -57,7 +59,7 @@ def _generate_good_delivery_token_email(request, good_delivery, msg=''):
 @login_required
 def user_index(request):
     """
-    User index page
+    User - Index page
 
     return: render
     """
@@ -74,13 +76,13 @@ def user_index(request):
 @is_operator
 def operator_active_campaigns(request, my_delivery_points):
     """
-    Operator index page with active campaigns
+    Operator - Index page with active campaigns
 
     :type my_delivery_points: list/queryset of DeliveryPoint (from @is_operator)
 
     :param my_delivery_points: delivery points managed (from @is_operator)
 
-    :return: render
+    :return: render/redirect
     """
     title =_("Campagne attive")
     template = "operator_active_campaigns.html"
@@ -101,13 +103,13 @@ def operator_active_campaigns(request, my_delivery_points):
 @is_campaign_operator
 def operator_campaign_detail(request, campaign_id, campaign, delivery_points):
     """
-    Operator page with campaign details
+    Operator - Page with campaign details
 
-    :type campaign_id: Integer
+    :type campaign_id: String
     :type campaign: Campaign (from @campaign_is_active)
     :type delivery_points: list/queryset of DeliveryPoint (from @is_campaign_operator)
 
-    :param campaign_id: campaign id
+    :param campaign_id: campaign slug
     :param campaign: Campaign object (from @campaign_is_active)
     :param delivery_points: delivery points managed (from @is_campaign_operator)
 
@@ -121,7 +123,6 @@ def operator_campaign_detail(request, campaign_id, campaign, delivery_points):
     template = "operator_campaign_detail.html"
     d = {'campaign': campaign,
          'delivery_points': delivery_points,
-         'is_operator': True,
          'sub_title': campaign,
          'title': title,}
 
@@ -133,14 +134,29 @@ def operator_campaign_detail(request, campaign_id, campaign, delivery_points):
 @is_delivery_point_operator
 def operator_delivery_point_detail(request, campaign_id, delivery_point_id,
                                    campaign, delivery_point, multi_tenant):
+    """
+    Operator - Page with delivery point deliveries
+
+    :type campaign_id: String
+    :type delivery_point_id: Int
+    :type campaign: Campaign (from @campaign_is_active)
+    :type delievery_point: DeliveryPoint (from @is_delivery_point_operator)
+    :type multi_tenant: Boolean (from @is_delivery_point_operator)
+
+    :param campaign_id: campaign slug
+    :param delivery_point_id: delivery point id
+    :param campaign: Campaign object (from @campaign_is_active)
+    :param delievery_point: DeliveryPoint object (from @is_delivery_point_operator)
+    :param multi_tenant: if operator is multi_tenant (from @is_delivery_point_operator)
+
+    :return: render
+    """
     title = _("Prenotazioni da gestire")
-    sub_title = delivery_point
     template = "operator_delivery_point_detail.html"
     d = {'campaign': campaign,
          'delivery_point': delivery_point,
-         'is_operator': True,
          'multi_tenant': multi_tenant,
-         'sub_title': sub_title,
+         'sub_title': delivery_point,
          'title': title,}
 
     return render(request, template, d)
@@ -152,6 +168,23 @@ def operator_delivery_point_detail(request, campaign_id, delivery_point_id,
 @is_delivery_point_operator
 def operator_new_delivery(request, campaign_id, delivery_point_id,
                           campaign, delivery_point, multi_tenant):
+    """
+    Operator - Create new good delivery if campaign allows it
+
+    :type campaign_id: String
+    :type delivery_point_id: Int
+    :type campaign: Campaign (from @campaign_is_active)
+    :type delievery_point: DeliveryPoint (from @is_delivery_point_operator)
+    :type multi_tenant: Boolean (from @is_delivery_point_operator)
+
+    :param campaign_id: campaign slug
+    :param delivery_point_id: delivery point id
+    :param campaign: Campaign object (from @campaign_is_active)
+    :param delievery_point: DeliveryPoint object (from @is_delivery_point_operator)
+    :param multi_tenant: if operator is multi_tenant (from @is_delivery_point_operator)
+
+    :return: render
+    """
     template = "operator_new_delivery.html"
     form = GoodDeliveryPreloadForm()
 
@@ -164,7 +197,7 @@ def operator_new_delivery(request, campaign_id, delivery_point_id,
                                          choosen_delivery_point=delivery_point)
             good_delivery.save()
             messages.add_message(request, messages.SUCCESS,
-                     _("{} inserito con successo.").format(user))
+                                 _("{} inserito con successo.").format(user))
             return redirect('good_delivery:operator_good_delivery_detail',
                             campaign_id=campaign_id,
                             delivery_point_id=delivery_point_id,
@@ -173,7 +206,6 @@ def operator_new_delivery(request, campaign_id, delivery_point_id,
     title = _("Nuova consegna (seleziona prodotto)")
     d = {'campaign': campaign,
          'form': form,
-         'is_operator': True,
          'sub_title': campaign,
          'title': title}
 
@@ -188,10 +220,32 @@ def operator_new_delivery(request, campaign_id, delivery_point_id,
 def operator_another_delivery(request, campaign_id, delivery_point_id,
                               good_delivery_id, campaign, delivery_point,
                               multi_tenant, good_delivery):
+    """
+    Operator - Create new good delivery from one disabled
+    (if campaign allows it)
+
+    :type campaign_id: String
+    :type delivery_point_id: Int
+    :type good_delivery_id: Int
+    :type campaign: Campaign (from @campaign_is_active)
+    :type delievery_point: DeliveryPoint (from @is_delivery_point_operator)
+    :type multi_tenant: Boolean (from @is_delivery_point_operator)
+    :type good_delivery: GoodDelivery (from @can_manage_good_delivery)
+
+    :param campaign_id: campaign slug
+    :param delivery_point_id: delivery point id
+    :param good_delivery_id: disabled good delivery starting from
+    :param campaign: Campaign object (from @campaign_is_active)
+    :param delievery_point: DeliveryPoint object (from @is_delivery_point_operator)
+    :param multi_tenant: if operator is multi_tenant (from @is_delivery_point_operator)
+    :param good_delivery: disabled GoodDelivery object (from @can_manage_good_delivery)
+
+    :return: redirect
+    """
     template = "operator_new_delivery.html"
 
-    # other deliveries not disabled for the user, in this campaign?
-    # create gte old_delivery.create
+    # other deliveries not disabled for the user in this campaign
+    # after starting good_delivery?
     other_deliveries = GoodDelivery.objects.filter(create__gte=good_delivery.create,
                                                    delivery_point__campaign=campaign,
                                                    delivered_to=good_delivery.delivered_to,
@@ -215,76 +269,176 @@ def operator_another_delivery(request, campaign_id, delivery_point_id,
 @campaign_is_in_progress
 @is_delivery_point_operator
 @can_manage_good_delivery
+def operator_good_delivery_add_items(request, campaign_id, delivery_point_id,
+                                     good_delivery_id, campaign, delivery_point,
+                                     multi_tenant, good_delivery):
+    """
+    Operator - If good delivery cart is empty, add single good items
+
+    :type campaign_id: String
+    :type delivery_point_id: Int
+    :type good_delivery_id: Int
+    :type campaign: Campaign (from @campaign_is_active)
+    :type delievery_point: DeliveryPoint (from @is_delivery_point_operator)
+    :type multi_tenant: Boolean (from @is_delivery_point_operator)
+    :type good_delivery: GoodDelivery (from @can_manage_good_delivery)
+
+    :param campaign_id: campaign slug
+    :param delivery_point_id: delivery point id
+    :param good_delivery_id: good delivery id
+    :param campaign: Campaign object (from @campaign_is_active)
+    :param delievery_point: DeliveryPoint object (from @is_delivery_point_operator)
+    :param multi_tenant: if operator is multi_tenant (from @is_delivery_point_operator)
+    :param good_delivery: GoodDelivery object (from @can_manage_good_delivery)
+
+    :return: redirect
+    """
+    # actual good delivery items
+    good_delivery_items = GoodDeliveryItem.objects.filter(good_delivery=good_delivery)
+
+    # if there are items, then redirect to good delivery detail page
+    if good_delivery_items:
+        return redirect('good_delivery:operator_good_delivery_detail',
+                        campaign_id=campaign_id,
+                        delivery_point_id=delivery_point_id,
+                        good_delivery_id=good_delivery_id)
+
+    # else add single items to good_delivery
+
+    # get delivery point good stocks
+    stocks = DeliveryPointGoodStock.objects.filter(delivery_point=delivery_point)
+
+    if request.POST:
+        post_dict = dict(request.POST.items())
+
+        # pop not related to stocks POST values
+        post_dict.pop('csrfmiddlewaretoken')
+        notes = post_dict.pop('notes')
+
+        # identity document required?
+        require_identity_document = getattr(settings,
+                                            "REQUIRE_IDENTITY_DOCUMENT",
+                                            REQUIRE_IDENTITY_DOCUMENT)
+        if require_identity_document:
+            document_type = post_dict.pop('document_type')
+            document_number = post_dict.pop('document_number')
+
+        # for every stock, get quantity of items to add
+        for k,v in post_dict.items():
+
+            # validate stock quantity fields
+            try:
+                v = int(v)
+            except:
+                messages.add_message(request, messages.ERROR,
+                                     _("Inserisci quantità reali"))
+                return redirect('good_delivery:operator_good_delivery_add_items',
+                                campaign_id=campaign_id,
+                                delivery_point_id=delivery_point_id,
+                                good_delivery_id=good_delivery.pk)
+
+            # get single stock
+            stock = stocks.get(pk=k)
+            # check availability
+            available_items = stock.get_available_items()
+            # if choosen quantity exceeds stock availability
+            if type(available_items)==int and int(v)>available_items:
+                messages.add_message(request, messages.ERROR,
+                                     _("La quantità residua nello "
+                                       "stock <b>{}</b> è di "
+                                       "<b>{}</b> unità").format(stock,
+                                                                 available_items))
+            # else
+            else:
+                # if stock provides a list of identification codes
+                # then quantity must be 1 for each item
+                # and user has to select an ID number for every one
+                dpgsi = DeliveryPointGoodStockIdentifier
+                has_identifier = dpgsi.objects.filter(delivery_point_stock=stock).first()
+                if has_identifier:
+                    i = 1
+                    while i<=int(v):
+                        good_delivery_item = GoodDeliveryItem(good_delivery=good_delivery,
+                                                              quantity=1,
+                                                              good=stock.good)
+                        good_delivery_item.save()
+                        i+=1
+                # else (e.g. glasses of water, bananas...)
+                # quantity is choosen by user
+                else:
+                    good_delivery_item = GoodDeliveryItem(good_delivery=good_delivery,
+                                                          quantity=v,
+                                                          good=stock.good)
+                    good_delivery_item.save()
+
+                # set operator data in good delivery
+                good_delivery.delivery_point = delivery_point
+                good_delivery.delivered_by = request.user
+                if require_identity_document:
+                    good_delivery.document_type = document_type
+                    good_delivery.document_number = document_number
+                good_delivery.notes = notes
+                good_delivery.save()
+
+        return redirect('good_delivery:operator_good_delivery_detail',
+                        campaign_id=campaign_id,
+                        delivery_point_id=delivery_point_id,
+                        good_delivery_id=good_delivery_id)
+
+    template = "operator_good_delivery_preload.html"
+    d = {'campaign': campaign,
+         'delivery_point': delivery_point,
+         'good_delivery': good_delivery,
+         'stocks': stocks,
+         'sub_title': delivery_point,
+         'title': "titolo",}
+    return render(request, template, d)
+
+@login_required
+@campaign_is_active
+@campaign_is_in_progress
+@is_delivery_point_operator
+@can_manage_good_delivery
 def operator_good_delivery_detail(request, campaign_id, delivery_point_id,
                                   good_delivery_id, campaign, delivery_point,
                                   multi_tenant, good_delivery):
-    # add single items to good_delivery
+    """
+    Operator - Good delivery detail page
+    (select items unique identifier, edit and change state)
+
+    :type campaign_id: String
+    :type delivery_point_id: Int
+    :type good_delivery_id: Int
+    :type campaign: Campaign (from @campaign_is_active)
+    :type delievery_point: DeliveryPoint (from @is_delivery_point_operator)
+    :type multi_tenant: Boolean (from @is_delivery_point_operator)
+    :type good_delivery: GoodDelivery (from @can_manage_good_delivery)
+
+    :param campaign_id: campaign slug
+    :param delivery_point_id: delivery point id
+    :param good_delivery_id: good delivery id
+    :param campaign: Campaign object (from @campaign_is_active)
+    :param delievery_point: DeliveryPoint object (from @is_delivery_point_operator)
+    :param multi_tenant: if operator is multi_tenant (from @is_delivery_point_operator)
+    :param good_delivery: GoodDelivery object (from @can_manage_good_delivery)
+
+    :return: redirect
+    """
+
+    # actual good delivery items
     good_delivery_items = GoodDeliveryItem.objects.filter(good_delivery=good_delivery)
+
     if not good_delivery_items:
-        stocks = DeliveryPointGoodStock.objects.filter(delivery_point=delivery_point)
-        if request.POST:
-            post_dict = dict(request.POST.items())
-            post_dict.pop('csrfmiddlewaretoken')
-            document_type = post_dict.pop('document_type')
-            document_number = post_dict.pop('document_number')
-            notes = post_dict.pop('notes')
-            for k,v in post_dict.items():
-                stock = stocks.get(pk=k)
-                # check availability
-                available_items = stock.get_available_items()
-                if type(available_items)==int and int(v)>available_items:
-                    messages.add_message(request, messages.ERROR,
-                                         _("La quantità residua nello "
-                                           "stock <b>{}</b> è di "
-                                           "<b>{}</b> unità").format(stock,
-                                                                     available_items))
-                else:
-                    has_identifier = DeliveryPointGoodStockIdentifier.objects.filter(delivery_point_stock=stock).first()
-                    # if stock provides a list of identification codes
-                    # then quantity must be 1 for each item
-                    # and user has to select an ID number for every one
-                    if has_identifier:
-                        i = 1
-                        while i<=int(v):
-                            good_delivery_item = GoodDeliveryItem(good_delivery=good_delivery,
-                                                                  quantity=1,
-                                                                  good=stock.good)
-                            good_delivery_item.save()
-                            i+=1
-                    # else (e.g. glasses of water, bananas...)
-                    # quantity is choosen by user
-                    else:
-                        good_delivery_item = GoodDeliveryItem(good_delivery=good_delivery,
-                                                              quantity=v,
-                                                              good=stock.good)
-                        good_delivery_item.save()
-                    # set operator data in good delivery
-                    good_delivery.delivery_point = delivery_point
-                    good_delivery.delivered_by = request.user
-                    good_delivery.document_type = document_type
-                    good_delivery.document_number = document_number
-                    good_delivery.notes = notes
-                    good_delivery.save()
-            return redirect('good_delivery:operator_good_delivery_detail',
-                            campaign_id=campaign_id,
-                            delivery_point_id=delivery_point_id,
-                            good_delivery_id=good_delivery_id)
-
-        template = "operator_good_delivery_preload.html"
-        d = {'campaign': campaign,
-             'delivery_point': delivery_point,
-             'good_delivery': good_delivery,
-             'is_operator': True,
-             'stocks': stocks,
-             'sub_title': delivery_point,
-             'title': "titolo",}
-        return render(request, template, d)
-
-    # end add single items to good_delivery
+        return redirect('good_delivery:operator_good_delivery_add_items',
+                        campaign_id=campaign_id,
+                        delivery_point_id=delivery_point_id,
+                        good_delivery_id=good_delivery_id)
 
     template = "operator_good_delivery_detail.html"
     title = good_delivery
-
+    form_prefix = getattr(settings,
+                          "GOOD_DELIVERY_ITEMS_FORMS_PREFIX",
+                          GOOD_DELIVERY_ITEMS_FORMS_PREFIX)
     # build one form for each single item (with ID code)
     good_forms = []
     goods_without_id = []
@@ -296,7 +450,8 @@ def operator_good_delivery_detail(request, campaign_id, delivery_point_id,
         if has_identifier:
             form = GoodDeliveryItemForm(instance=item,
                                         stock=stock,
-                                        prefix="form{}".format(prefix_index))
+                                        prefix="{}{}".format(form_prefix,
+                                                             prefix_index))
             good_forms.append(form)
             prefix_index+=1
         else:
@@ -310,15 +465,16 @@ def operator_good_delivery_detail(request, campaign_id, delivery_point_id,
                                  _("Il punto di consegna attuale non "
                                    "è quello abilitato a completare la consegna"))
             return redirect('good_delivery:operator_good_delivery_detail',
-                                campaign_id=campaign_id,
-                                delivery_point_id=delivery_point_id,
-                                good_delivery_id=good_delivery_id)
+                            campaign_id=campaign_id,
+                            delivery_point_id=delivery_point_id,
+                            good_delivery_id=good_delivery_id)
         if not good_delivery.is_waiting():
             messages.add_message(request, messages.ERROR,
                              _("La consegna non può più subire modifiche"))
             return redirect('good_delivery:operator_good_delivery_detail',
                             campaign_id=campaign_id,
-                            delivery_id=good_delivery.pk)
+                            delivery_point_id=delivery_point_id,
+                            good_delivery_id=good_delivery_id)
         prefix_index = 1
         filled_forms = []
         for f in good_forms:
@@ -327,7 +483,8 @@ def operator_good_delivery_detail(request, campaign_id, delivery_point_id,
             form = GoodDeliveryItemForm(instance=f.instance,
                                         data=request.POST,
                                         stock=stock,
-                                        prefix="form{}".format(prefix_index))
+                                        prefix="{}{}".format(form_prefix,
+                                                             prefix_index))
             filled_forms.append(form)
             prefix_index+=1
         good_forms = filled_forms
@@ -363,7 +520,6 @@ def operator_good_delivery_detail(request, campaign_id, delivery_point_id,
          'good_delivery': good_delivery,
          'good_forms': good_forms,
          'goods_without_id': goods_without_id,
-         'is_operator': True,
          'logs': logs,
          'sub_title': delivery_point,
          'title': title,}
@@ -377,6 +533,28 @@ def operator_good_delivery_detail(request, campaign_id, delivery_point_id,
 def operator_good_delivery_deliver(request, campaign_id, delivery_point_id,
                                    good_delivery_id, campaign, delivery_point,
                                    multi_tenant, good_delivery):
+    """
+    Operator - Mark a good delivery as delivered
+    (user token confirmation isn't needed)
+
+    :type campaign_id: String
+    :type delivery_point_id: Int
+    :type good_delivery_id: Int
+    :type campaign: Campaign (from @campaign_is_active)
+    :type delievery_point: DeliveryPoint (from @is_delivery_point_operator)
+    :type multi_tenant: Boolean (from @is_delivery_point_operator)
+    :type good_delivery: GoodDelivery (from @can_manage_good_delivery)
+
+    :param campaign_id: campaign slug
+    :param delivery_point_id: delivery point id
+    :param good_delivery_id: good delivery id
+    :param campaign: Campaign object (from @campaign_is_active)
+    :param delievery_point: DeliveryPoint object (from @is_delivery_point_operator)
+    :param multi_tenant: if operator is multi_tenant (from @is_delivery_point_operator)
+    :param good_delivery: GoodDelivery object (from @can_manage_good_delivery)
+
+    :return: redirect
+    """
     if campaign.require_agreement:
         messages.add_message(request, messages.ERROR,
                              _("Agreement richiesto. Impossibie consegnare"))
@@ -405,10 +583,29 @@ def operator_good_delivery_deliver(request, campaign_id, delivery_point_id,
 @campaign_is_active
 @campaign_is_in_progress
 @is_delivery_point_operator
-# @can_manage_good_delivery
 def operator_good_delivery_reset(request, campaign_id, delivery_point_id,
                                  good_delivery_id, campaign, delivery_point,
                                  multi_tenant):
+    """
+    Operator - Good delivery reset preloaded items stock quantity
+    (only in the same delivery point!)
+
+    :type campaign_id: String
+    :type delivery_point_id: Int
+    :type good_delivery_id: Int
+    :type campaign: Campaign (from @campaign_is_active)
+    :type delievery_point: DeliveryPoint (from @is_delivery_point_operator)
+    :type multi_tenant: Boolean (from @is_delivery_point_operator)
+
+    :param campaign_id: campaign slug
+    :param delivery_point_id: delivery point id
+    :param good_delivery_id: good delivery id
+    :param campaign: Campaign object (from @campaign_is_active)
+    :param delievery_point: DeliveryPoint object (from @is_delivery_point_operator)
+    :param multi_tenant: if operator is multi_tenant (from @is_delivery_point_operator)
+
+    :return: redirect
+    """
     good_delivery = get_object_or_404(GoodDelivery,
                                       pk=good_delivery_id,
                                       delivery_point=delivery_point)
@@ -441,6 +638,28 @@ def operator_good_delivery_reset(request, campaign_id, delivery_point_id,
 def operator_good_delivery_disable(request, campaign_id, delivery_point_id,
                                    good_delivery_id, campaign, delivery_point,
                                    multi_tenant, good_delivery):
+    """
+    Operator - Disable a good delivery
+    (select items unique identifier, edit and change state)
+
+    :type campaign_id: String
+    :type delivery_point_id: Int
+    :type good_delivery_id: Int
+    :type campaign: Campaign (from @campaign_is_active)
+    :type delievery_point: DeliveryPoint (from @is_delivery_point_operator)
+    :type multi_tenant: Boolean (from @is_delivery_point_operator)
+    :type good_delivery: GoodDelivery (from @can_manage_good_delivery)
+
+    :param campaign_id: campaign slug
+    :param delivery_point_id: delivery point id
+    :param good_delivery_id: good delivery id
+    :param campaign: Campaign object (from @campaign_is_active)
+    :param delievery_point: DeliveryPoint object (from @is_delivery_point_operator)
+    :param multi_tenant: if operator is multi_tenant (from @is_delivery_point_operator)
+    :param good_delivery: GoodDelivery object (from @can_manage_good_delivery)
+
+    :return: redirect
+    """
     if good_delivery.disabled_date:
         messages.add_message(request, messages.ERROR,
                              _("Consegna già disabilitata"))
@@ -465,10 +684,32 @@ def operator_good_delivery_disable(request, campaign_id, delivery_point_id,
 @campaign_is_active
 @campaign_is_in_progress
 @is_delivery_point_operator
-@can_manage_good_delivery
 def operator_good_delivery_delete(request, campaign_id, delivery_point_id,
                                   good_delivery_id, campaign, delivery_point,
-                                  multi_tenant, good_delivery):
+                                  multi_tenant):
+    """
+    Operator - Delete a Good delivery
+    ((only in the same delivery point!))
+
+    :type campaign_id: String
+    :type delivery_point_id: Int
+    :type good_delivery_id: Int
+    :type campaign: Campaign (from @campaign_is_active)
+    :type delievery_point: DeliveryPoint (from @is_delivery_point_operator)
+    :type multi_tenant: Boolean (from @is_delivery_point_operator)
+
+    :param campaign_id: campaign slug
+    :param delivery_point_id: delivery point id
+    :param good_delivery_id: good delivery id
+    :param campaign: Campaign object (from @campaign_is_active)
+    :param delievery_point: DeliveryPoint object (from @is_delivery_point_operator)
+    :param multi_tenant: if operator is multi_tenant (from @is_delivery_point_operator)
+
+    :return: redirect
+    """
+    good_delivery = get_object_or_404(GoodDelivery,
+                                      pk=good_delivery_id,
+                                      delivery_point=delivery_point)
     if good_delivery.is_waiting():
         good_delivery.delete()
         messages.add_message(request, messages.SUCCESS,
@@ -481,6 +722,11 @@ def operator_good_delivery_delete(request, campaign_id, delivery_point_id,
 
 @login_required
 def user_use_token(request):
+    """
+    User - Confirm a good delivery by using URL token
+
+    :return: message
+    """
     title =_("Accettazione condizioni")
     try:
         msg = ''
@@ -502,8 +748,6 @@ def user_use_token(request):
             msg = _("Campagna non attiva")
         elif good_delivery.disabled_date:
             msg = _("Consegna disabilitata. Impossibile completare l'operazione")
-        # elif good_delivery.return_date:
-            # msg = _("Prodotto restituito")
         elif not good_delivery.delivered_by:
             msg = _("Consegna non completata dall'operatore")
         elif good_delivery.delivery_date:
@@ -530,6 +774,26 @@ def user_use_token(request):
 def operator_good_delivery_send_token(request, campaign_id, delivery_point_id,
                                       good_delivery_id, multi_tenant,
                                       campaign, delivery_point):
+    """
+    Operator - Send URL token to user to confirmate delivery
+    (only in the same delivery point!)
+
+    :type campaign_id: String
+    :type delivery_point_id: Int
+    :type good_delivery_id: Int
+    :type campaign: Campaign (from @campaign_is_active)
+    :type delievery_point: DeliveryPoint (from @is_delivery_point_operator)
+    :type multi_tenant: Boolean (from @is_delivery_point_operator)
+
+    :param campaign_id: campaign slug
+    :param delivery_point_id: delivery point id
+    :param good_delivery_id: good delivery id
+    :param campaign: Campaign object (from @campaign_is_active)
+    :param delievery_point: DeliveryPoint object (from @is_delivery_point_operator)
+    :param multi_tenant: if operator is multi_tenant (from @is_delivery_point_operator)
+
+    :return: redirect
+    """
     good_delivery = get_object_or_404(GoodDelivery,
                                       delivery_point=delivery_point,
                                       pk=good_delivery_id)
@@ -554,6 +818,27 @@ def operator_good_delivery_item_return(request, campaign_id, delivery_point_id,
                                   good_delivery_id, good_delivery_item_id,
                                   campaign, delivery_point,
                                   multi_tenant, good_delivery):
+    """
+    Operator - Return single items
+
+    :type campaign_id: String
+    :type delivery_point_id: Int
+    :type good_delivery_id: Int
+    :type campaign: Campaign (from @campaign_is_active)
+    :type delievery_point: DeliveryPoint (from @is_delivery_point_operator)
+    :type multi_tenant: Boolean (from @is_delivery_point_operator)
+    :type good_delivery: GoodDelivery (from @can_manage_good_delivery)
+
+    :param campaign_id: campaign slug
+    :param delivery_point_id: delivery point id
+    :param good_delivery_id: good delivery id
+    :param campaign: Campaign object (from @campaign_is_active)
+    :param delievery_point: DeliveryPoint object (from @is_delivery_point_operator)
+    :param multi_tenant: if operator is multi_tenant (from @is_delivery_point_operator)
+    :param good_delivery: GoodDelivery object (from @can_manage_good_delivery)
+
+    :return: redirect
+    """
     if not good_delivery.delivery_date:
         messages.add_message(request, messages.ERROR,
                              _("Consegna non ancora effettuata"))

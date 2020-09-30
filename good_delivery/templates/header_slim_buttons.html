@@ -6,7 +6,7 @@
         <div class="it-access-top-wrapper">
             <button class="btn btn-primary btn-sm" href="#" type="button">
                 {% trans "Ruolo" %}:
-                {% if is_operator %}
+                {% if campaign or is_operator %}
                     {% trans "Operatore" %}
                 {% else %}
                     {% trans "Utente" %}

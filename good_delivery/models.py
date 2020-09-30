@@ -199,8 +199,7 @@ class GoodDelivery(TimeStampedModel):
     """
     # autofilled from delivery_point on save()
     campaign = models.ForeignKey(DeliveryCampaign,
-                                 on_delete=models.CASCADE,
-                                 blank=True, null=True)
+                                 on_delete=models.CASCADE)
     choosen_delivery_point = models.ForeignKey(DeliveryPoint,
                                                on_delete=models.PROTECT,
                                                related_name="choosen_delivered_point")

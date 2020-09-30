@@ -228,8 +228,6 @@
             {% for good_form in good_forms %}
                 <div class="pb-4">
                     <h4>{{ good_form.instance }}</h4>
-                    {{ good_form.as_p }}
-
                     {% if good_form.instance.return_date %}
                     <span class="badge badge-warning mb-2">
                         {% trans "Restituito" %}
@@ -238,7 +236,10 @@
                         -
                         {{ good_form.instance.returned_to }}
                     </span>
-                    {% elif good_form.instance.can_be_returned %}
+                    {% endif %}
+                    {{ good_form.as_p }}
+
+                    {% if good_form.instance.can_be_returned %}
                     <button type="button"
                        class="btn btn-outline-warning btn-block"
                        data-toggle="modal"

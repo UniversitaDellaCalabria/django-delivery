@@ -1,6 +1,7 @@
 from django.utils.translation import gettext_lazy as _
 
 
+GOOD_DELIVERY_ITEMS_FORMS_PREFIX = "form"
 REQUIRE_IDENTITY_DOCUMENT = True
 
 

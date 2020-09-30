@@ -26,6 +26,7 @@ urlpatterns = [
     path(f'{op_prefix_camp}/<str:campaign_id>/<int:delivery_point_id>/<int:good_delivery_id>/another/', operator_another_delivery, name='operator_another_delivery'),
 
     path(f'{op_prefix_camp}/<str:campaign_id>/<int:delivery_point_id>/<int:good_delivery_id>/', operator_good_delivery_detail, name='operator_good_delivery_detail'),
+    path(f'{op_prefix_camp}/<str:campaign_id>/<int:delivery_point_id>/<int:good_delivery_id>/add-items/', operator_good_delivery_add_items, name='operator_good_delivery_add_items'),
     path(f'{op_prefix_camp}/<str:campaign_id>/<int:delivery_point_id>/<int:good_delivery_id>/deliver/', operator_good_delivery_deliver, name='operator_good_delivery_deliver'),
     path(f'{op_prefix_camp}/<str:campaign_id>/<int:delivery_point_id>/<int:good_delivery_id>/reset/', operator_good_delivery_reset, name='operator_good_delivery_reset'),
     path(f'{op_prefix_camp}/<str:campaign_id>/<int:delivery_point_id>/<int:good_delivery_id>/disable/', operator_good_delivery_disable, name='operator_good_delivery_disable'),

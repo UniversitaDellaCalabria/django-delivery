@@ -38,7 +38,7 @@
             <input type="number"
                    name="{{ stock.pk }}"
                    value="1"
-                   required=""
+                   required
                    id="{{ stock.pk }}">
             <small class="form-text text-muted">
                 Il campo Oggetto è impostato con la denominazione
@@ -48,6 +48,8 @@
 
         <hr>
 
+        {% settings_value "REQUIRE_IDENTITY_DOCUMENT" as require_identity_document %}
+        {% if require_identity_document %}
         <h4 class="pb-4">{% trans "Documento d'identità" %}</h4>
         <div style="padding: 0 0 1rem">
             <b>
@@ -70,7 +72,7 @@
                    name="document_number"
                    id="id_document_number">
         </div>
-
+        {% endif %}
         <div style="padding: 0 0 1rem">
             <b>
                 <label for="notes">
