@@ -233,24 +233,25 @@ class GoodDeliveryTest(TestCase):
         assert b'La consegna non' in req.content
 
 
-    # def test_op_delivery_disable(self):
-        # _, campaign_booking, good_devpoint_stock = \
-            # self._get_operator_good_delivery_detail()
-        # url_kwargs = dict(campaign_id=campaign_booking.campaign.slug,
-                          # good_delivery_id=campaign_booking.pk)
-        # url = reverse('good_delivery:operator_good_delivery_disable',
-                      # kwargs=url_kwargs)
+    def test_op_delivery_disable(self):
+        _, campaign_booking, good_devpoint_stock = \
+            self._get_operator_good_delivery_detail()
+        url_kwargs = dict(campaign_id=campaign_booking.campaign.slug,
+                          delivery_point_id=good_devpoint_stock.delivery_point.pk,
+                          good_delivery_id=campaign_booking.pk)
+        url = reverse('good_delivery:operator_good_delivery_disable',
+                      kwargs=url_kwargs)
 
-        # req = self.client.get(url, follow=True)
-        # gd = GoodDelivery.objects.get(pk=campaign_booking.pk)
-        # assert gd.disabled_date
-        # assert gd.state == 'disabilitata'
-        # assert b'Disabilitazione completata' in req.content
+        req = self.client.get(url, follow=True)
+        gd = GoodDelivery.objects.get(pk=campaign_booking.pk)
+        assert gd.disabled_date
+        assert gd.state == 'disabilitata'
+        assert b'Disabilitazione completata' in req.content
 
-        # url = reverse('good_delivery:operator_good_delivery_send_token',
-                      # kwargs=url_kwargs)
-        # req = self.client.get(url, follow=True)
-        # assert b'Consegna bloccata' in req.content
+        url = reverse('good_delivery:operator_good_delivery_send_token',
+                      kwargs=url_kwargs)
+        req = self.client.get(url, follow=True)
+        assert b'Consegna bloccata' in req.content
 
 
     # def test_op_delivery_delete(self):
