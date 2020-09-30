@@ -300,17 +300,17 @@ class GoodDeliveryTest(TestCase):
         # assert b'inserito con successo' in req.content
 
 
-    # def test_good_delivery_tags(self):
-        # logger.info('test tags')
-        # logger.info(current_date())
-        # logger.info(markdown('*hello*\n- a\n- b'))
-        # logger.info(user_from_pk(1))
+    def test_good_delivery_tags(self):
+        logger.info('test tags')
+        logger.info(current_date())
+        logger.info(markdown('*hello*\n- a\n- b'))
+        logger.info(user_from_pk(1))
 
 
-    # def test_good_delivery_attachment(self):
-        # campaign_booking, good_devpoint_stock = self._campaign_gear()
-        # gda = GoodDeliveryAttachment.objects.create(good_delivery=campaign_booking)
-        # gda.get_folder()
+    def test_good_delivery_attachment(self):
+        campaign_booking, good_devpoint_stock = self._campaign_gear()
+        gda = GoodDeliveryAttachment.objects.create(good_delivery=campaign_booking)
+        gda.get_folder()
 
 
     # def test_operator_another_delivery(self):
