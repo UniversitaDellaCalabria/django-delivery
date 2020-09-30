@@ -174,7 +174,8 @@ class GoodDeliveryTest(TestCase):
                 'document_type': 'that_doc',
                 'document_id': 'CICI'}
         # TODO - how to test the Form from scratch
-        # form = GoodDeliveryItemForm(data=data, stock=good_devpoint_stock)
+        # form = GoodDeliveryItemForm(instance= , 
+                                    # stock=good_devpoint_stock)
         # assert form.is_valid()
 
         csrf_data = self._get_csrfmiddlewaretoken(req.context)
@@ -201,21 +202,21 @@ class GoodDeliveryTest(TestCase):
         assert b'In corso' in home.content
 
 
-    # def test_op_delivery_campaign_expired(self):
-        # url, campaign_booking, good_devpoint_stock = \
-            # self._get_operator_good_delivery_detail()
+    def test_op_delivery_campaign_expired(self):
+        url, campaign_booking, good_devpoint_stock = \
+            self._get_operator_good_delivery_detail()
 
-        # req = self.client.get(url)
-        # csrf_data = self._get_csrfmiddlewaretoken(req.context)
+        req = self.client.get(url, follow=True)
+        csrf_data = self._get_csrfmiddlewaretoken(req.context)
 
-        # ## test campaign not in progress
-        # campaign_booking.campaign.date_end = timezone.localtime() - \
-                                             # timezone.timedelta(days=1024)
-        # campaign_booking.campaign.save()
-        # assert not campaign_booking.campaign.is_in_progress()
+        ## test campaign not in progress
+        campaign_booking.campaign.date_end = timezone.localtime() - \
+                                             timezone.timedelta(days=1024)
+        campaign_booking.campaign.save()
+        assert not campaign_booking.campaign.is_in_progress()
 
-        # req = self.client.post(url, data=csrf_data, follow=True)
-        # assert b'Campagna non in corso' in req.content
+        req = self.client.post(url, data=csrf_data, follow=True)
+        assert b'Campagna non in corso' in req.content
 
 
     # def test_op_delivery_not_waiting(self):
