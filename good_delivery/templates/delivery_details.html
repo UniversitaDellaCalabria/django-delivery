@@ -29,6 +29,32 @@
 
 <h5 class="card-title">{{ good_delivery }}</h5>
 
+<div class="card-text">
+    <ul>
+    {% for item in good_delivery.gooddeliveryitem_set.all %}
+        <li>
+            <b>{{ item }}</b>
+            {% if item.return_date %}
+            <br>
+            <span class="badge badge-warning">
+                {% trans "Restituito" %}
+                -
+                {{ item.return_date }}
+                -
+                {{ item.returned_to }}
+            </span>
+            {% endif %}
+            <br>
+            {% if item.good_identifier %}
+                {% trans "ID" %}: {{ item.good_identifier }}
+                <br>
+            {% endif %}
+            {% trans "Quantità" %}: {{ item.quantity }}
+        </li>
+    {% endfor %}
+    </ul>
+</div>
+
 <p class="card-text">
     <b>{% trans "Data inserimento" %}:</b> {{ good_delivery.create }}
 </p>

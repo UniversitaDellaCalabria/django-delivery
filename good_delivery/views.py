@@ -441,7 +441,6 @@ def operator_good_delivery_detail(request, campaign_id, delivery_point_id,
                           GOOD_DELIVERY_ITEMS_FORMS_PREFIX)
     # build one form for each single item (with ID code)
     good_forms = []
-    goods_without_id = []
     prefix_index = 1
     for item in good_delivery_items:
         stock = DeliveryPointGoodStock.objects.filter(delivery_point=delivery_point,
@@ -454,8 +453,6 @@ def operator_good_delivery_detail(request, campaign_id, delivery_point_id,
                                                              prefix_index))
             good_forms.append(form)
             prefix_index+=1
-        else:
-            goods_without_id.append(item)
     logs = LogEntry.objects.filter(content_type_id=ContentType.objects.get_for_model(good_delivery).pk,
                                    object_id=good_delivery.pk)
 
@@ -519,7 +516,6 @@ def operator_good_delivery_detail(request, campaign_id, delivery_point_id,
          'delivery_point': delivery_point,
          'good_delivery': good_delivery,
          'good_forms': good_forms,
-         'goods_without_id': goods_without_id,
          'logs': logs,
          'sub_title': delivery_point,
          'title': title,}

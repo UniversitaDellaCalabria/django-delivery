@@ -120,10 +120,10 @@
 
 {% if good_delivery.can_be_disabled %}
 <button type="button"
-   class="btn btn-outline-secondary"
+   class="btn btn-outline-danger"
    data-toggle="modal"
    data-target="#disableDelivery">
-    <svg class="icon icon-xs icon-info">
+    <svg class="icon icon-xs icon-danger">
         <use xlink:href="{% static 'svg/sprite.svg' %}#it-ban"></use>
     </svg> {% trans "Disabilita" %}
 </button>
@@ -147,7 +147,7 @@
                 </p>
             </div>
             <div class="modal-footer">
-                <a role="button" class="btn btn-info"
+                <a role="button" class="btn btn-danger"
                    href="{% url 'good_delivery:operator_good_delivery_disable' campaign.slug delivery_point.pk good_delivery.pk %}">
                     {% trans "Si, confermo" %}
                 </a>
@@ -209,18 +209,7 @@
 {% block page_content %}
     {% include "delivery_details.html" %}
 
-    {% if goods_without_id %}
-    <hr />
-    <ul>
-    {% for good_without_id in goods_without_id %}
-    <li>
-        <b>{{ good_without_id.good }}</b>
-        <p>{% trans "Quantità" %}: {{ good_without_id.quantity }}</p>
-    </li>
-    {% endfor %}
-    </ul>
-    {% endif %}
-    {% if good_forms %}
+    {% if good_delivery.is_waiting and good_forms %}
     <hr />
     <div class="pb-4">
         <form method="post" enctype="multipart/form-data">
@@ -285,47 +274,46 @@
 
             {% endfor %}
 
-            {% if good_delivery.is_waiting %}
-                {% csrf_token %}
-                {% block form_buttons %}
-                <div>
-                    <button type="button"
-                            class="btn btn-success btn-block"
-                            data-toggle="modal"
-                            data-target="#action">
-                            <svg class="icon icon-xs icon-white">
-                                <use xlink:href="{% static 'svg/sprite.svg' %}#it-check"></use>
-                            </svg>
-                            {% trans "Modifica" %}
-                    </button>
-                    <div class="modal fade" tabindex="-1" role="dialog" id="action">
-                        <div class="modal-dialog modal-dialog-centered" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">
-                                        {% trans "Modifica consegna" %}
-                                    </h5>
-                                    <button class="close" type="button"
-                                            data-dismiss="modal" aria-label="Close">
-                                       <svg class="icon">
-                                          <use xlink:href="{% static 'svg/sprite.svg' %}#it-close"></use>
-                                       </svg>
-                                    </button>
-                                </div>
-                                <div class="modal-body">
-                                    <p>{% trans "Vuoi davvero procedere confermando i dati immessi?" %}</p>
-                                </div>
-                                <div class="modal-footer">
-                                    <input class="btn btn-success"
-                                           type="submit"
-                                           value="{% trans 'Si, procedi' %}">
-                                </div>
+
+            {% csrf_token %}
+            {% block form_buttons %}
+            <div>
+                <button type="button"
+                        class="btn btn-success btn-block"
+                        data-toggle="modal"
+                        data-target="#action">
+                        <svg class="icon icon-xs icon-white">
+                            <use xlink:href="{% static 'svg/sprite.svg' %}#it-check"></use>
+                        </svg>
+                        {% trans "Modifica" %}
+                </button>
+                <div class="modal fade" tabindex="-1" role="dialog" id="action">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">
+                                    {% trans "Modifica consegna" %}
+                                </h5>
+                                <button class="close" type="button"
+                                        data-dismiss="modal" aria-label="Close">
+                                   <svg class="icon">
+                                      <use xlink:href="{% static 'svg/sprite.svg' %}#it-close"></use>
+                                   </svg>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <p>{% trans "Vuoi davvero procedere confermando i dati immessi?" %}</p>
+                            </div>
+                            <div class="modal-footer">
+                                <input class="btn btn-success"
+                                       type="submit"
+                                       value="{% trans 'Si, procedi' %}">
                             </div>
                         </div>
                     </div>
                 </div>
-                {% endblock form_buttons %}
-            {% endif %}
+            </div>
+            {% endblock form_buttons %}
         </form>
     </div>
     {% endif %}
