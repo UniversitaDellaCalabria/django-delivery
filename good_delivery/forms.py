@@ -73,7 +73,6 @@ class GoodDeliveryItemForm(forms.ModelForm):
 
         if good_stock_identifier and good_stock_identifier.good_identifier != good_identifier:
             self.add_error('good_identifier', _("Identificatori non coincidenti"))
-
         existent_delivery = GoodDeliveryItem.objects.filter(Q(good_identifier=good_identifier) &
                                                             Q(good_identifier__isnull=False),
                                                             good=self.instance.good,

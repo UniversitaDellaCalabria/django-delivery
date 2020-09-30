@@ -11,6 +11,7 @@ from django.db.models import Q
 from django.templatetags.static import static
 from django.utils import timezone
 from django.utils.translation import gettext as _
+from django.utils.text import slugify
 
 from ckeditor.fields import RichTextField
 
@@ -45,7 +46,6 @@ class DeliveryCampaign(TimeStampedModel):
                             unique=True)
     slug = models.SlugField(max_length=255,
                             blank=False, null=False, unique=True,
-                            default=name,
                             validators=[
                                 RegexValidator(
                                     regex='^(?=.*[a-zA-Z])',
@@ -74,6 +74,10 @@ class DeliveryCampaign(TimeStampedModel):
     def is_in_progress(self):
         # return self.date_start <= timezone.localtime() and
         return self.date_end > timezone.localtime()
+
+    def save(self, *args, **kwargs):
+        self.slug = slugify(self.name)
+        super(DeliveryCampaign, self).save(*args, **kwargs)
 
     def __str__(self):
         return '{}'.format(self.name)
@@ -319,7 +323,6 @@ class GoodDelivery(TimeStampedModel):
         return '{} - {}'.format(self.campaign, self.delivered_to)
 
     # TODO save()
-
     # check relazioni user e product con DeliveryPoint
     # ----------------------------------------------
     # per verificare la consistenza dei dati e l'effettiva

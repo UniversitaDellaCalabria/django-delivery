@@ -90,6 +90,7 @@ class GoodDeliveryTest(TestCase):
         home = self.client.get(url, follow=True)
         assert b'Prenotazioni da gestire' in home.content
 
+
     def _get_csrfmiddlewaretoken(self, context):
         """
         context = self.client.get().context
@@ -97,6 +98,7 @@ class GoodDeliveryTest(TestCase):
         """
         csrfmiddlewaretoken = context.get('csrf_token').__str__()
         return {'csrfmiddlewaretoken': csrfmiddlewaretoken}
+
 
     def test_op_create_delivery(self):
         """
@@ -143,53 +145,55 @@ class GoodDeliveryTest(TestCase):
         assert b'con successo' in req.content
 
 
-    # def _get_operator_good_delivery_detail(self):
-        # self.client.force_login(self.operator)
-        # campaign_booking, good_devpoint_stock = self._campaign_gear()
-        # url_kwargs = dict(campaign_id=good_devpoint_stock.delivery_point.campaign.slug,
-                          # good_delivery_id=campaign_booking.pk)
-        # url = reverse('good_delivery:operator_good_delivery_detail',
-                       # kwargs=url_kwargs)
-        # return url, campaign_booking, good_devpoint_stock
+    def _get_operator_good_delivery_detail(self):
+        self.client.force_login(self.operator)
+        campaign_booking, good_devpoint_stock = self._campaign_gear()
+        url_kwargs = dict(campaign_id=good_devpoint_stock.delivery_point.campaign.slug,
+                          delivery_point_id=good_devpoint_stock.delivery_point.pk,
+                          good_delivery_id=campaign_booking.pk)
+        url = reverse('good_delivery:operator_good_delivery_detail',
+                       kwargs=url_kwargs)
+        return url, campaign_booking, good_devpoint_stock
 
 
-    # def test_op_update_booked_delivery(self):
-        # url, campaign_booking, good_devpoint_stock = \
-            # self._get_operator_good_delivery_detail()
-        # req = self.client.get(url, follow=True)
-        # assert req.status_code == 200
-        # assert b'Attesa ritiro' in req.content
-
-        # ## test form
-        # data = {'quantity': 1}
-        # form = GoodDeliveryForm(data=data, stock=good_devpoint_stock)
+    def test_op_update_booked_delivery(self):
+        url, campaign_booking, good_devpoint_stock = \
+            self._get_operator_good_delivery_detail()
+        req = self.client.get(url, follow=True)
+        assert req.status_code == 200
+        
+        # redirect to add-items
+        url = req.redirect_chain[0][0]
+        
+        ## test form
+        data = {'1': 1}
+        # TODO - how to test the Form from scratch
+        # form = GoodDeliveryItemForm(data=data, stock=good_devpoint_stock)
         # assert form.is_valid()
 
-        # csrf_data = self._get_csrfmiddlewaretoken(req.context)
-        # data.update(csrf_data)
-        # ## first try, failed csrf - MUST FAIL
-        # ## WARNING:django.security.csrf:Forbidden (CSRF token missing or incorrect.)
-        # req = self.client.post(url, data={})
-        # assert req.status_code == 403
+        csrf_data = self._get_csrfmiddlewaretoken(req.context)
+        data.update(csrf_data)
+        
+        req = self.client.post(url, data=data, follow=True)
+        
+        assert b'Invia link attivazione' in req.content
 
-        # req = self.client.post(url, data=data, follow=True)
-        # assert b'Modifica effettuata correttamente' in req.content
+        url_kwargs = dict(campaign_id=good_devpoint_stock.delivery_point.campaign.slug,
+                          delivery_point_id=good_devpoint_stock.delivery_point.pk,
+                          good_delivery_id=campaign_booking.pk)
+        url = reverse('good_delivery:operator_good_delivery_send_token',
+              kwargs=url_kwargs)
+        req = self.client.get(url, follow=True)
+        assert b'Link di attivazione inviato' in req.content
 
-        # url_kwargs = dict(campaign_id=good_devpoint_stock.delivery_point.campaign.slug,
-                          # good_delivery_id=campaign_booking.pk)
-        # url = reverse('good_delivery:operator_good_delivery_send_token',
-              # kwargs=url_kwargs)
-        # req = self.client.get(url, follow=True)
-        # assert b'Link di attivazione inviato' in req.content
+        gd = GoodDelivery.objects.get(pk=campaign_booking.pk)
+        assert gd.state == 'in attesa'
 
-        # gd = GoodDelivery.objects.get(pk=campaign_booking.pk)
-        # assert gd.state == 'in attesa'
-
-        # ## user access
-        # self.client.force_login(self.user)
-        # url = reverse('good_delivery:user_index')
-        # home = self.client.get(url)
-        # assert b'In corso' in home.content
+        ## user access
+        self.client.force_login(self.user)
+        url = reverse('good_delivery:user_index')
+        home = self.client.get(url)
+        assert b'In corso' in home.content
 
 
     # def test_op_delivery_campaign_expired(self):

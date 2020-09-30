@@ -313,7 +313,7 @@ def operator_good_delivery_add_items(request, campaign_id, delivery_point_id,
 
         # pop not related to stocks POST values
         post_dict.pop('csrfmiddlewaretoken')
-        notes = post_dict.pop('notes')
+        notes = post_dict.pop('notes') if post_dict.get('notes') else ''
 
         # identity document required?
         if campaign.identity_document_required:
@@ -432,7 +432,6 @@ def operator_good_delivery_detail(request, campaign_id, delivery_point_id,
 
     # actual good delivery items
     good_delivery_items = GoodDeliveryItem.objects.filter(good_delivery=good_delivery)
-
     if not good_delivery_items:
         return redirect('good_delivery:operator_good_delivery_add_items',
                         campaign_id=campaign_id,
