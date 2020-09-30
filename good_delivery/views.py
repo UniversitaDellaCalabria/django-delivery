@@ -318,9 +318,9 @@ def operator_good_delivery_add_items(request, campaign_id, delivery_point_id,
         # identity document required?
         if campaign.identity_document_required:
             document_type = post_dict.pop('document_type')
-            document_number = post_dict.pop('document_number')
+            document_id = post_dict.pop('document_id')
 
-            if not document_type or not document_number:
+            if not document_type or not document_id:
                 messages.add_message(request, messages.ERROR,
                                      _("Inserisci gli estremi del documento di identità"))
                 return redirect('good_delivery:operator_good_delivery_add_items',
@@ -380,7 +380,7 @@ def operator_good_delivery_add_items(request, campaign_id, delivery_point_id,
                 good_delivery.delivered_by = request.user
                 if campaign.identity_document_required:
                     good_delivery.document_type = document_type
-                    good_delivery.document_number = document_number
+                    good_delivery.document_number = document_id
                 good_delivery.notes = notes
                 good_delivery.save()
 
@@ -618,7 +618,7 @@ def operator_good_delivery_reset(request, campaign_id, delivery_point_id,
         good_delivery.delivered_by = None
         good_delivery.delivery_point = None
         good_delivery.document_type = None
-        good_delivery.document_number = None
+        good_delivery.document_id = None
         good_delivery.notes = None
         good_delivery.save()
         msg = _("{} reset complete").format(good_delivery)

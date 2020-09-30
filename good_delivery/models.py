@@ -232,7 +232,7 @@ class GoodDelivery(TimeStampedModel):
                                     related_name="disabled_by")
     document_type = models.CharField(max_length=255,
                                      blank=True, null=True)
-    document_number = models.CharField(max_length=255,
+    document_id = models.CharField(max_length=255,
                                        blank=True, null=True)
     notes = models.TextField(null=True, blank=True)
 

@@ -63,6 +63,7 @@ class GoodDeliveryTest(TestCase):
         data = campaign_data.copy()
         data['name'] = 'gears'
         data['operator_can_create'] = False
+        data['identity_document_required'] = True
         campaign = DeliveryCampaign.objects.create(**data)
         devpoint = DeliveryPoint.objects.create(campaign=campaign,
                                                 name='ufficio_gear')
@@ -72,6 +73,10 @@ class GoodDeliveryTest(TestCase):
         good_devpoint_stock = DeliveryPointGoodStock.objects.create(delivery_point=devpoint,
                                                               good=self.good_gear,
                                                               max_number=0)
+        good_devpoint_stock_identifier = DeliveryPointGoodStockIdentifier.objects.create(
+                                            delivery_point_stock = good_devpoint_stock,
+                                            good_identifier = 23,
+                                        )
         booking = GoodDelivery.objects.create(delivery_point=devpoint,
                                               delivered_to=self.user,
                                               choosen_delivery_point=op_devpoint.delivery_point,
@@ -163,9 +168,11 @@ class GoodDeliveryTest(TestCase):
         
         # redirect to add-items
         url = req.redirect_chain[0][0]
-        breakpoint()
+        # breakpoint()
         ## test form
-        data = {'1': 1}
+        data = {'1': 1, 
+                'document_type': 'that_doc',
+                'document_id': 'CICI'}
         # TODO - how to test the Form from scratch
         # form = GoodDeliveryItemForm(data=data, stock=good_devpoint_stock)
         # assert form.is_valid()
