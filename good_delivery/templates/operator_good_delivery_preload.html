@@ -36,10 +36,10 @@
         <div style="padding: 0 0 1rem">
             <b><label for="{{ stock.pk }}">{{ stock.good }}</label></b>
             <input type="number"
-                   name="{{ stock.pk }}"
+                   name="stock-{{ stock.pk }}"
                    value="1"
                    required
-                   id="{{ stock.pk }}">
+                   id="stock-{{ stock.pk }}">
             <small class="form-text text-muted">
                 Il campo Oggetto è impostato con la denominazione
             </small>

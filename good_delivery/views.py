@@ -332,9 +332,7 @@ def operator_good_delivery_add_items(request, campaign_id, delivery_point_id,
         for k,v in post_dict.items():
 
             # validate stock quantity fields
-            try:
-                v = int(v)
-            except:
+            if not v.isdigit():
                 messages.add_message(request, messages.ERROR,
                                      _("Inserisci quantità reali"))
                 return redirect('good_delivery:operator_good_delivery_add_items',
@@ -347,7 +345,8 @@ def operator_good_delivery_add_items(request, campaign_id, delivery_point_id,
             # check availability
             available_items = stock.get_available_items()
             # if choosen quantity exceeds stock availability
-            if type(available_items)==int and int(v)>available_items:
+            if type(available_items) == int and \
+               int(v) > available_items:
                 messages.add_message(request, messages.ERROR,
                                      _("La quantità residua nello "
                                        "stock <b>{}</b> è di "
@@ -362,12 +361,12 @@ def operator_good_delivery_add_items(request, campaign_id, delivery_point_id,
                 has_identifier = dpgsi.objects.filter(delivery_point_stock=stock).first()
                 if has_identifier:
                     i = 1
-                    while i<=int(v):
+                    while i <= int(v):
                         good_delivery_item = GoodDeliveryItem(good_delivery=good_delivery,
                                                               quantity=1,
                                                               good=stock.good)
                         good_delivery_item.save()
-                        i+=1
+                        i += 1
                 # else (e.g. glasses of water, bananas...)
                 # quantity is choosen by user
                 else:
@@ -489,6 +488,7 @@ def operator_good_delivery_detail(request, campaign_id, delivery_point_id,
             filled_forms.append(form)
             prefix_index+=1
         good_forms = filled_forms
+        
         if all([f.is_valid() for f in good_forms]):
             for f in good_forms:
                 f.save()

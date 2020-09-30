@@ -133,7 +133,6 @@ class GoodDeliveryTest(TestCase):
         csrf_data = self._get_csrfmiddlewaretoken(req.context)
         data = {'quantity': 1, 'user': self.user.pk}
         data.update(csrf_data)
-        
         req = self.client.post(url, data=data, follow=True)
         
         csrf_data = self._get_csrfmiddlewaretoken(req.context)
@@ -164,7 +163,7 @@ class GoodDeliveryTest(TestCase):
         
         # redirect to add-items
         url = req.redirect_chain[0][0]
-        
+        breakpoint()
         ## test form
         data = {'1': 1}
         # TODO - how to test the Form from scratch
@@ -173,7 +172,6 @@ class GoodDeliveryTest(TestCase):
 
         csrf_data = self._get_csrfmiddlewaretoken(req.context)
         data.update(csrf_data)
-        
         req = self.client.post(url, data=data, follow=True)
         
         assert b'Invia link attivazione' in req.content
