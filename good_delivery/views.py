@@ -742,7 +742,8 @@ def user_use_token(request):
                                           pk=pk,
                                           delivered_to__pk=user_id,
                                           delivery_point__pk=delivery_point_id,
-                                          modified=modified)
+                                          # modified=modified
+                                          )
         campaign = good_delivery.campaign
         if request.user.is_authenticated and not request.user.pk==user_id:
             msg = _("Utente non autorizzato")

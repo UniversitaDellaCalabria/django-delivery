@@ -317,6 +317,7 @@ class GoodDeliveryTest(TestCase):
         # _, campaign_booking, good_devpoint_stock = \
             # self._get_operator_good_delivery_detail()
         # url_kwargs = dict(campaign_id=campaign_booking.campaign.slug,
+                          # delivery_point_id=good_devpoint_stock.delivery_point.pk,
                           # good_delivery_id=campaign_booking.pk)
         # url = reverse('good_delivery:operator_another_delivery',
                       # kwargs=url_kwargs)
@@ -335,7 +336,7 @@ class GoodDeliveryTest(TestCase):
         # data = {'quantity': 1}
         # data.update(csrf_data)
         # req = self.client.post(url, data=data, follow=True)
-
+        
         # assert b'Inserimento effettuato' in req.content
         # assert req.status_code == 200
 
@@ -364,32 +365,32 @@ class GoodDeliveryTest(TestCase):
         # req = self.client.get(url, follow=True)
         # assert b'Bene precedentemente restituito' in req.content
 
-    # def test_user_use_token(self):
-        # url, campaign_booking, good_devpoint_stock = \
-            # self._get_operator_good_delivery_detail()
+    def test_user_use_token(self):
+        url, campaign_booking, good_devpoint_stock = \
+            self._get_operator_good_delivery_detail()
 
-        # ## user access
-        # self.client.force_login(self.user)
-        # url = reverse('good_delivery:user_index')
-        # home = self.client.get(url)
-        # assert b'In corso' in home.content
+        ## user access
+        self.client.force_login(self.user)
+        url = reverse('good_delivery:user_index')
+        home = self.client.get(url)
+        assert b'In corso' in home.content
 
-        # ## user uses token
-        # req_factory = RequestFactory()
-        # request = req_factory.get(url)
-        # gd = GoodDelivery.objects.get(pk=campaign_booking.pk)
-        # token = _generate_good_delivery_token_email(request, gd)
+        ## user uses token
+        req_factory = RequestFactory()
+        request = req_factory.get(url)
+        gd = GoodDelivery.objects.get(pk=campaign_booking.pk)
+        token = _generate_good_delivery_token_email(request, gd)
 
-        # url = reverse('good_delivery:user_use_token')
-        # req = self.client.get(url, data={'token': token})
-        # assert req.status_code == 401
-        # assert b'Consegna non completata' in req.content
+        url = reverse('good_delivery:user_use_token')
+        req = self.client.get(url, data={'token': token})
+        assert req.status_code == 401
+        assert b'Consegna non completata' in req.content
 
-        # gd.delivered_by = self.operator
-        # gd.save()
-
-        # req = self.client.get(url, data={'token': token})
-        # assert b'Hai confermato' in req.content
+        gd.delivered_by = self.operator
+        gd.save()
+        
+        req = self.client.get(url, data={'token': token})
+        assert b'Hai confermato' in req.content
 
     # def test_altro(self):
         # breakpoint()
