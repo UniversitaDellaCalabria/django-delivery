@@ -323,6 +323,14 @@ def operator_good_delivery_add_items(request, campaign_id, delivery_point_id,
             document_type = post_dict.pop('document_type')
             document_number = post_dict.pop('document_number')
 
+            if not document_type or not document_number:
+                messages.add_message(request, messages.ERROR,
+                                     _("Inserisci gli estremi del documento di identità"))
+                return redirect('good_delivery:operator_good_delivery_add_items',
+                                campaign_id=campaign_id,
+                                delivery_point_id=delivery_point_id,
+                                good_delivery_id=good_delivery.pk)
+
         # for every stock, get quantity of items to add
         for k,v in post_dict.items():
 
