@@ -298,9 +298,12 @@ def operator_good_delivery_add_items(request, campaign_id, delivery_point_id,
 
     # good_delivery disabled
     if good_delivery.disabled_date:
-        return custom_message(request,
-                              _("Consegna disabilitata senza beni inseriti"),
-                              403)
+        messages.add_message(request, messages.ERROR,
+                                     _("Consegna <b>{}</b> disabilitata "
+                                       "senza beni inseriti"
+                                       "".format(good_delivery)))
+        return redirect('good_delivery:operator_campaign_detail',
+                        campaign_id=campaign_id)
 
     # if there are items, then redirect to good delivery detail page
     if good_delivery_items:
