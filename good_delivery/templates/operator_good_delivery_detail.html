@@ -163,7 +163,7 @@
    data-toggle="modal"
    data-target="#deleteDeliveryGood">
     <svg class="icon icon-xs icon-danger">
-        <use xlink:href="{% static 'svg/sprite.svg' %}#it-close-circle"></use>
+        <use xlink:href="{% static 'svg/sprite.svg' %}#it-delete"></use>
     </svg> {% trans "Elimina" %}
 </button>
 <div class="modal fade" tabindex="-1" role="dialog" id="deleteDeliveryGood">
@@ -196,7 +196,7 @@
 </div>
 {% endif %}
 
-{% if good_delivery.delivered_by and good_delivery.is_waiting %}
+{% if good_delivery.can_be_marked_by_user or good_delivery.single_items_to_deliver %}
 <a role="button" class="btn btn-success pull-right"
    href="{% url 'good_delivery:operator_good_delivery_send_token' campaign.slug delivery_point.pk good_delivery.pk %}">
         <svg class="icon icon-xs icon-white">
@@ -204,10 +204,24 @@
         </svg> {% trans "Invia link attivazione" %}
 </a>
 {% endif %}
+
 {% endblock top_buttons %}
 
 {% block page_content %}
     {% include "delivery_details.html" %}
+
+    {% if returned_items_to_replace and not good_delivery.disabled_date %}
+    <div class="pb-4">
+        {% for k,v in returned_items_to_replace %}
+            <a role="button" class="btn btn-outline-success btn-xs"
+               href="{% url 'good_delivery:operator_good_delivery_add_replaced_item' campaign.slug delivery_point.pk good_delivery.pk k.pk %}">
+                    <svg class="icon icon-xs icon-success">
+                        <use xlink:href="{% static 'svg/sprite.svg' %}#it-plus-circle"></use>
+                    </svg> {% trans "Aggiungi" %} {{ k }}
+            </a>
+        {% endfor %}
+    </div>
+    {% endif %}
 
     {% if good_delivery.is_waiting and good_forms %}
     <hr />

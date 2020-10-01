@@ -71,6 +71,7 @@ class DeliveryCampaign(TimeStampedModel):
         verbose_name_plural = _('Campagne di consegne')
 
     # @property
+    # TODO perchè la data di inizio no?
     def is_in_progress(self):
         # return self.date_start <= timezone.localtime() and
         return self.date_end > timezone.localtime()
@@ -271,7 +272,6 @@ class GoodDelivery(TimeStampedModel):
 
     def is_waiting(self):
         if self.delivery_date: return False
-        # if self.return_date: return False
         if self.disabled_date: return False
         return self.get_items()
 
@@ -295,7 +295,10 @@ class GoodDelivery(TimeStampedModel):
     def can_be_marked_by_operator(self):
         # marked as delivered by operator
         # without user confirmation
-        return not self.campaign.require_agreement and self.delivered_by and self.is_waiting()
+        if not self.campaign.is_in_progress(): return False
+        if self.campaign.require_agreement: return False
+        if not self.delivered_by: return False
+        return self.is_waiting()
 
     def can_be_marked_by_user(self):
         """
@@ -303,8 +306,23 @@ class GoodDelivery(TimeStampedModel):
         """
         if not self.delivery_point: return False
         if not self.campaign.is_in_progress(): return False
-        if not self.campaign.require_agreement: return False
+        if not self.delivered_by: return False
         return self.is_waiting()
+
+    def single_items_to_deliver(self):
+        """
+        check if there are waiting items that operator has added after
+        delivery (for a return)
+        """
+        if not self.delivery_point: return False
+        if not self.campaign.is_in_progress(): return False
+        if not self.delivery_date: return False
+        waiting_items = GoodDeliveryItem.objects.filter(good_delivery=self,
+                                                        create__gt=self.delivery_date,
+                                                        return_date__isnull=True,
+                                                        delivery_date__isnull=True)
+        if waiting_items: return True
+        return False
 
     @property
     def state(self):
@@ -319,14 +337,40 @@ class GoodDelivery(TimeStampedModel):
         else:
             return _('unknown')
 
+    def mark_as_delivered(self, delivery_point, operator):
+        if not self.delivery_date:
+            self.delivery_date = timezone.localtime()
+            self.delivered_by = operator
+            self.delivery_point = delivery_point
+            self.save()
+        for item in self.get_items():
+            if not item.delivery_date:
+                item.delivery_date = timezone.localtime()
+            if not item.delivered_by:
+                item.delivered_by = operator
+            if not item.delivery_point:
+                item.delivery_point = delivery_point
+            item.save()
+
+    def get_returned_items_to_replace(self):
+        returned_good_items = {}
+        returned_items = GoodDeliveryItem.objects.filter(good_delivery=self,
+                                                         return_date__isnull=False)
+        for returned_item in returned_items:
+            if returned_good_items.get(returned_item.good):
+                returned_good_items[returned_item.good] += 1
+            else:
+                returned_good_items[returned_item.good] = 1
+        for post_delivered in GoodDeliveryItem.objects.filter(good_delivery=self,
+                                                              create__gt=self.delivery_date):
+            if returned_good_items.get(post_delivered.good):
+                returned_good_items[post_delivered.good] -= 1
+                if returned_good_items[post_delivered.good] == 0:
+                    returned_good_items.pop(post_delivered.good)
+        return returned_good_items
+
     def __str__(self):
         return '{} - {}'.format(self.campaign, self.delivered_to)
-
-    # TODO save()
-    # check relazioni user e product con DeliveryPoint
-    # ----------------------------------------------
-    # per verificare la consistenza dei dati e l'effettiva
-    # corrispondenza e validità dell'operazione
 
 
 class GoodDeliveryItem(TimeStampedModel):
@@ -339,9 +383,17 @@ class GoodDeliveryItem(TimeStampedModel):
     good_stock_identifier = models.ForeignKey(DeliveryPointGoodStockIdentifier,
                                               blank=True, null=True,
                                               on_delete=models.CASCADE)
-    # se non è presente un identificativo in stock
-    # ma l'operatore deve specificarlo per check
     good_identifier = models.CharField(max_length=255, blank=True, null=True)
+    delivery_point = models.ForeignKey(DeliveryPoint,
+                                       on_delete=models.PROTECT,
+                                       blank=True, null=True,
+                                       related_name="item_delivered_point")
+    delivery_date = models.DateTimeField(_('Data di consegna'),
+                                         blank=True, null=True)
+    delivered_by = models.ForeignKey(get_user_model(),
+                                     on_delete=models.PROTECT,
+                                     blank=True, null=True,
+                                     related_name="item_delivered_by")
     returned_point = models.ForeignKey(DeliveryPoint,
                                        on_delete=models.PROTECT,
                                        blank=True, null=True,
@@ -360,6 +412,11 @@ class GoodDeliveryItem(TimeStampedModel):
     def can_be_returned(self):
         if not self.good_delivery.delivery_date: return False
         if not self.good_identifier: return False
+        if self.return_date: return False
+        return True
+
+    def can_be_deleted(self):
+        if self.delivery_date: return False
         if self.return_date: return False
         return True
 

@@ -151,10 +151,10 @@ class GoodDeliveryTest(TestCase):
         """
         self.client.force_login(self.operator)
         op_devpoint, good_devpoint_stock = self._campaign_food()
-        
+
         # test items availability without a real stock
         good_devpoint_stock.get_available_items()
-        
+
         url_kwargs = dict(campaign_id=op_devpoint.delivery_point.campaign.slug,
                           delivery_point_id=good_devpoint_stock.delivery_point.pk)
         url = reverse('good_delivery:operator_new_delivery',
@@ -197,15 +197,15 @@ class GoodDeliveryTest(TestCase):
         url = req.redirect_chain[0][0]
 
         ## test form
-        data = _item_data.copy()        
+        data = _item_data.copy()
         # test missing documents
         csrf_data = self._get_csrfmiddlewaretoken(req.context)
         data.update(csrf_data)
-        
+
         data.pop('document_id')
         req = self.client.post(url, data=data, follow=True)
         assert b'Inserisci gli estremi' in req.content
-        
+
         # test invalid quantities
         data = _item_data.copy()
         data['{}1'.format(_stock_prefix)] = '1.2'
@@ -213,14 +213,22 @@ class GoodDeliveryTest(TestCase):
         data.update(csrf_data)
         req = self.client.post(url, data=data, follow=True)
         assert b'reali' in req.content
-        
+
         # test buono
         data = _item_data.copy()
         csrf_data = self._get_csrfmiddlewaretoken(req.context)
         data.update(csrf_data)
         req = self.client.post(url, data=data, follow=True)
-        assert b'Invia link attivazione' in req.content
+        # il delivered_by ora viene settato
+        # quando l'operatore sceglie gli id degli items
+        # assert b'Invia link attivazione' in req.content
+        assert b'Reset' in req.content
 
+
+        # TODO
+        # il pulsante Invia link attivazione ora si vede solo
+        # se nel carrello c'è almeno un item
+        # (prima si vedeva non appena l'operatore definiva le quantità da inserire)
         url_kwargs = dict(campaign_id=good_devpoint_stock.delivery_point.campaign.slug,
                           delivery_point_id=good_devpoint_stock.delivery_point.pk,
                           good_delivery_id=campaign_booking.pk)
@@ -367,23 +375,23 @@ class GoodDeliveryTest(TestCase):
                       kwargs=url_kwargs)
         req = self.client.get(url, follow=True)
         assert b'Processi di consegna attivi' in req.content
-        
+
         ## disable
         gd = GoodDelivery.objects.get(pk=campaign_booking.pk)
         gd.disabled_date = timezone.localtime()
         gd.save()
-        
+
         url = reverse('good_delivery:operator_good_delivery_disable',
               kwargs=url_kwargs)
         req = self.client.get(url, follow=True)
         assert b'disabilitata' in req.content
-        
+
         ## POST disabilita
         csrf_data = self._get_csrfmiddlewaretoken(req.context)
         data = {'notes': 'test'*10000}
         data.update(csrf_data)
         req = self.client.post(url, data=data, follow=True)
-        
+
         assert b'Disabilitazione completata' in req.content
         assert req.status_code == 200
 
@@ -395,11 +403,11 @@ class GoodDeliveryTest(TestCase):
         data.update(csrf_data)
         req = self.client.post(url, data=data, follow=True)
         # assert b'disabilitata senza beni inseriti' in req.content
-        
+
         # TODO
         #open_html_in_webbrowser(req.content)
-        
-        
+
+
     # def test_operator_good_delivery_return(self):
         # _, campaign_booking, good_devpoint_stock = \
             # self._get_operator_good_delivery_detail()

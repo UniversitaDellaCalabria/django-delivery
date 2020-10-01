@@ -77,7 +77,6 @@ class GoodDeliveryItemForm(forms.ModelForm):
         cleaned_data = super().clean()
         good_stock_identifier = cleaned_data.get("good_stock_identifier")
         good_identifier = cleaned_data.get("good_identifier")
-
         stock = self.stock
 
         if good_stock_identifier and good_stock_identifier.good_identifier != good_identifier:

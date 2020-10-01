@@ -41,7 +41,7 @@
 
                     {% include "delivery_details.html" %}
 
-                    {% if good_delivery.can_be_marked_by_user %}
+                    {% if good_delivery.can_be_marked_by_user or good_delivery.single_items_to_deliver %}
                         <button type="button"
                            class="btn btn-success"
                            data-toggle="modal"

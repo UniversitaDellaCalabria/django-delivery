@@ -5,9 +5,9 @@
 
 {% block top_buttons %}
 <a role="button" class="btn btn-outline-secondary"
-   href="{% url 'good_delivery:operator_campaign_detail' campaign.slug %}">
+   href="{% url 'good_delivery:operator_good_delivery_detail' campaign.slug delivery_point.pk good_delivery.pk %}">
     <svg class="icon icon-xs">
         <use xlink:href="{% static 'svg/sprite.svg' %}#it-arrow-left"></use>
-    </svg> {{ campaign }}
+    </svg> {{ good_delivery }}
 </a>
 {% endblock top_buttons %}
