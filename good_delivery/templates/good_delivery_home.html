@@ -1,0 +1,93 @@
+{% load i18n %}
+{% load static %}
+{% load good_delivery_tags %}
+
+<div class="pb-4">
+
+    <h4>{% trans "Sistema di approvvigionamento beni in presenza" %}</h4>
+
+    <div class="pb-3">
+        {% if good_deliveries %}
+        <div class="row" id="categories-grid">
+          {% for good_delivery in good_deliveries %}
+          <div class="col-12 col-lg-4 category-box">
+            <!--start card-->
+            <div class="card-wrapper card-space">
+              <div class="card card-bg no-after">
+                <div class="card-body">
+
+                    <p class="card-text">
+                        <b>{{ good_delivery.campaign }}</b>
+
+                        {% if good_delivery.campaign.is_in_progress %}
+                        <span class="badge badge-success mb-2">
+                            {% trans "In corso" %}
+                        </span>
+                        {% else %}
+                        <span class="badge badge-danger mb-2">
+                            {% trans "Scaduta" %}
+                        </span>
+                        {% endif %}
+                    </p>
+
+                    {% include "delivery_details.html" %}
+
+                    {% if good_delivery.can_be_marked_by_user or good_delivery.single_items_to_deliver %}
+                        <button type="button"
+                           class="btn btn-success"
+                           data-toggle="modal"
+                           data-target="#confirmDelivery">
+                            <svg class="icon icon-xs icon-white">
+                                <use xlink:href="{% static 'svg/sprite.svg' %}#it-check-circle"></use>
+                            </svg> {% trans "Completa il processo di consegna" %}
+                        </button>
+                        <div class="modal fade" tabindex="-1" role="dialog" id="confirmDelivery">
+                            <div class="modal-dialog modal-dialog-centered" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">
+                                            {% trans "Completa procedura di consegna" %}
+                                        </h5>
+                                        <button class="close" type="button"
+                                                data-dismiss="modal" aria-label="Close">
+                                           <svg class="icon">
+                                              <use xlink:href="{% static 'svg/sprite.svg' %}#it-close"></use>
+                                           </svg>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>{% trans "Desideri confermare la procedura di consegna " %}
+                                           <b>{{ delivery }}</b> ?
+                                        </p>
+                                        {% if good_delivery.good_identifier %}
+                                        <br>
+                                        <p>{% trans "Assicurati che l'ID sia esatto " %}
+                                           <b>{{ good_delivery.good_identifier }}</b>
+                                        </p>
+                                        {% endif %}
+                                    </div>
+                                    <div class="modal-footer">
+                                        <a role="button" class="btn btn-success"
+                                           href="{% url 'good_delivery:user_use_token' %}?token={{ good_delivery.build_jwt }}">
+                                            {% trans "Si, confermo" %}
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+              </div>
+            </div>
+            <!--end card-->
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info" role="alert">
+            <h4 class="alert-heading">{% trans "Avviso" %}</h4>
+            <p>{% trans "Non risultano operazioni di consegna a tuo carico" %}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
