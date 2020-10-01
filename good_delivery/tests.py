@@ -251,6 +251,12 @@ class GoodDeliveryTest(TestCase):
                       kwargs=url_kwargs)
 
         req = self.client.get(url, follow=True)
+
+        csrf_data = self._get_csrfmiddlewaretoken(req.context)
+        data = {'notes': 'notes'}
+        data.update(csrf_data)
+        req = self.client.post(url, data=data, follow=True)
+
         gd = GoodDelivery.objects.get(pk=campaign_booking.pk)
         assert gd.disabled_date
         assert gd.state == 'disabilitata'
