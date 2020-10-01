@@ -35,14 +35,18 @@
 
         {% for stock in stocks %}
         <div style="padding: 0 0 1rem">
-            <b><label for="{{stock_prefix}}{{ stock.pk }}">{{ stock.good }}</label></b>
+            <b>
+                <label for="{{stock_prefix}}{{ stock.pk }}">
+                    {{ stock.good }}
+                </label>
+            </b> *
             <input type="number"
                    name="{{stock_prefix}}{{ stock.pk }}"
                    value="1"
                    required
                    id="{{stock_prefix}}{{ stock.pk }}">
             <small class="form-text text-muted">
-                Il campo Oggetto è impostato con la denominazione
+                {% trans "Specifica la quantità da consegnare" %}
             </small>
         </div>
         {% endfor %}
@@ -56,7 +60,7 @@
                 <label for="document_type">
                     {% trans "Tipo documento" %}
                 </label>
-            </b>
+            </b> *
             <input type="text"
                    required
                    name="document_type"
@@ -68,7 +72,7 @@
                 <label for="document_id">
                     {% trans "Dati documento" %}
                 </label>
-            </b>
+            </b> *
             <input type="text"
                    required
                    name="document_id"
