@@ -28,6 +28,7 @@ class UsersDeliveryPointDTD(DjangoDatatablesServerProc):
         if self.search_key:
             params = json.loads(self.search_key)
             text = params['text']
+            delivery_point = params['delivery_point']
             if delivery_point and delivery_point.isdigit():
                 self.aqs = self.aqs.filter(Q(choosen_delivery_point__pk=delivery_point) |
                                            Q(delivery_point__pk=delivery_point))
