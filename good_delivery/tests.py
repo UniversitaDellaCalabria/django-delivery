@@ -242,17 +242,27 @@ class GoodDeliveryTest(TestCase):
 
         gd = GoodDelivery.objects.get(pk=campaign_booking.pk)
         assert gd.state == 'in attesa'
-        
-        # insert stock identifiers
-        data = {'form1-good_stock_identifier': 1,
-                'form1-good_identifier': 23}
-        csrf_data = self._get_csrfmiddlewaretoken(req.context)
-        data.update(csrf_data)
+
+        # insert stock identifiers        
         url_kwargs = dict(campaign_id=good_devpoint_stock.delivery_point.campaign.slug,
                           delivery_point_id=good_devpoint_stock.delivery_point.pk,
                           good_delivery_id=campaign_booking.pk)
         url = reverse('good_delivery:operator_good_delivery_detail',
               kwargs=url_kwargs)
+        
+        # Wrong identifiers
+        data = {'form1-good_stock_identifier': 'asas',
+                'form1-good_identifier': 23.345345345}
+        csrf_data = self._get_csrfmiddlewaretoken(req.context)
+        data.update(csrf_data)
+        req = self.client.post(url, data=data, follow=True)
+        assert b'non compare tra quelle' in req.content
+
+        # good identifiers
+        data = {'form1-good_stock_identifier': 1,
+                'form1-good_identifier': 23}
+        csrf_data = self._get_csrfmiddlewaretoken(req.context)
+        data.update(csrf_data)
         req = self.client.post(url, data=data, follow=True)
         assert 'Quantità: 1' in req.content.decode()
         
@@ -262,8 +272,6 @@ class GoodDeliveryTest(TestCase):
         home = self.client.get(url)
         assert b'In corso' in home.content
         
-        
-
 
     def test_op_delivery_campaign_expired(self):
         url, campaign_booking, good_devpoint_stock = \

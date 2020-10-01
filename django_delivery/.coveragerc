@@ -8,3 +8,4 @@ omit =
     */apps/*
     */migrations/*
     */src/*
+    django_delivery/*
