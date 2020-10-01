@@ -317,7 +317,7 @@ def operator_good_delivery_add_items(request, campaign_id, delivery_point_id,
 
         # pop not related to stocks POST values
         post_dict.pop('csrfmiddlewaretoken')
-        notes = post_dict.pop('notes') if post_dict.get('notes') else ''
+        notes = post_dict.pop('notes')
 
         # identity document required?
         if campaign.identity_document_required:
@@ -334,7 +334,6 @@ def operator_good_delivery_add_items(request, campaign_id, delivery_point_id,
 
         # for every stock, get quantity of items to add
         for k,v in post_dict.items():
-
             # validate stock quantity fields
             if not v.isdigit():
                 GoodDeliveryItem.objects.filter(good_delivery=good_delivery).delete()
