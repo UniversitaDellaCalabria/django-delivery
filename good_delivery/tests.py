@@ -276,7 +276,7 @@ class GoodDeliveryTest(TestCase):
         # campaign_booking hasn't items!
         # so is_waiting() return an empty queryset
         # so operator_good_delivery_send_token returns "Consegna bloccata" message
-        assert b'Consegna bloccata' in req.content.decode()
+        assert 'Consegna bloccata' in req.content.decode()
 
 
     # def test_op_delivery_preload(self):

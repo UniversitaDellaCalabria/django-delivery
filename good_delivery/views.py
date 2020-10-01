@@ -296,6 +296,10 @@ def operator_good_delivery_add_items(request, campaign_id, delivery_point_id,
     # actual good delivery items
     good_delivery_items = GoodDeliveryItem.objects.filter(good_delivery=good_delivery)
 
+    # good_delivery disabled
+    if good_delivery.disabled_date:
+        return custom_message(request, _("Consegna disabilitata"), 403)
+
     # if there are items, then redirect to good delivery detail page
     if good_delivery_items:
         return redirect('good_delivery:operator_good_delivery_detail',
