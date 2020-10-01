@@ -1,4 +1,5 @@
 import logging
+import urllib
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -36,7 +37,7 @@ campaign_data = dict(name='banane',
                      date_start=timezone.localtime(),
                      date_end=timezone.localtime() + timezone.timedelta(hours=3),
                      is_active=True,
-                     require_agreement=True,
+                     require_agreement=False,
                      new_delivery_if_disabled=True)
 
 
@@ -72,6 +73,7 @@ class GoodDeliveryTest(TestCase):
         data = campaign_data.copy()
         data['name'] = 'gears'
         data['operator_can_create'] = False
+        data['require_agreement'] = True
         data['identity_document_required'] = True
         campaign = DeliveryCampaign.objects.create(**data)
         devpoint = DeliveryPoint.objects.create(campaign=campaign,
@@ -125,7 +127,6 @@ class GoodDeliveryTest(TestCase):
         url = reverse('good_delivery:operator_campaign_detail',
                       kwargs=url_kwargs)
         req = self.client.get(url)
-        open_html_in_webbrowser(req.content)
         assert b'Prenotazioni da gestire' in req.content
 
 
@@ -174,6 +175,16 @@ class GoodDeliveryTest(TestCase):
 
         assert req.status_code == 200
         assert b'con successo' in req.content
+        
+        # manual operator_good_delivery_deliver
+        good_delivery_id = GoodDelivery.objects.filter(delivered_to=self.user).first()
+        url_kwargs = dict(campaign_id=op_devpoint.delivery_point.campaign.slug,
+                          delivery_point_id=good_devpoint_stock.delivery_point.pk,
+                          good_delivery_id=good_delivery_id.pk)
+        url = reverse('good_delivery:operator_good_delivery_deliver',
+                      kwargs=url_kwargs)
+        req = self.client.get(url, follow=True)
+        assert b'Prenotazioni da gestire' in req.content
 
 
     def _get_operator_good_delivery_detail(self):
@@ -231,12 +242,27 @@ class GoodDeliveryTest(TestCase):
 
         gd = GoodDelivery.objects.get(pk=campaign_booking.pk)
         assert gd.state == 'in attesa'
-
+        
+        # insert stock identifiers
+        data = {'form1-good_stock_identifier': 1,
+                'form1-good_identifier': 23}
+        csrf_data = self._get_csrfmiddlewaretoken(req.context)
+        data.update(csrf_data)
+        url_kwargs = dict(campaign_id=good_devpoint_stock.delivery_point.campaign.slug,
+                          delivery_point_id=good_devpoint_stock.delivery_point.pk,
+                          good_delivery_id=campaign_booking.pk)
+        url = reverse('good_delivery:operator_good_delivery_detail',
+              kwargs=url_kwargs)
+        req = self.client.post(url, data=data, follow=True)
+        assert 'Quantità: 1' in req.content.decode()
+        
         ## user access
         self.client.force_login(self.user)
         url = reverse('good_delivery:user_index')
         home = self.client.get(url)
         assert b'In corso' in home.content
+        
+        
 
 
     def test_op_delivery_campaign_expired(self):
@@ -450,6 +476,32 @@ class GoodDeliveryTest(TestCase):
 
         req = self.client.get(url, data={'token': token})
         assert b'Hai confermato' in req.content
+
+    def test_datatables(self):
+        url, campaign_booking, good_devpoint_stock = \
+            self._get_operator_good_delivery_detail()
+
+        ## user access
+        self.client.force_login(self.operator)
+        
+        url = reverse('good_delivery:delivery_point_deliveries_json',
+                      kwargs=dict(campaign_id = campaign_booking.campaign.slug,
+                                  delivery_point_id = good_devpoint_stock.delivery_point.pk))
+        data = json.dumps({"draw":1,
+                          "columns":[
+                            {"data":0,"name":"","searchable":1,"orderable":1,"search":{"value":"","regex":0}},
+                            {"data":1,"name":"","searchable":1,"orderable":0,"search":{"value":"","regex":0}},
+                            {"data":2,"name":"","searchable":1,"orderable":0,"search":{"value":"","regex":0}},
+                            {"data":3,"name":"","searchable":1,"orderable":0,"search":{"value":"","regex":0}},
+                            {"data":4,"name":"","searchable":1,"orderable":0,"search":{"value":"","regex":0}}
+                            ],
+                          "order":[{"column":0,"dir":"asc"}],
+                          "start":"0",
+                          "length":"10",
+                          "search": {"value": '''{"text":"", "delivery_point": null}''', "regex":0}})
+        req = self.client.post(url, dict(args =data))
+        content = json.loads(req.content)
+        assert isinstance(content, dict)
 
     # def test_altro(self):
         # breakpoint()
