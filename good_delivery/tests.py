@@ -9,6 +9,7 @@ from django.utils import timezone
 
 from . forms import *
 from . models import *
+from . settings import GOOD_STOCK_FORMS_PREFIX
 from . templatetags.good_delivery_tags import (current_date,
                                                markdown,
                                                user_from_pk)
@@ -170,9 +171,13 @@ class GoodDeliveryTest(TestCase):
         url = req.redirect_chain[0][0]
         # breakpoint()
         ## test form
-        data = {'1': 1,
+        stock_prefix = getattr(settings,
+                               "GOOD_STOCK_FORMS_PREFIX",
+                               GOOD_STOCK_FORMS_PREFIX)
+        data = {'{}1'.format(stock_prefix): 1,
                 'document_type': 'that_doc',
-                'document_id': 'CICI'}
+                'document_id': 'CICI',
+                'notes': ''}
         # TODO - how to test the Form from scratch
         # form = GoodDeliveryItemForm(instance= ,
                                     # stock=good_devpoint_stock)
