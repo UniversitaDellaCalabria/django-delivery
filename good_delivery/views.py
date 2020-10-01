@@ -417,6 +417,7 @@ def operator_good_delivery_add_items(request, campaign_id, delivery_point_id,
          'title': "titolo",}
     return render(request, template, d)
 
+
 @login_required
 @campaign_is_active
 @campaign_is_in_progress
@@ -511,11 +512,17 @@ def operator_good_delivery_detail(request, campaign_id, delivery_point_id,
         if all([f.is_valid() for f in good_forms]):
             for f in good_forms:
                 f.save()
-            duplicates = GoodDeliveryItem.objects.values('good_stock_identifier').annotate(name_count=Count('good_stock_identifier')).filter(name_count__gt=1)
+            duplicates = GoodDeliveryItem.objects\
+                            .values('good_stock_identifier')\
+                            .annotate(name_count=Count('good_stock_identifier'))\
+                            .filter(name_count__gt=1)
             if duplicates:
+                # TODO: cover
                 for duplicate in duplicates:
-                    duplicate_items = GoodDeliveryItem.objects.filter(good_stock_identifier=duplicate['good_stock_identifier'],
-                                                                      good_delivery=good_delivery)
+                    value = duplicate['good_stock_identifier']
+                    duplicate_items = GoodDeliveryItem.objects\
+                                        .filter(good_stock_identifier=value,
+                                                good_delivery=good_delivery)
                     for duplicate_item in duplicate_items:
                         duplicate_item.good_stock_identifier = None
                         duplicate_item.save()
