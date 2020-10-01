@@ -2,6 +2,8 @@ include AUTHORS
 include LICENSE
 include README.md
 include good_delivery/static/*
+include good_delivery/static/css/*
+include good_delivery/static/js/*
 include good_delivery/templates/*
 include good_delivery/templates/datatables/*
 include good_delivery/templatetags/*
