@@ -293,12 +293,9 @@ def operator_good_delivery_add_items(request, campaign_id, delivery_point_id,
 
     :return: redirect
     """
-    if not good_delivery.is_waiting():
-            messages.add_message(request, messages.ERROR,
-                                 _("La consegna non può più subire modifiche"))
     # actual good delivery items
     good_delivery_items = GoodDeliveryItem.objects.filter(good_delivery=good_delivery)
-    
+
     # if there are items, then redirect to good delivery detail page
     if good_delivery_items:
         return redirect('good_delivery:operator_good_delivery_detail',
@@ -336,6 +333,7 @@ def operator_good_delivery_add_items(request, campaign_id, delivery_point_id,
 
             # validate stock quantity fields
             if not v.isdigit():
+                GoodDeliveryItem.objects.filter(good_delivery=good_delivery).delete()
                 messages.add_message(request, messages.ERROR,
                                      _("Inserisci quantità reali"))
                 return redirect('good_delivery:operator_good_delivery_add_items',
@@ -344,7 +342,11 @@ def operator_good_delivery_add_items(request, campaign_id, delivery_point_id,
                                 good_delivery_id=good_delivery.pk)
 
             # get single stock
-            stock = stocks.get(pk=k)
+            stock_prefix = getattr(settings,
+                                   "GOOD_STOCK_FORMS_PREFIX",
+                                   GOOD_STOCK_FORMS_PREFIX)
+            stock_pk = k.replace(stock_prefix,'')
+            stock = stocks.get(pk=stock_pk)
             # check availability
             available_items = stock.get_available_items()
             # if choosen quantity exceeds stock availability
@@ -490,7 +492,7 @@ def operator_good_delivery_detail(request, campaign_id, delivery_point_id,
             filled_forms.append(form)
             prefix_index+=1
         good_forms = filled_forms
-        
+
         if all([f.is_valid() for f in good_forms]):
             for f in good_forms:
                 f.save()

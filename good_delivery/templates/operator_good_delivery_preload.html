@@ -30,16 +30,17 @@
 {% endblock top_buttons %}
 
 {% block page_content %}
+    {% settings_value "GOOD_STOCK_FORMS_PREFIX" as stock_prefix %}
     <form method="post" enctype="multipart/form-data">
 
         {% for stock in stocks %}
         <div style="padding: 0 0 1rem">
-            <b><label for="{{ stock.pk }}">{{ stock.good }}</label></b>
+            <b><label for="{{stock_prefix}}{{ stock.pk }}">{{ stock.good }}</label></b>
             <input type="number"
-                   name="stock-{{ stock.pk }}"
+                   name="{{stock_prefix}}{{ stock.pk }}"
                    value="1"
                    required
-                   id="stock-{{ stock.pk }}">
+                   id="{{stock_prefix}}{{ stock.pk }}">
             <small class="form-text text-muted">
                 Il campo Oggetto è impostato con la denominazione
             </small>
@@ -64,14 +65,14 @@
 
         <div style="padding: 0 0 1rem">
             <b>
-                <label for="document_number">
+                <label for="document_id">
                     {% trans "Dati documento" %}
                 </label>
             </b>
             <input type="text"
                    required
-                   name="document_number"
-                   id="id_document_number">
+                   name="document_id"
+                   id="id_document_id">
             <small class="form-text text-muted">
                 {% trans "Numero, data, rilasciato da" %}
             </small>

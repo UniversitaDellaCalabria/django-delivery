@@ -2,6 +2,7 @@ from django.utils.translation import gettext_lazy as _
 
 
 GOOD_DELIVERY_ITEMS_FORMS_PREFIX = "form"
+GOOD_STOCK_FORMS_PREFIX = "stock"
 
 
 # E-mail messages
