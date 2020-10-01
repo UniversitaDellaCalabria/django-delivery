@@ -298,7 +298,9 @@ def operator_good_delivery_add_items(request, campaign_id, delivery_point_id,
 
     # good_delivery disabled
     if good_delivery.disabled_date:
-        return custom_message(request, _("Consegna disabilitata"), 403)
+        return custom_message(request,
+                              _("Consegna disabilitata senza beni inseriti"),
+                              403)
 
     # if there are items, then redirect to good delivery detail page
     if good_delivery_items:
@@ -665,27 +667,45 @@ def operator_good_delivery_disable(request, campaign_id, delivery_point_id,
     :param multi_tenant: if operator is multi_tenant (from @is_delivery_point_operator)
     :param good_delivery: GoodDelivery object (from @can_manage_good_delivery)
 
-    :return: redirect
+    :return: render
     """
     if good_delivery.disabled_date:
         messages.add_message(request, messages.ERROR,
                              _("Consegna già disabilitata"))
-    else:
-        good_delivery.disabled_point = delivery_point
-        good_delivery.disabled_date = timezone.localtime()
-        good_delivery.disabled_by = request.user
-        good_delivery.save(update_fields=['disabled_point',
-                                          'disabled_date',
-                                          'disabled_by',
-                                          'modified'])
+    title = _("Disabilitazione consegna")
+    template = "operator_good_delivery_disable.html"
+    form = GoodDeliveryDisableForm()
 
-        msg = _("{} disabilitata").format(good_delivery)
-        good_delivery.log_action(msg, CHANGE, request.user)
+    if request.POST:
+        form = GoodDeliveryDisableForm(data=request.POST)
+        if form.is_valid():
+            good_delivery.disabled_point = delivery_point
+            good_delivery.disabled_date = timezone.localtime()
+            good_delivery.disabled_by = request.user
+            good_delivery.disable_notes = form.cleaned_data['notes']
+            good_delivery.save(update_fields=['disabled_point',
+                                              'disabled_date',
+                                              'disabled_by',
+                                              'disable_notes',
+                                              'modified'])
 
-        messages.add_message(request, messages.SUCCESS,
-                                 _("Disabilitazione completata"))
-    return redirect('good_delivery:operator_campaign_detail',
-                    campaign_id=campaign_id)
+            msg = _("{} disabilitata").format(good_delivery)
+            good_delivery.log_action(msg, CHANGE, request.user)
+
+            messages.add_message(request, messages.SUCCESS,
+                                     _("Disabilitazione completata"))
+            return redirect('good_delivery:operator_campaign_detail',
+                            campaign_id=campaign_id)
+
+
+    d = {'campaign': campaign,
+         'delivery_point': delivery_point,
+         'form': form,
+         'good_delivery': good_delivery,
+         'sub_title': good_delivery,
+         'title': title,}
+
+    return render(request, template, d)
 
 @login_required
 @campaign_is_active

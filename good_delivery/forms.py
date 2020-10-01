@@ -10,6 +10,15 @@ from bootstrap_italia_template.widgets import (BootstrapItaliaSelectWidget,
 from . models import *
 
 
+class GoodDeliveryDisableForm(forms.Form):
+    notes = forms.CharField(label=_('Motivazione'),
+                            widget=forms.Textarea(attrs={'rows':2}),
+                            required=True)
+
+    class Media:
+        js = ('js/textarea-autosize.js',)
+
+
 class GoodDeliveryPreloadForm(forms.Form):
     user = forms.ModelChoiceField(label=_('Destinatario'),
                                   queryset=None, required=True,

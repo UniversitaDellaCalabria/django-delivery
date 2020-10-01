@@ -230,6 +230,7 @@ class GoodDelivery(TimeStampedModel):
                                     on_delete=models.PROTECT,
                                     blank=True, null=True,
                                     related_name="disabled_by")
+    disable_notes = models.TextField(null=True, blank=True)
     document_type = models.CharField(max_length=255,
                                      blank=True, null=True)
     document_id = models.CharField(max_length=255, blank=True, null=True)

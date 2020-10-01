@@ -1,0 +1,71 @@
+{% extends "base_page_schema.html" %}
+
+{% load i18n %}
+{% load static %}
+{% load good_delivery_tags %}
+
+{% block menu_links %}
+{% include 'operator_menu.html' %}
+{% endblock menu_links %}
+
+{% block top_buttons %}
+<a role="button" class="btn btn-outline-secondary"
+   href="{% url 'good_delivery:operator_good_delivery_detail' campaign.slug delivery_point.pk good_delivery.pk %}">
+    <svg class="icon icon-xs">
+        <use xlink:href="{% static 'svg/sprite.svg' %}#it-arrow-left"></use>
+    </svg> {{ good_delivery }}
+</a>
+{% endblock top_buttons %}
+
+{% block page_content %}
+ <form method="post" enctype="multipart/form-data">
+    {% include 'form_template.html' %}
+    {% block form_buttons %}
+    <div>
+        <button type="button"
+                class="btn btn-danger btn-block"
+                data-toggle="modal"
+                data-target="#disableDelivery">
+                <svg class="icon icon-xs icon-white">
+                    <use xlink:href="{% static 'svg/sprite.svg' %}#it-check"></use>
+                </svg> {% trans "Chiudi la richiesta" %}
+        </button>
+        <div class="modal fade" tabindex="-1" role="dialog" id="disableDelivery">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            {% trans "Disabilitazione consegna" %}
+                        </h5>
+                        <button class="close" type="button"
+                                data-dismiss="modal" aria-label="Close">
+                           <svg class="icon">
+                              <use xlink:href="{% static 'svg/sprite.svg' %}#it-close"></use>
+                           </svg>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>{% trans "Vuoi davvero disabilitare la consegna" %}
+                           <br>
+                           <b>{{ good_delivery }}</b> ?
+                        </p>
+                    </div>
+                    <div class="modal-footer">
+                        <input class="btn btn-danger"
+                               type="submit"
+                               id="submitForm"
+                               value="{% trans 'Si, disabilita la consegna' %}">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock form_buttons %}
+</form>
+{% endblock page_content %}
+
+{% block extra_scripts %}
+{{ block.super }}
+{{ form.media }}
+{% endblock extra_scripts %}
+
