@@ -513,6 +513,7 @@ def operator_good_delivery_detail(request, campaign_id, delivery_point_id,
                             .annotate(name_count=Count('good_stock_identifier'))\
                             .filter(name_count__gt=1)
             if duplicates:
+                # TODO: cover
                 for duplicate in duplicates:
                     value = duplicate['good_stock_identifier']
                     duplicate_items = GoodDeliveryItem.objects\
