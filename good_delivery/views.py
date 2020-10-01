@@ -124,7 +124,7 @@ def operator_campaign_detail(request, campaign_id, campaign, delivery_points):
     d = {'campaign': campaign,
          'delivery_points': delivery_points,
          'sub_title': campaign,
-         'title': title,}
+         'title': title}
 
     return render(request, template, d)
 
@@ -326,8 +326,10 @@ def operator_good_delivery_add_items(request, campaign_id, delivery_point_id,
 
         # identity document required?
         if campaign.identity_document_required:
-            document_type = post_dict.pop('document_type')
-            document_id = post_dict.pop('document_id')
+            document_type = post_dict.pop('document_type') \
+                            if post_dict.get('document_type') else None
+            document_id = post_dict.pop('document_id') \
+                          if post_dict.get('document_id') else None
 
             if not document_type or not document_id:
                 messages.add_message(request, messages.ERROR,

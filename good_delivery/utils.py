@@ -1,3 +1,6 @@
+import webbrowser
+import os
+
 from django.conf import settings
 from django.core.mail import send_mail
 from django.shortcuts import render
@@ -37,3 +40,12 @@ def get_labeled_errors(form):
         field = form.fields[field_name]
         d[field.label] = form.errors[field_name]
     return d
+
+
+def open_html_in_webbrowser(bhtml, fpath='/tmp'):  # pragma: no cover
+    fname = '{}/{}.html'.format(fpath,
+                                __name__)
+    with open(fname ,'wb') as f:
+        f.write(bhtml)
+        webbrowser.open_new_tab(fname)
+    
