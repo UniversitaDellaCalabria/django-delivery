@@ -172,7 +172,7 @@ class DeliveryPointGoodStock(TimeStampedModel):
 
         delivered_quantity = 0
         for delivered_item in delivered_items:
-            delivered_quantity += delivered.item.quantity
+            delivered_quantity += delivered_item.quantity
         if self.max_number > 0:
             return self.max_number - delivered_quantity
         return True

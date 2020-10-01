@@ -206,6 +206,15 @@ class GoodDeliveryTest(TestCase):
         req = self.client.post(url, data=data, follow=True)
         assert b'Inserisci gli estremi' in req.content
         
+        # test invalid quantities
+        data = _item_data.copy()
+        data['{}1'.format(_stock_prefix)] = '1.2'
+        csrf_data = self._get_csrfmiddlewaretoken(req.context)
+        data.update(csrf_data)
+        req = self.client.post(url, data=data, follow=True)
+        assert b'reali' in req.content
+        
+        # test buono
         data = _item_data.copy()
         csrf_data = self._get_csrfmiddlewaretoken(req.context)
         data.update(csrf_data)

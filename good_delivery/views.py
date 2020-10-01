@@ -350,7 +350,8 @@ def operator_good_delivery_add_items(request, campaign_id, delivery_point_id,
                                 campaign_id=campaign_id,
                                 delivery_point_id=delivery_point_id,
                                 good_delivery_id=good_delivery.pk)
-
+            
+            quantity = int(v)
             # get single stock
             stock_prefix = getattr(settings,
                                    "GOOD_STOCK_FORMS_PREFIX",
@@ -361,7 +362,7 @@ def operator_good_delivery_add_items(request, campaign_id, delivery_point_id,
             available_items = stock.get_available_items()
             # if choosen quantity exceeds stock availability
             if type(available_items) == int and \
-               int(v) > available_items:
+               quantity > available_items:
                 messages.add_message(request, messages.ERROR,
                                      _("La quantità residua nello "
                                        "stock <b>{}</b> è di "
@@ -374,19 +375,18 @@ def operator_good_delivery_add_items(request, campaign_id, delivery_point_id,
                 # and user has to select an ID number for every one
                 dpgsi = DeliveryPointGoodStockIdentifier
                 has_identifier = dpgsi.objects.filter(delivery_point_stock=stock).first()
+                
                 if has_identifier:
-                    i = 1
-                    while i <= int(v):
-                        good_delivery_item = GoodDeliveryItem(good_delivery=good_delivery,
-                                                              quantity=1,
-                                                              good=stock.good)
-                        good_delivery_item.save()
-                        i += 1
+                    for i in range(quantity):
+                        good_delivery_item = GoodDeliveryItem.objects.\
+                                                create(good_delivery=good_delivery,
+                                                       quantity=1,
+                                                       good=stock.good)
                 # else (e.g. glasses of water, bananas...)
                 # quantity is choosen by user
-                else:
+                else: # pragma: no cover
                     good_delivery_item = GoodDeliveryItem(good_delivery=good_delivery,
-                                                          quantity=v,
+                                                          quantity=quantity,
                                                           good=stock.good)
                     good_delivery_item.save()
 
@@ -473,6 +473,7 @@ def operator_good_delivery_detail(request, campaign_id, delivery_point_id,
             prefix_index+=1
     logs = LogEntry.objects.filter(content_type_id=ContentType.objects.get_for_model(good_delivery).pk,
                                    object_id=good_delivery.pk)
+    
     if request.POST:
         if good_delivery.delivery_point != delivery_point:
             messages.add_message(request, messages.ERROR,
