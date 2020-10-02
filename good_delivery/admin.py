@@ -60,8 +60,11 @@ class DeliveryPointGoodStockIdentifierAdmin(admin.ModelAdmin):
 
 @admin.register(GoodDelivery)
 class GoodDeliveryAdmin(admin.ModelAdmin):
-    list_display = ('delivered_to', 'create', 'modified')
-    list_filter = ('delivered_to',)
+    list_display = ('delivered_to', 'create',
+                    'modified','choosen_delivery_point',
+                    'delivery_point')
+    autocomplete_fields = ('delivered_to',)
+    list_filter = ('delivery_point','create','delivery_date')
     search_fields = ('delivered_to',)
     inlines = [GoodDeliveryItemInline,]
 
