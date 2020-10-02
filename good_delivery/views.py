@@ -1176,10 +1176,10 @@ def operator_good_delivery_item_delete(request, campaign_id, delivery_point_id,
 
         mail_params = {
                    'hostname': settings.HOSTNAME,
-                   'user': good_delivery_item.delivered_to,
+                   'user': good_delivery.delivered_to,
                   }
         send_custom_mail(subject=_("{} - eliminazione bene").format(good_delivery_item),
-                         recipients=[good_delivery_item.delivered_to],
+                         recipients=[good_delivery.delivered_to],
                          body=msg,
                          params=mail_params)
 
