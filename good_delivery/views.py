@@ -197,7 +197,13 @@ def operator_new_delivery(request, campaign_id, delivery_point_id,
                                          choosen_delivery_point=delivery_point)
             good_delivery.save()
             messages.add_message(request, messages.SUCCESS,
-                                 _("{} inserito con successo.").format(user))
+                                 _("{} creata con successo.").format(user))
+
+            # log action
+            good_delivery.log_action(_("Creazione della consegna"),
+                                     CHANGE,
+                                     request.user)
+
             return redirect('good_delivery:operator_good_delivery_detail',
                             campaign_id=campaign_id,
                             delivery_point_id=delivery_point_id,
@@ -263,6 +269,13 @@ def operator_another_delivery(request, campaign_id, delivery_point_id,
                                 delivered_to=good_delivery.delivered_to,
                                 campaign=good_delivery.campaign)
     new_delivery.save()
+
+    # log action
+    new_delivery.log_action(_("Creazione nuova consegna in seguito a "
+                              "disabilitazione di {}").format(good_delivery),
+                            CHANGE,
+                            request.user)
+
     return redirect('good_delivery:operator_good_delivery_detail',
                     campaign_id=campaign_id,
                     delivery_point_id=delivery_point_id,
@@ -386,6 +399,10 @@ def operator_good_delivery_add_items(request, campaign_id, delivery_point_id,
                                                 create(good_delivery=good_delivery,
                                                        quantity=1,
                                                        good=stock.good)
+                        # log action
+                        good_delivery.log_action(_("Inserimento item {}").format(good_delivery_item),
+                                                CHANGE,
+                                                request.user)
                 # else (e.g. glasses of water, bananas...)
                 # quantity is choosen by user
                 else: # pragma: no cover
@@ -394,6 +411,12 @@ def operator_good_delivery_add_items(request, campaign_id, delivery_point_id,
                                                           good=stock.good)
                     good_delivery.delivered_by = request.user
                     good_delivery_item.save()
+
+                    # log action
+                    good_delivery.log_action(_("Inserimento {} item {}").format(quantity,
+                                                                                good_delivery_item),
+                                            CHANGE,
+                                            request.user)
 
                 # set operator data in good delivery
                 good_delivery.delivery_point = delivery_point
@@ -532,6 +555,10 @@ def operator_good_delivery_detail(request, campaign_id, delivery_point_id,
             else:
                 good_delivery.delivered_by = request.user
                 good_delivery.save()
+                # log action
+                good_delivery.log_action(_("Inserimento identificatori univoci"),
+                                         CHANGE,
+                                         request.user)
                 messages.add_message(request, messages.SUCCESS,
                                      _("Modifica effettuata correttamente"))
             return redirect('good_delivery:operator_good_delivery_detail',
@@ -600,10 +627,9 @@ def operator_good_delivery_deliver(request, campaign_id, delivery_point_id,
         good_delivery.mark_as_delivered(delivery_point=delivery_point,
                                         operator=request.user)
         msg = _("{} consegnata (senza agreement)").format(good_delivery)
+        # log action
         good_delivery.log_action(msg, CHANGE, request.user)
-
-        messages.add_message(request, messages.SUCCESS,
-                                 _("Consegna completata"))
+        messages.add_message(request, messages.SUCCESS, msg)
     return redirect('good_delivery:operator_campaign_detail',
                     campaign_id=campaign_id)
 
@@ -649,10 +675,9 @@ def operator_good_delivery_reset(request, campaign_id, delivery_point_id,
         good_delivery.document_id = None
         good_delivery.notes = None
         good_delivery.save()
-        msg = _("{} reset complete").format(good_delivery)
+        msg = _("Reset di {} effettuato").format(good_delivery)
         good_delivery.log_action(msg, CHANGE, request.user)
-        messages.add_message(request, messages.SUCCESS,
-                                 _("Reset completato"))
+        messages.add_message(request, messages.SUCCESS, msg)
     return redirect('good_delivery:operator_good_delivery_detail',
                     campaign_id=campaign_id,
                     delivery_point_id=delivery_point_id,
@@ -708,11 +733,10 @@ def operator_good_delivery_disable(request, campaign_id, delivery_point_id,
                                               'disable_notes',
                                               'modified'])
 
-            msg = _("{} disabilitata").format(good_delivery)
+            msg = _("{} disabilitata con successo").format(good_delivery)
             good_delivery.log_action(msg, CHANGE, request.user)
 
-            messages.add_message(request, messages.SUCCESS,
-                                     _("Disabilitazione completata"))
+            messages.add_message(request, messages.SUCCESS, msg)
             return redirect('good_delivery:operator_campaign_detail',
                             campaign_id=campaign_id)
         else:
@@ -807,6 +831,10 @@ def user_use_token(request):
             msg = _("Hai confermato correttamente la consegna")
             good_delivery.mark_as_delivered(delivery_point=good_delivery.delivery_point,
                                             operator=good_delivery.delivered_by)
+            # log action
+            good_delivery.log_action(_("Consegna di {} confermata dall'utente"),
+                                     CHANGE,
+                                     request.user)
             return custom_message(request=request,
                                   message=msg,
                                   msg_type='success')
@@ -860,8 +888,10 @@ def operator_good_delivery_send_token(request, campaign_id, delivery_point_id,
                              _("Inserire almeno un bene"))
     else:
         _generate_good_delivery_token_email(request, good_delivery)
-        messages.add_message(request, messages.SUCCESS,
-                             _("Link di attivazione inviato a {}").format(good_delivery.delivered_to.email))
+        # log action
+        msg = _("Token di attivazione generato e inviato a {}").format(good_delivery.delivered_to.email)
+        good_delivery.log_action(msg, CHANGE, request.user)
+        messages.add_message(request, messages.SUCCESS, msg)
     return redirect('good_delivery:operator_good_delivery_detail',
                     campaign_id=campaign_id,
                     delivery_point_id=delivery_point_id,
@@ -919,11 +949,10 @@ def operator_good_delivery_item_return(request, campaign_id, delivery_point_id,
         good_delivery_item.returned_to = request.user
         good_delivery_item.save()
 
-        msg = _("{} restituito").format(good_delivery_item)
+        msg = _("{} restituito correttamente").format(good_delivery_item)
         good_delivery.log_action(msg, CHANGE, request.user)
 
-        messages.add_message(request, messages.SUCCESS,
-                                 _("Restituzione completata"))
+        messages.add_message(request, messages.SUCCESS, msg)
     return redirect('good_delivery:operator_good_delivery_detail',
                     campaign_id=campaign_id,
                     delivery_point_id=delivery_point_id,
@@ -997,8 +1026,9 @@ def operator_good_delivery_add_replaced_item(request, campaign_id, delivery_poin
             if not campaign.require_agreement:
                 good_delivery_item.delivery_date = timezone.localtime()
             good_delivery_item.save()
-            messages.add_message(request, messages.SUCCESS,
-                                 _("{} aggiunto con successo").format(good))
+            msg = _("{} aggiunto con successo").format(good)
+            good_delivery.log_action(msg, CHANGE, request.user)
+            messages.add_message(request, messages.SUCCESS, msg)
             return redirect('good_delivery:operator_good_delivery_detail',
                             campaign_id=campaign_id,
                             delivery_point_id=delivery_point_id,
@@ -1064,11 +1094,9 @@ def operator_good_delivery_item_delete(request, campaign_id, delivery_point_id,
     if good_delivery_item.can_be_deleted():
         good_delivery_item.delete()
 
-        msg = _("{} eliminato").format(good_delivery_item)
+        msg = _("{} eliminato correttamente").format(good_delivery_item)
         good_delivery.log_action(msg, CHANGE, request.user)
-
-        messages.add_message(request, messages.SUCCESS,
-                             _("Eliminazione completata"))
+        messages.add_message(request, messages.SUCCESS, msg)
 
     else:
         messages.add_message(request, messages.ERROR,
@@ -1078,17 +1106,6 @@ def operator_good_delivery_item_delete(request, campaign_id, delivery_point_id,
                     campaign_id=campaign_id,
                     delivery_point_id=delivery_point_id,
                     good_delivery_id=good_delivery_id)
-
-
-
-
-
-
-
-
-
-
-
 
 
 

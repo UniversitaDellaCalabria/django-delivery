@@ -267,7 +267,7 @@ class GoodDeliveryTest(TestCase):
         url = reverse('good_delivery:operator_good_delivery_send_token',
               kwargs=url_kwargs)
         req = self.client.get(url, follow=True)
-        assert b'Link di attivazione inviato' in req.content
+        assert b'Token di attivazione generato' in req.content
 
         ## user access
         self.client.force_login(self.user)
@@ -329,7 +329,7 @@ class GoodDeliveryTest(TestCase):
         gd = GoodDelivery.objects.get(pk=campaign_booking.pk)
         assert gd.disabled_date
         assert gd.state == 'disabilitata'
-        assert b'Disabilitazione completata' in req.content
+        assert b'disabilitata con successo' in req.content
 
 
     def test_op_delivery_delete(self):
@@ -423,7 +423,7 @@ class GoodDeliveryTest(TestCase):
         data.update(csrf_data)
         req = self.client.post(url, data=data, follow=True)
 
-        assert b'Disabilitazione completata' in req.content
+        assert b'disabilitata con successo' in req.content
         assert req.status_code == 200
 
         # deliver again
