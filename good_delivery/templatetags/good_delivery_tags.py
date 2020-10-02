@@ -7,8 +7,9 @@ from django.contrib.auth import get_user_model
 from django.template.defaultfilters import stringfilter
 from django.utils import timezone
 
-from good_delivery.jwts import *
 from good_delivery import settings as good_delivery_settings
+from good_delivery.jwts import *
+from good_delivery.models import GoodDelivery
 
 
 register = template.Library()
