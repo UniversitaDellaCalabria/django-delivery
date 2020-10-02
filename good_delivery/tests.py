@@ -329,7 +329,7 @@ class GoodDeliveryTest(TestCase):
         gd = GoodDelivery.objects.get(pk=campaign_booking.pk)
         assert gd.disabled_date
         assert gd.state == 'disabilitata'
-        assert b'disabilitata con successo' in req.content
+        assert b'Disabilitazione effettuata successo' in req.content
 
 
     def test_op_delivery_delete(self):
@@ -423,7 +423,7 @@ class GoodDeliveryTest(TestCase):
         data.update(csrf_data)
         req = self.client.post(url, data=data, follow=True)
 
-        assert b'disabilitata con successo' in req.content
+        assert b'Disabilitazione effettuata successo' in req.content
         assert req.status_code == 200
 
         # deliver again

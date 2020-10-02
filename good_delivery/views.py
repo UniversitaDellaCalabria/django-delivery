@@ -432,9 +432,14 @@ def operator_good_delivery_add_items(request, campaign_id, delivery_point_id,
                         good_delivery_id=good_delivery_id)
 
     template = "operator_good_delivery_preload.html"
+
+    logs = LogEntry.objects.filter(content_type_id=ContentType.objects.get_for_model(good_delivery).pk,
+                                   object_id=good_delivery.pk)
+
     d = {'campaign': campaign,
          'delivery_point': delivery_point,
          'good_delivery': good_delivery,
+         'logs': logs,
          'stocks': stocks,
          'sub_title': delivery_point,
          'title': "titolo",}
@@ -626,7 +631,8 @@ def operator_good_delivery_deliver(request, campaign_id, delivery_point_id,
     else:
         good_delivery.mark_as_delivered(delivery_point=delivery_point,
                                         operator=request.user)
-        msg = _("{} consegnata (senza agreement)").format(good_delivery)
+        msg = _("Consegna (senza conferma da parte dell'utente) "
+                "effettuata con successo").format(good_delivery)
         # log action
         good_delivery.log_action(msg, CHANGE, request.user)
         messages.add_message(request, messages.SUCCESS, msg)
@@ -675,7 +681,7 @@ def operator_good_delivery_reset(request, campaign_id, delivery_point_id,
         good_delivery.document_id = None
         good_delivery.notes = None
         good_delivery.save()
-        msg = _("Reset di {} effettuato").format(good_delivery)
+        msg = _("Reset effettuato con successo").format(good_delivery)
         good_delivery.log_action(msg, CHANGE, request.user)
         messages.add_message(request, messages.SUCCESS, msg)
     return redirect('good_delivery:operator_good_delivery_detail',
@@ -733,7 +739,7 @@ def operator_good_delivery_disable(request, campaign_id, delivery_point_id,
                                               'disable_notes',
                                               'modified'])
 
-            msg = _("{} disabilitata con successo").format(good_delivery)
+            msg = _("Disabilitazione effettuata successo").format(good_delivery)
             good_delivery.log_action(msg, CHANGE, request.user)
 
             messages.add_message(request, messages.SUCCESS, msg)
@@ -828,13 +834,13 @@ def user_use_token(request):
             msg = _("Consegna già effetuata")
         else:
             # success!
-            msg = _("Hai confermato correttamente la consegna")
             good_delivery.mark_as_delivered(delivery_point=good_delivery.delivery_point,
                                             operator=good_delivery.delivered_by)
             # log action
-            good_delivery.log_action(_("Consegna di {} confermata dall'utente"),
+            good_delivery.log_action(_("Consegna confermata dall'utente"),
                                      CHANGE,
                                      request.user)
+            msg = _("Hai confermato correttamente la consegna")
             return custom_message(request=request,
                                   message=msg,
                                   msg_type='success')
