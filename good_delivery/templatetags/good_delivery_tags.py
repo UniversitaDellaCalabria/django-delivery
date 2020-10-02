@@ -39,6 +39,6 @@ def user_from_pk(user_id):
     return user
 
 @register.simple_tag
-def user_good_deliveries():
-    return GoodDelivery.objects.filter(delivered_to=request.user,
+def user_good_deliveries(user):
+    return GoodDelivery.objects.filter(delivered_to=user,
                                        campaign__is_active=True)
