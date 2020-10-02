@@ -1097,10 +1097,10 @@ def operator_good_delivery_add_replaced_item(request, campaign_id, delivery_poin
 
             mail_params = {
                    'hostname': settings.HOSTNAME,
-                   'user': good_delivery_item.delivered_to,
+                   'user': good_delivery.delivered_to,
                   }
             send_custom_mail(subject=_("{} - aggiunta nuovo bene").format(good_delivery_item),
-                             recipients=[good_delivery_item.delivered_to],
+                             recipients=[good_delivery.delivered_to],
                              body=msg,
                              params=mail_params)
 
