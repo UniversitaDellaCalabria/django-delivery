@@ -485,7 +485,9 @@ class GoodDeliveryTest(TestCase):
         assert b'Consegna non completata' in req.content
 
         gd.delivered_by = self.operator
-        gd.save()
+        # with gd.save() field gd.modified will be updated
+        # and token check will fail!
+        gd.save(update_fields=['delivered_by'])
 
         req = self.client.get(url, data={'token': token})
         assert b'Hai confermato' in req.content

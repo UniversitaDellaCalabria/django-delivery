@@ -789,7 +789,7 @@ def user_use_token(request):
                                           pk=pk,
                                           delivered_to__pk=user_id,
                                           delivery_point__pk=delivery_point_id,
-                                          # modified=modified
+                                          modified=modified
                                           )
         campaign = good_delivery.campaign
         if request.user.is_authenticated and not request.user.pk==user_id:
@@ -814,7 +814,9 @@ def user_use_token(request):
     except Exception as e:
         logger.exception(e)
         return custom_message(request=request,
-                              message=_("Invalid token"),
+                              message=_("Token non valido. "
+                                        "Se la consegna ha subito ulteriori modifiche, "
+                                        "prova a inviarne uno nuovo"),
                               status=500)
 
 @login_required

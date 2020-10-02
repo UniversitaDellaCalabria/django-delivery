@@ -73,8 +73,7 @@ class DeliveryCampaign(TimeStampedModel):
     # @property
     # TODO perchè la data di inizio no?
     def is_in_progress(self):
-        # return self.date_start <= timezone.localtime() and
-        return self.date_end > timezone.localtime()
+        return self.date_start <= timezone.localtime() and self.date_end > timezone.localtime()
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)
