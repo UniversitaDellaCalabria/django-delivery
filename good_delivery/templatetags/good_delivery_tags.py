@@ -36,3 +36,8 @@ def user_from_pk(user_id):
     user = user_model.objects.get(pk=user_id)
     if not user: return False
     return user
+
+@register.simple_tag
+def user_good_deliveries():
+    return GoodDelivery.objects.filter(delivered_to=request.user,
+                                       campaign__is_active=True)
