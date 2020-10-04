@@ -7,9 +7,9 @@
             <button class="btn btn-primary btn-sm" href="#" type="button">
                 {% trans "Ruolo" %}:
                 {% if campaign or is_operator %}
-                    {% trans "Operatore" %}
+                    {% trans "Operatore Consegne" %}
                 {% else %}
-                    {% trans "Utente" %}
+                    {% trans "Utente Consegne" %}
                 {% endif %}
             </button>
         </div>
@@ -21,12 +21,12 @@
                     <ul class="link-list">
                         <li>
                             <a class="list-item" href="{% url 'good_delivery:user_index' %}">
-                                <span>{% trans "Utente" %}</span>
+                                <span>{% trans "Utente Consegne" %}</span>
                             </a>
                         </li>
                         <li>
                             <a class="list-item" href="{% url 'good_delivery:operator_active_campaigns' %}">
-                                <span>{% trans "Operatore" %}</span>
+                                <span>{% trans "Operatore Consegne" %}</span>
                             </a>
                         </li>
                         <li>

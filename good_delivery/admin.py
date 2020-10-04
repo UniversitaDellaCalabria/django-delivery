@@ -64,6 +64,7 @@ class GoodDeliveryAdmin(admin.ModelAdmin):
     list_filter = ('delivered_to',)
     search_fields = ('delivered_to',)
     inlines = [GoodDeliveryItemInline,]
+    autocomplete_fields = ('delivered_to', 'delivered_by', 'disabled_by')
 
 @admin.register(Agreement)
 class AgreementAdmin(admin.ModelAdmin):

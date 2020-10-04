@@ -5,8 +5,9 @@ from .models import *
 
 
 class OperatorDeliveryPointInline(admin.TabularInline):
-	 model = OperatorDeliveryPoint
-	 extra = 0
+    model = OperatorDeliveryPoint
+    autocomplete_fields = ('operator',)
+    extra = 0
 
 
 class DeliveryCampaignAgreementInline(admin.TabularInline):
@@ -31,4 +32,5 @@ class DeliveryPointGoodStockInline(admin.TabularInline):
 
 class GoodDeliveryItemInline(admin.TabularInline):
     model = GoodDeliveryItem
+    autocomplete_fields = ('good_stock_identifier',)
     extra = 0
