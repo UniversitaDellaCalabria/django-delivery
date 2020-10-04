@@ -10,6 +10,8 @@ A stock of available products is defined for each delivery point, each of which 
 Users entitled to collect the goods are associated with a single delivery point.
 
 ![Alt text](gallery/1.png) 
+![Alt text](gallery/4.png) 
+![Alt text](gallery/5.png) 
 
 Management and flow description
 -------------------------------

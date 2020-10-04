@@ -62,6 +62,10 @@ description:
     screenshots:
       - >-
         https://raw.githubusercontent.com/UniversitaDellaCalabria/django-delivery/master/gallery/1.png
+      - >-
+        https://raw.githubusercontent.com/UniversitaDellaCalabria/django-delivery/master/gallery/4.png
+      - >-
+        https://raw.githubusercontent.com/UniversitaDellaCalabria/django-delivery/master/gallery/5.png
     shortDescription: 'Manage the delivery of goods, such as a sim cards or a 4g routers.  '
 developmentStatus: stable
 intendedAudience:
@@ -81,7 +85,6 @@ it:
     spid: false
   riuso:
     codiceIPA: unical
-landingURL: 'https://github.com/UniversitaDellaCalabria/uniTicket'
 legal:
   authorsFile: >-
     https://raw.githubusercontent.com/UniversitaDellaCalabria/django-delivery/master/AUTHORS
