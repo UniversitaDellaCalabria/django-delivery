@@ -33,18 +33,8 @@
 <div class="card-text">
     <ul>
     {% for item in good_delivery.gooddeliveryitem_set.all %}
-        <li>
+        <li class="mb-2">
             <b>{{ item }}</b>
-            {% if item.return_date %}
-            <br>
-            <span class="badge badge-warning">
-                {% trans "Restituito" %}
-                -
-                {{ item.return_date }}
-                -
-                {{ item.returned_to }}
-            </span>
-            {% endif %}
             <br>
             {% if item.good_identifier %}
                 {% trans "ID" %}: {{ item.good_identifier }}
@@ -52,10 +42,26 @@
             {% endif %}
             {% trans "Quantità" %}: {{ item.quantity }}
 
+            {% if item.create > good_delivery.delivery_date and item.delivery_date %}
+            <br>
+            <span class="badge badge-success">
+                {% trans "Consegnato" %}
+            </span>
+            {{ item.delivery_date }} - {{ item.delivery_point }} - {{ item.delivered_by }}
+            {% endif %}
+
+            {% if item.return_date %}
+            <br>
+            <span class="badge badge-warning">
+                {% trans "Restituito" %}
+            </span>
+            {{ item.return_date }} - {{ item.returned_point }} - {{ item.returned_to }}
+            {% endif %}
+
             {% if campaign and item.can_be_returned %}
             <br>
             <button type="button"
-               class="btn btn-outline-warning btn-xs mt-1 mb-4"
+               class="btn btn-outline-warning btn-xs mt-1"
                data-toggle="modal"
                data-target="#returnGood_{{ item.pk }}">
                 <svg class="icon icon-xs icon-warning">
@@ -93,6 +99,48 @@
                     </div>
                 </div>
             </div>
+
+            {% if item.can_be_deleted %}
+                <button type="button"
+                   class="btn btn-outline-danger btn-xs mt-1"
+                   data-toggle="modal"
+                   data-target="#deleteGood_{{ item.pk }}">
+                    <svg class="icon icon-xs icon-danger">
+                        <use xlink:href="{% static 'svg/sprite.svg' %}#it-delete"></use>
+                    </svg> {% trans "Elimina" %}
+                </button>
+                <div class="modal fade" tabindex="-1" role="dialog" id="deleteGood_{{ item.pk }}">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">
+                                    {% trans "Eliminazione bene" %}
+                                </h5>
+                                <button class="close" type="button"
+                                        data-dismiss="modal" aria-label="Close">
+                                   <svg class="icon">
+                                      <use xlink:href="{% static 'svg/sprite.svg' %}#it-close"></use>
+                                   </svg>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <p>
+                                    {% trans "Desideri effettuare l'eliminazione bene" %}
+                                    <b>{{ item }}</b>
+                                    {% trans "con identificativo" %}
+                                    <b>{{ item.good_identifier }}</b>?
+                                </p>
+                            </div>
+                            <div class="modal-footer">
+                                <a role="button" class="btn btn-danger"
+                                   href="{% url 'good_delivery:operator_good_delivery_item_delete' campaign.slug delivery_point.pk good_delivery.pk item.pk %}">
+                                    {% trans "Si, confermo" %}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
             {% endif %}
         </li>
     {% endfor %}
@@ -120,5 +168,7 @@
     <b>{% trans "Punto di consegna" %}:</b> {{ good_delivery.disabled_point }}
     <br>
     <b>{% trans "Operatore" %}:</b> {{ good_delivery.disabled_by }}
+    <br>
+    <b>{% trans "Motivazione" %}:</b> {{ good_delivery.disable_notes }}
 </p>
 {% endif %}

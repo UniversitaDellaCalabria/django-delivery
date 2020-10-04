@@ -28,42 +28,12 @@
     </svg> {{ delivery_point }}
 </a>
 {% if good_delivery.can_be_disabled %}
-<button type="button"
-   class="btn btn-outline-danger"
-   data-toggle="modal"
-   data-target="#disableDelivery">
+<a role="button" class="btn btn-outline-danger"
+   href="{% url 'good_delivery:operator_good_delivery_disable' campaign.slug delivery_point.pk good_delivery.pk %}">
     <svg class="icon icon-xs icon-danger">
         <use xlink:href="{% static 'svg/sprite.svg' %}#it-ban"></use>
     </svg> {% trans "Disabilita" %}
-</button>
-<div class="modal fade" tabindex="-1" role="dialog" id="disableDelivery">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    {% trans "Disabilita procedura di consegna" %}
-                </h5>
-                <button class="close" type="button"
-                        data-dismiss="modal" aria-label="Close">
-                   <svg class="icon">
-                      <use xlink:href="{% static 'svg/sprite.svg' %}#it-close"></use>
-                   </svg>
-                </button>
-            </div>
-            <div class="modal-body">
-                <p>{% trans "Desideri disabilitare la procedura di consegna " %}
-                   <b>{{ good_delivery }}</b> ?
-                </p>
-            </div>
-            <div class="modal-footer">
-                <a role="button" class="btn btn-danger"
-                   href="{% url 'good_delivery:operator_good_delivery_disable' campaign.slug delivery_point.pk good_delivery.pk %}">
-                    {% trans "Si, confermo" %}
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
+</a>
 {% endif %}
 {% endblock top_buttons %}
 
@@ -137,4 +107,7 @@
                value="{% trans 'Procedi' %}">
         {% endblock form_buttons %}
     </form>
+
+    {% include "logs.html" %}
+
 {% endblock page_content %}

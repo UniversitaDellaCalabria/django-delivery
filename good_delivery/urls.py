@@ -27,6 +27,7 @@ urlpatterns = [
 
     path(f'{op_prefix_camp}/<str:campaign_id>/<int:delivery_point_id>/<int:good_delivery_id>/', operator_good_delivery_detail, name='operator_good_delivery_detail'),
     path(f'{op_prefix_camp}/<str:campaign_id>/<int:delivery_point_id>/<int:good_delivery_id>/add-items/', operator_good_delivery_add_items, name='operator_good_delivery_add_items'),
+    path(f'{op_prefix_camp}/<str:campaign_id>/<int:delivery_point_id>/<int:good_delivery_id>/add-replaced-item/<int:good_id>/', operator_good_delivery_add_replaced_item, name='operator_good_delivery_add_replaced_item'),
     path(f'{op_prefix_camp}/<str:campaign_id>/<int:delivery_point_id>/<int:good_delivery_id>/deliver/', operator_good_delivery_deliver, name='operator_good_delivery_deliver'),
     path(f'{op_prefix_camp}/<str:campaign_id>/<int:delivery_point_id>/<int:good_delivery_id>/reset/', operator_good_delivery_reset, name='operator_good_delivery_reset'),
     path(f'{op_prefix_camp}/<str:campaign_id>/<int:delivery_point_id>/<int:good_delivery_id>/disable/', operator_good_delivery_disable, name='operator_good_delivery_disable'),
@@ -34,6 +35,7 @@ urlpatterns = [
     path(f'{op_prefix_camp}/<str:campaign_id>/<int:delivery_point_id>/<int:good_delivery_id>/send-token/', operator_good_delivery_send_token, name='operator_good_delivery_send_token'),
 
     path(f'{op_prefix_camp}/<str:campaign_id>/<int:delivery_point_id>/<int:good_delivery_id>/<int:good_delivery_item_id>/return/', operator_good_delivery_item_return, name='operator_good_delivery_item_return'),
+    path(f'{op_prefix_camp}/<str:campaign_id>/<int:delivery_point_id>/<int:good_delivery_id>/<int:good_delivery_item_id>/delete/', operator_good_delivery_item_delete, name='operator_good_delivery_item_delete'),
 
     # path(f'{op_prefix_camp}/<str:campaign_id>/<int:user_delivery_point_id>/<int:good_delivery_id>/enable/', good_delivery_enable, name='good_delivery_enable'),
 ]
