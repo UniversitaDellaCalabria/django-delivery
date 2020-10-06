@@ -34,14 +34,16 @@
 {% endblock top_buttons %}
 
 {% block over_content %}
-<div class="card-wrapper card-space">
-    <div class="card card-bg no-after">
-        <div class="card-body">
-            <ul>
-                <li>{% trans "Prodotti consegnati" %}: <b>{{ total_delivered_items }}</b></li>
-                <li>{% trans "Resi effettuati" %}: <b>{{ total_returned_items }}</b></li>
-                <li>{% trans "Consegne annullate" %}: <b>{{ total_disabled_deliveries }}</b></li>
-            </ul>
+<div class="col-12 col-lg-4">
+    <div class="card-wrapper card-space">
+        <div class="card card-bg no-after">
+            <div class="card-body">
+                <ul>
+                    <li>{% trans "Prodotti consegnati" %}: <b>{{ total_delivered_items }}</b></li>
+                    <li>{% trans "Resi effettuati" %}: <b>{{ total_returned_items }}</b></li>
+                    <li>{% trans "Consegne annullate" %}: <b>{{ total_disabled_deliveries }}</b></li>
+                </ul>
+            </div>
         </div>
     </div>
 </div>
