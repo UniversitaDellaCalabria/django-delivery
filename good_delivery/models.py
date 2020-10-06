@@ -189,6 +189,7 @@ class DeliveryPointGoodStockIdentifier(TimeStampedModel):
                                              on_delete=models.CASCADE)
     good_identifier = models.CharField(max_length=255, blank=True, null=True,
                                        help_text=_('Identificativo del prodotto/servizio'))
+    notes = models.TextField(max_length=511, null=True, blank=True)
 
     class Meta:
         verbose_name = _('Identificativo bene in stock')

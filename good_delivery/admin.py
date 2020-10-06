@@ -53,7 +53,7 @@ class DeliveryPointGoodStockAdmin(admin.ModelAdmin):
 
 @admin.register(DeliveryPointGoodStockIdentifier)
 class DeliveryPointGoodStockIdentifierAdmin(admin.ModelAdmin):
-    list_display = ('delivery_point_stock','good_identifier')
+    list_display = ('delivery_point_stock','good_identifier','notes')
     list_filter = ('delivery_point_stock',)
     search_fields = ('delivery_point_stock','good_identifier')
 
