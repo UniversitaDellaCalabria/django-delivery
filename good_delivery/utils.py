@@ -4,6 +4,7 @@ import os
 from django.conf import settings
 from django.core.mail import send_mail
 from django.shortcuts import render
+from django.utils.html import strip_tags
 from django.utils.translation import gettext as _
 
 
@@ -28,7 +29,8 @@ def send_custom_mail(subject, recipients, body, params={}):
                          settings.MSG_FOOTER]
         msg_body = ''.join([i.__str__() for i in msg_body_list]).format(**params)
         result = send_mail(subject=subject,
-                           message=msg_body,
+                           html_message=msg_body,
+                           message=strip_tags(msg_body),
                            from_email=settings.EMAIL_SENDER,
                            recipient_list=recipients_list,
                            fail_silently=False)
@@ -48,4 +50,4 @@ def open_html_in_webbrowser(bhtml, fpath='/tmp'):  # pragma: no cover
     with open(fname ,'wb') as f:
         f.write(bhtml)
         webbrowser.open_new_tab(fname)
-    
+

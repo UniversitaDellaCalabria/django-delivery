@@ -431,7 +431,8 @@ class Agreement(TimeStampedModel):
     """
     name = models.CharField(max_length=255)
     # description = models.TextField(max_length=1023)
-    description = RichTextField(max_length=1023)
+    subject = models.CharField(max_length=255)
+    description = RichTextField(max_length=12000)
     is_active = models.BooleanField(default=True)
 
     class Meta:
