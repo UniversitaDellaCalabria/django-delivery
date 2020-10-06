@@ -153,11 +153,23 @@ def operator_delivery_point_detail(request, campaign_id, delivery_point_id,
     """
     title = _("Prenotazioni da gestire")
     template = "operator_delivery_point_detail.html"
+
+    total_delivered_items = GoodDeliveryItem.objects.filter(delivery_date__isnull=False,
+                                                            delivery_point=delivery_point).count()
+    total_returned_items = GoodDeliveryItem.objects.filter(return_date__isnull=False,
+                                                           returned_point=delivery_point).count()
+    total_disabled_deliveries = GoodDelivery.objects.filter(disabled_date__isnull=False,
+                                                            disabled_point=delivery_point).count()
+
     d = {'campaign': campaign,
          'delivery_point': delivery_point,
          'multi_tenant': multi_tenant,
          'sub_title': delivery_point,
-         'title': title,}
+         'title': title,
+         'total_delivered_items': total_delivered_items,
+         'total_returned_items': total_returned_items,
+         'total_disabled_deliveries': total_disabled_deliveries
+        }
 
     return render(request, template, d)
 
