@@ -10,6 +10,22 @@ from bootstrap_italia_template.widgets import (BootstrapItaliaSelectWidget,
 from . models import *
 
 
+# in admin
+class AdminImportCSVForm(forms.Form):
+    campaign = forms.ModelChoiceField(label=_('Campagna'),
+                                      queryset=None, required=True)
+    good = forms.ModelChoiceField(label=_('Bene'),
+                                  queryset=None, required=True)
+    file_to_import = forms.FileField()
+
+    def __init__(self, *args, **kwargs):
+        campaigns = DeliveryCampaign.objects.all()
+        goods = Good.objects.all()
+        super().__init__(*args, **kwargs)
+        self.fields['campaign'].queryset = campaigns
+        self.fields['good'].queryset = goods
+
+
 class GoodDeliveryDisableForm(forms.Form):
     notes = forms.CharField(label=_('Motivazione'),
                             widget=forms.Textarea(attrs={'rows':2}),

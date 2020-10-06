@@ -1,0 +1,15 @@
+{% extends 'admin/change_list.html' %}
+
+ {% load i18n %}
+
+{% block content %}
+    <div style="margin-bottom: 20px">
+        <h2>{% trans "Carica CSV identificativi prodotti" %}</h2>
+        <form action="{% url 'good_delivery:import_stockidentifiers_from_file' %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ csv_upload_form }}
+            <input type="submit" value="Upload">
+        </form>
+    </div>
+    {{ block.super }}
+{% endblock %}

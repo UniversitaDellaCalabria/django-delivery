@@ -1,7 +1,19 @@
 from django.contrib import admin
+from django.urls import path
 
 from . admin_inlines import *
+from . forms import AdminImportCSVForm
 from . models import *
+
+
+class CsvUploadAdmin(admin.ModelAdmin):
+
+    change_list_template = "custom_admin/upload_csv.html"
+
+    def changelist_view(self, request, extra_context=None):
+        extra = extra_context or {}
+        extra["csv_upload_form"] = AdminImportCSVForm()
+        return super(CsvUploadAdmin, self).changelist_view(request, extra_context=extra)
 
 
 @admin.register(DeliveryCampaign)
@@ -52,7 +64,7 @@ class DeliveryPointGoodStockAdmin(admin.ModelAdmin):
     # inlines = [DeliveryPointGoodStockIdentifierInline, ]
 
 @admin.register(DeliveryPointGoodStockIdentifier)
-class DeliveryPointGoodStockIdentifierAdmin(admin.ModelAdmin):
+class DeliveryPointGoodStockIdentifierAdmin(CsvUploadAdmin):
     list_display = ('delivery_point_stock','good_identifier','notes')
     list_filter = ('delivery_point_stock',)
     search_fields = ('delivery_point_stock','good_identifier')

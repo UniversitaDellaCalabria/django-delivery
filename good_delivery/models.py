@@ -194,6 +194,7 @@ class DeliveryPointGoodStockIdentifier(TimeStampedModel):
     class Meta:
         verbose_name = _('Identificativo bene in stock')
         verbose_name_plural = _('Identificativi beni in stock')
+        unique_together = ("delivery_point_stock", "good_identifier")
 
     def __str__(self):
         return self.good_identifier

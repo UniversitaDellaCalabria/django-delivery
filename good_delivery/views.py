@@ -1203,37 +1203,3 @@ def operator_good_delivery_item_delete(request, campaign_id, delivery_point_id,
                     campaign_id=campaign_id,
                     delivery_point_id=delivery_point_id,
                     good_delivery_id=good_delivery_id)
-
-
-
-# ENABLE METHOD DISABLED
-# @login_required
-# @campaign_is_active
-# @campaign_is_in_progress
-# @is_campaign_operator
-# def good_delivery_enable(request, campaign_id, user_delivery_point_id,
-                         # good_delivery_id, campaign, delivery_points):
-    # reservation = get_object_or_404(UserDeliveryPoint,
-                                    # pk=user_delivery_point_id,
-                                    # delivery_point__in=delivery_points)
-    # good_delivery = get_object_or_404(GoodDelivery,
-                                      # created_by__delivery_point__in=delivery_points,
-                                      # pk=good_delivery_id)
-    # if not good_delivery.disabled_date:
-        # messages.add_message(request, messages.ERROR,
-                             # _("Consegna già abilitata"))
-    # else:
-        # good_delivery.disabled_date = None
-        # good_delivery.disabled_by = None
-        # good_delivery.save(update_fields=['disabled_date',
-                                          # 'disabled_by',
-                                          # 'modified'])
-
-        # msg = _("{} abilitata").format(good_delivery)
-        # good_delivery.log_action(msg, CHANGE, request.user)
-
-        # messages.add_message(request, messages.SUCCESS,
-                                 # _("Riabilitazione completata"))
-    # return redirect('good_delivery:operator_user_reservation_detail',
-                    # campaign_id=campaign_id,
-                    # user_delivery_point_id=reservation.pk)

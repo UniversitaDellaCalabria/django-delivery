@@ -2,6 +2,7 @@ from django.conf import settings
 from django.urls import include, path, re_path
 
 from . views import *
+from . views_admin import *
 from . views_datatables import *
 
 
@@ -12,9 +13,13 @@ op_prefix = f'{prefix}/operator'
 op_prefix_camp = f'{op_prefix}/campaigns'
 
 urlpatterns = [
+
+    # admin view
+    path('import_from_file/', import_stockidentifiers_from_file, name='import_stockidentifiers_from_file'),
+
     # user
     path(f'{prefix}', user_index, name='user_index'),
-    path(f'{prefix}/use_token', user_use_token, name='user_use_token'),
+    path(f'{prefix}/use-token', user_use_token, name='user_use_token'),
 
     # operator
     path(f'{op_prefix}', operator_active_campaigns, name='operator_index'),
