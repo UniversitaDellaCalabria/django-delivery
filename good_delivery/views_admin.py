@@ -45,9 +45,10 @@ def import_stockidentifiers_from_file(request):
                     # good identifier
                     identifier = values[0]
                     # good notes
-                    notes = values[1]
+                    # notes = values[1]
                     # delivery point name
-                    name = values[2]
+                    # name = values[2]
+                    name = values[1]
 
                     # if delivery point is not existent list
                     if name in disabled_delivery_points: continue
@@ -75,13 +76,13 @@ def import_stockidentifiers_from_file(request):
 
                     # if current identifier already exists
                     existent_id = DeliveryPointGoodStockIdentifier.objects.filter(delivery_point_stock=stock,
-                                                                                  good_identifier=identifier,
-                                                                                  notes=notes).first()
+                                                                                  good_identifier=identifier).first()
+                                                                                  # notes=notes).first()
                     # no duplicates
                     if not existent_id:
                         stock_id = DeliveryPointGoodStockIdentifier(delivery_point_stock=stock,
-                                                                    good_identifier=identifier,
-                                                                    notes=notes)
+                                                                    good_identifier=identifier)
+                                                                    # notes=notes)
                         stock_id.save()
                         inserted += 1
 
