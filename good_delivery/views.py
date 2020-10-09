@@ -359,16 +359,16 @@ def operator_good_delivery_add_items(request, campaign_id, delivery_point_id,
 
         # pop not related to stocks POST values
         post_dict.pop('csrfmiddlewaretoken')
-        notes = post_dict.pop('notes').strip()
+        notes = post_dict.pop('notes')
 
         # identity document required?
         if campaign.identity_document_required:
             document_type = post_dict.pop('document_type') \
                             if post_dict.get('document_type') else ''
-            document_id = post_dict.pop('document_id').strip() \
+            document_id = post_dict.pop('document_id') \
                           if post_dict.get('document_id') else ''
 
-            if not document_type.strip() or not document_id:
+            if not document_type.strip() or not document_id.strip():
                 messages.add_message(request, messages.ERROR,
                                      _("Inserisci gli estremi del documento di identità"))
                 return redirect('good_delivery:operator_good_delivery_add_items',
