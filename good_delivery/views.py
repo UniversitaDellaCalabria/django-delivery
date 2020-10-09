@@ -462,7 +462,7 @@ def operator_good_delivery_add_items(request, campaign_id, delivery_point_id,
          'logs': logs,
          'stocks': stocks,
          'sub_title': delivery_point,
-         'title': "titolo",}
+         'title': good_delivery,}
     return render(request, template, d)
 
 
