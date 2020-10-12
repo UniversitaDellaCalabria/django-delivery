@@ -4,10 +4,9 @@
 <script charset="utf8" src="{% static 'js/escape_html.js' %}"></script>
 <script charset="utf8" src="{% static 'js/datatables/datatables.min.js' %}"></script>
 <script>
-//var url = "{{ var_url }}";
+var back_url = "{{ back_url }}";
 
 $(function() {
-
     var dom = 'Blrtip';
     var buttons = [
              { "extend": "csv", "text": "CSV" },
@@ -65,7 +64,7 @@ $(function() {
                 orderable: false,
                 className: "min-mobile-p",
                 render: function ( data, type, row ) {
-                    return "<a href='"+ row[0] +"'><span style='word-break: break-word;'>"+escapeHtml(data)+"</span></a>";
+                    return "<a href='"+ back_url + row[0] +"'><span style='word-break: break-word;'>"+escapeHtml(data)+"</span></a>";
                 }
             } ,
             {

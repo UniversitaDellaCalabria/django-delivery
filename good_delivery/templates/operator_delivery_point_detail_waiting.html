@@ -36,8 +36,9 @@
 {% endblock over_content %}
 
 {% block extra_scripts %}
+    {% url 'good_delivery:operator_delivery_point_detail' campaign_id=campaign.slug delivery_point_id=delivery_point.pk as back_url %}
     {% url 'good_delivery:delivery_point_deliveries_waiting_json' campaign_id=campaign.slug delivery_point_id=delivery_point.pk as ajax_url %}
-    {% include 'datatables/datatable_script.html' with ajax_url=ajax_url %}
+    {% include 'datatables/datatable_script.html' with ajax_url=ajax_url back_url=back_url %}
 {% endblock extra_scripts %}
 
 

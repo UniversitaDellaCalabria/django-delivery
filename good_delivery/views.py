@@ -453,7 +453,6 @@ def operator_good_delivery_detail(request, campaign_id, delivery_point_id,
 
     :return: redirect
     """
-
     # actual good delivery items
     good_delivery_items = GoodDeliveryItem.objects.filter(good_delivery=good_delivery)
     if not good_delivery_items:
