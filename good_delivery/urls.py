@@ -25,7 +25,12 @@ urlpatterns = [
     path(f'{op_prefix}', operator_active_campaigns, name='operator_index'),
     path(f'{op_prefix_camp}/', operator_active_campaigns, name='operator_active_campaigns'),
     path(f'{op_prefix_camp}/<str:campaign_id>/', operator_campaign_detail, name='operator_campaign_detail'),
-    path(f'{op_prefix_camp}/<str:campaign_id>/<int:delivery_point_id>/', operator_delivery_point_detail, name='operator_delivery_point_detail'),
+    # path(f'{op_prefix_camp}/<str:campaign_id>/<int:delivery_point_id>/', operator_delivery_point_detail, name='operator_delivery_point_detail'),
+    path(f'{op_prefix_camp}/<str:campaign_id>/<int:delivery_point_id>/', OperatorDeliveryPointDetail.as_view(), name='operator_delivery_point_detail'),
+    path(f'{op_prefix_camp}/<str:campaign_id>/<int:delivery_point_id>/waiting/', OperatorDeliveryPointDetail.as_view(template_name="operator_delivery_point_detail_waiting.html"), name='operator_delivery_point_detail_waiting'),
+    path(f'{op_prefix_camp}/<str:campaign_id>/<int:delivery_point_id>/delivered/', OperatorDeliveryPointDetail.as_view(template_name="operator_delivery_point_detail_delivered.html"), name='operator_delivery_point_detail_delivered'),
+    path(f'{op_prefix_camp}/<str:campaign_id>/<int:delivery_point_id>/disabled/', OperatorDeliveryPointDetail.as_view(template_name="operator_delivery_point_detail_disabled.html"), name='operator_delivery_point_detail_disabled'),
+    path(f'{op_prefix_camp}/<str:campaign_id>/<int:delivery_point_id>/pending/', OperatorDeliveryPointDetail.as_view(template_name="operator_delivery_point_detail_pending.html"), name='operator_delivery_point_detail_pending'),
 
     path(f'{op_prefix_camp}/<str:campaign_id>/<int:delivery_point_id>/new/', operator_new_delivery, name='operator_new_delivery'),
     path(f'{op_prefix_camp}/<str:campaign_id>/<int:delivery_point_id>/<int:good_delivery_id>/another/', operator_another_delivery, name='operator_another_delivery'),
@@ -49,4 +54,8 @@ urlpatterns = [
 urlpatterns += [
     # User json
     path(f'{prefix}/<str:campaign_id>/<int:delivery_point_id>/delivery_point_deliveries.json', delivery_point_deliveries, name='delivery_point_deliveries_json'),
+    path(f'{prefix}/<str:campaign_id>/<int:delivery_point_id>/delivery_point_deliveries_delivered.json', delivery_point_deliveries_delivered, name='delivery_point_deliveries_delivered_json'),
+    path(f'{prefix}/<str:campaign_id>/<int:delivery_point_id>/delivery_point_deliveries_disabled.json', delivery_point_deliveries_disabled, name='delivery_point_deliveries_disabled_json'),
+    path(f'{prefix}/<str:campaign_id>/<int:delivery_point_id>/delivery_point_deliveries_to_define.json', delivery_point_deliveries_to_define, name='delivery_point_deliveries_to_define_json'),
+    path(f'{prefix}/<str:campaign_id>/<int:delivery_point_id>/delivery_point_deliveries_waiting.json', delivery_point_deliveries_waiting, name='delivery_point_deliveries_waiting_json'),
 ]

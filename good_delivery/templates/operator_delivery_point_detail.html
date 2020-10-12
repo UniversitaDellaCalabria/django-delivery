@@ -9,7 +9,7 @@
 {% endblock menu_links %}
 
 {% block top_buttons %}
-<div>
+<div class="pb-4">
     <a role="button" class="btn btn-outline-secondary"
        href="{% url 'good_delivery:operator_active_campaigns' %}">
         <svg class="icon icon-xs">
@@ -22,15 +22,43 @@
             <use xlink:href="{% static 'svg/sprite.svg' %}#it-arrow-left"></use>
         </svg> {{ campaign }}
     </a>
-    {% if campaign.operator_can_create %}
-    <a role="button" class="btn btn-success pull-right"
-       href="{% url 'good_delivery:operator_new_delivery' campaign.slug delivery_point.pk %}">
-        <svg class="icon icon-xs icon-white">
-            <use xlink:href="{% static 'svg/sprite.svg' %}#it-plus-circle"></use>
-        </svg> {% trans "Nuova consegna" %}
-    </a>
-    {% endif %}
 </div>
+
+{% block other_top_buttons %}
+    <a role="button" class="btn btn-outline-secondary"
+       href="{% url 'good_delivery:operator_delivery_point_detail_pending' campaign.slug delivery_point.pk %}">
+        <span class="badge badge-secondary">
+            {{ pending_deliveries }}
+        </span> {% trans "Da definire" %}
+    </a>
+    <a role="button" class="btn btn-outline-secondary"
+       href="{% url 'good_delivery:operator_delivery_point_detail_waiting' campaign.slug delivery_point.pk %}">
+        <span class="badge badge-primary">
+            {{ waiting_deliveries }}
+        </span> {% trans "In attesa" %}
+    </a>
+    <a role="button" class="btn btn-outline-secondary"
+       href="{% url 'good_delivery:operator_delivery_point_detail_delivered' campaign.slug delivery_point.pk %}">
+        <span class="badge badge-secondary">
+            {{ delivered_deliveries }}
+        </span> {% trans "Consegnate" %}
+    </a>
+    <a role="button" class="btn btn-outline-secondary"
+       href="{% url 'good_delivery:operator_delivery_point_detail_disabled' campaign.slug delivery_point.pk %}">
+        <span class="badge badge-secondary">
+            {{ disabled_deliveries }}
+        </span> {% trans "Disabilitate" %}
+    </a>
+{% endblock other_top_buttons %}
+
+{% if campaign.operator_can_create %}
+<a role="button" class="btn btn-success pull-right"
+   href="{% url 'good_delivery:operator_new_delivery' campaign.slug delivery_point.pk %}">
+    <svg class="icon icon-xs icon-white">
+        <use xlink:href="{% static 'svg/sprite.svg' %}#it-plus-circle"></use>
+    </svg> {% trans "Nuova consegna" %}
+</a>
+{% endif %}
 {% endblock top_buttons %}
 
 {% block over_content %}
@@ -39,7 +67,7 @@
         <div class="card card-bg no-after">
             <div class="card-body">
                 <ul>
-                    <li>{% trans "Prodotti consegnati" %}: <b>{{ total_delivered_items }}</b></li>
+                    <li>{% trans "Singoli prodotti consegnati" %}: <b>{{ total_delivered_items }}</b></li>
                     <li>{% trans "Resi effettuati" %}: <b>{{ total_returned_items }}</b></li>
                     <li>{% trans "Consegne annullate" %}: <b>{{ total_disabled_deliveries }}</b></li>
                 </ul>

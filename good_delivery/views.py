@@ -8,8 +8,10 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
+from django.utils.decorators import method_decorator
 from django.utils.html import strip_tags
 from django.utils.translation import gettext as _
+from django.views import View
 
 from . decorators import *
 from . forms import *
@@ -125,51 +127,6 @@ def operator_campaign_detail(request, campaign_id, campaign, delivery_points):
          'delivery_points': delivery_points,
          'sub_title': campaign,
          'title': title}
-
-    return render(request, template, d)
-
-@login_required
-@campaign_is_active
-@campaign_is_in_progress
-@is_delivery_point_operator
-def operator_delivery_point_detail(request, campaign_id, delivery_point_id,
-                                   campaign, delivery_point, multi_tenant):
-    """
-    Operator - Page with delivery point deliveries
-
-    :type campaign_id: String
-    :type delivery_point_id: Int
-    :type campaign: Campaign (from @campaign_is_active)
-    :type delievery_point: DeliveryPoint (from @is_delivery_point_operator)
-    :type multi_tenant: Boolean (from @is_delivery_point_operator)
-
-    :param campaign_id: campaign slug
-    :param delivery_point_id: delivery point id
-    :param campaign: Campaign object (from @campaign_is_active)
-    :param delievery_point: DeliveryPoint object (from @is_delivery_point_operator)
-    :param multi_tenant: if operator is multi_tenant (from @is_delivery_point_operator)
-
-    :return: render
-    """
-    title = _("Prenotazioni da gestire")
-    template = "operator_delivery_point_detail.html"
-
-    total_delivered_items = GoodDeliveryItem.objects.filter(delivery_date__isnull=False,
-                                                            delivery_point=delivery_point).count()
-    total_returned_items = GoodDeliveryItem.objects.filter(return_date__isnull=False,
-                                                           returned_point=delivery_point).count()
-    total_disabled_deliveries = GoodDelivery.objects.filter(disabled_date__isnull=False,
-                                                            disabled_point=delivery_point).count()
-
-    d = {'campaign': campaign,
-         'delivery_point': delivery_point,
-         'multi_tenant': multi_tenant,
-         'sub_title': delivery_point,
-         'title': title,
-         'total_delivered_items': total_delivered_items,
-         'total_returned_items': total_returned_items,
-         'total_disabled_deliveries': total_disabled_deliveries
-        }
 
     return render(request, template, d)
 
@@ -1203,3 +1160,121 @@ def operator_good_delivery_item_delete(request, campaign_id, delivery_point_id,
                     campaign_id=campaign_id,
                     delivery_point_id=delivery_point_id,
                     good_delivery_id=good_delivery_id)
+
+
+
+
+
+
+class OperatorDeliveryPointDetail(View):
+    template_name = "operator_delivery_point_detail.html"
+
+    @method_decorator(login_required)
+    @method_decorator(campaign_is_active)
+    @method_decorator(campaign_is_in_progress)
+    @method_decorator(is_delivery_point_operator)
+    def get(self, request, campaign_id, delivery_point_id,
+            campaign, delivery_point, multi_tenant):
+        """
+        Operator - Page with delivery point deliveries
+
+        :type campaign_id: String
+        :type delivery_point_id: Int
+        :type campaign: Campaign (from @campaign_is_active)
+        :type delievery_point: DeliveryPoint (from @is_delivery_point_operator)
+        :type multi_tenant: Boolean (from @is_delivery_point_operator)
+
+        :param campaign_id: campaign slug
+        :param delivery_point_id: delivery point id
+        :param campaign: Campaign object (from @campaign_is_active)
+        :param delievery_point: DeliveryPoint object (from @is_delivery_point_operator)
+        :param multi_tenant: if operator is multi_tenant (from @is_delivery_point_operator)
+
+        :return: render
+        """
+        title = _("Prenotazioni da gestire")
+
+
+        deliveries = GoodDelivery.objects.filter(choosen_delivery_point=delivery_point)
+        pending_deliveries = deliveries.filter(delivery_point__isnull=True).count()
+        waiting_deliveries = deliveries.filter(delivery_point__isnull=False,
+                                               delivery_date__isnull=True,
+                                               disabled_date__isnull=True).count()
+        delivered_deliveries = deliveries.filter(delivery_date__isnull=False,
+                                                 disabled_date__isnull=True).count()
+        disabled_deliveries = deliveries.filter(disabled_date__isnull=False).count()
+
+        total_delivered_items = GoodDeliveryItem.objects.filter(delivery_date__isnull=False,
+                                                                delivery_point=delivery_point).count()
+        total_returned_items = GoodDeliveryItem.objects.filter(return_date__isnull=False,
+                                                               returned_point=delivery_point).count()
+        total_disabled_deliveries = GoodDelivery.objects.filter(disabled_date__isnull=False,
+                                                                disabled_point=delivery_point).count()
+
+        d = {'campaign': campaign,
+             'delivery_point': delivery_point,
+             'multi_tenant': multi_tenant,
+             'sub_title': delivery_point,
+             'title': title,
+             'total_delivered_items': total_delivered_items,
+             'total_returned_items': total_returned_items,
+             'total_disabled_deliveries': total_disabled_deliveries,
+
+             'pending_deliveries': pending_deliveries,
+             'waiting_deliveries': waiting_deliveries,
+             'delivered_deliveries': delivered_deliveries,
+             'disabled_deliveries': disabled_deliveries
+            }
+
+        return render(request, self.template_name, d)
+
+
+
+
+
+
+
+# @login_required
+# @campaign_is_active
+# @campaign_is_in_progress
+# @is_delivery_point_operator
+# def operator_delivery_point_detail(request, campaign_id, delivery_point_id,
+                                   # campaign, delivery_point, multi_tenant):
+    # """
+    # Operator - Page with delivery point deliveries
+
+    # :type campaign_id: String
+    # :type delivery_point_id: Int
+    # :type campaign: Campaign (from @campaign_is_active)
+    # :type delievery_point: DeliveryPoint (from @is_delivery_point_operator)
+    # :type multi_tenant: Boolean (from @is_delivery_point_operator)
+
+    # :param campaign_id: campaign slug
+    # :param delivery_point_id: delivery point id
+    # :param campaign: Campaign object (from @campaign_is_active)
+    # :param delievery_point: DeliveryPoint object (from @is_delivery_point_operator)
+    # :param multi_tenant: if operator is multi_tenant (from @is_delivery_point_operator)
+
+    # :return: render
+    # """
+    # title = _("Prenotazioni da gestire")
+    # template = "operator_delivery_point_detail.html"
+
+    # total_delivered_items = GoodDeliveryItem.objects.filter(delivery_date__isnull=False,
+                                                            # delivery_point=delivery_point).count()
+    # total_returned_items = GoodDeliveryItem.objects.filter(return_date__isnull=False,
+                                                           # returned_point=delivery_point).count()
+    # total_disabled_deliveries = GoodDelivery.objects.filter(disabled_date__isnull=False,
+                                                            # disabled_point=delivery_point).count()
+
+    # d = {'campaign': campaign,
+         # 'delivery_point': delivery_point,
+         # 'multi_tenant': multi_tenant,
+         # 'sub_title': delivery_point,
+         # 'title': title,
+         # 'total_delivered_items': total_delivered_items,
+         # 'total_returned_items': total_returned_items,
+         # 'total_disabled_deliveries': total_disabled_deliveries
+        # }
+
+    # return render(request, template, d)

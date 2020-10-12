@@ -1,0 +1,46 @@
+{% extends "operator_delivery_point_detail.html" %}
+
+{% load i18n %}
+{% load static %}
+
+{% block other_top_buttons %}
+    <a role="button" class="btn btn-outline-secondary"
+       href="{% url 'good_delivery:operator_delivery_point_detail' campaign.slug delivery_point.pk %}">
+        {% trans "Tutte" %}
+    </a>
+    <a role="button" class="btn btn-outline-secondary"
+       href="{% url 'good_delivery:operator_delivery_point_detail_pending' campaign.slug delivery_point.pk %}">
+        <span class="badge badge-secondary">
+            {{ pending_deliveries }}
+        </span> {% trans "Da definire" %}
+    </a>
+    <a role="button" class="btn btn-outline-secondary"
+       href="{% url 'good_delivery:operator_delivery_point_detail_delivered' campaign.slug delivery_point.pk %}">
+        <span class="badge badge-secondary">
+            {{ delivered_deliveries }}
+        </span> {% trans "Consegnate" %}
+    </a>
+    <a role="button" class="btn btn-outline-secondary"
+       href="{% url 'good_delivery:operator_delivery_point_detail_disabled' campaign.slug delivery_point.pk %}">
+        <span class="badge badge-secondary">
+            {{ disabled_deliveries }}
+        </span> {% trans "Disabilitate" %}
+    </a>
+{% endblock other_top_buttons %}
+
+{% block content_page_title %}
+    {{ block.super }} - {% trans "In attesa" %}
+{% endblock content_page_title %}
+
+{% block over_content %}
+{% endblock over_content %}
+
+{% block extra_scripts %}
+    {% url 'good_delivery:delivery_point_deliveries_waiting_json' campaign_id=campaign.slug delivery_point_id=delivery_point.pk as ajax_url %}
+    {% include 'datatables/datatable_script.html' with ajax_url=ajax_url %}
+{% endblock extra_scripts %}
+
+
+
+
+

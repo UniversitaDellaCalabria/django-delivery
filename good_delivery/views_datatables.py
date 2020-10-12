@@ -47,8 +47,6 @@ class UsersDeliveryPointDTD(DjangoDatatablesServerProc):
 def delivery_point_deliveries(request, campaign_id, delivery_point_id,
                               campaign, delivery_point, multi_tenant):
     """
-    Returns all tickets opened by user
-
     :return: JsonResponse
     """
     columns = _columns
@@ -58,5 +56,95 @@ def delivery_point_deliveries(request, campaign_id, delivery_point_id,
     else:
         deliveries = GoodDelivery.objects.filter(Q(choosen_delivery_point=delivery_point) |
                                                  Q(delivery_point=delivery_point))
+    dtd = UsersDeliveryPointDTD( request, deliveries, columns )
+    return JsonResponse(dtd.get_dict())
+
+@csrf_exempt
+@login_required
+@campaign_is_active
+@is_delivery_point_operator
+def delivery_point_deliveries_to_define(request, campaign_id, delivery_point_id,
+                                        campaign, delivery_point, multi_tenant):
+    """
+    :return: JsonResponse
+    """
+    columns = _columns
+    if multi_tenant:
+        deliveries = GoodDelivery.objects.filter(Q(choosen_delivery_point__campaign=campaign) |
+                                                 Q(delivery_point__campaign=campaign),
+                                                 delivery_point__isnull=True)
+    else:
+        deliveries = GoodDelivery.objects.filter(Q(choosen_delivery_point=delivery_point) |
+                                                 Q(delivery_point=delivery_point),
+                                                 delivery_point__isnull=True)
+    dtd = UsersDeliveryPointDTD( request, deliveries, columns )
+    return JsonResponse(dtd.get_dict())
+
+@csrf_exempt
+@login_required
+@campaign_is_active
+@is_delivery_point_operator
+def delivery_point_deliveries_delivered(request, campaign_id, delivery_point_id,
+                                        campaign, delivery_point, multi_tenant):
+    """
+    :return: JsonResponse
+    """
+    columns = _columns
+    if multi_tenant:
+        deliveries = GoodDelivery.objects.filter(Q(choosen_delivery_point__campaign=campaign) |
+                                                 Q(delivery_point__campaign=campaign),
+                                                 delivery_date__isnull=False,
+                                                 disabled_date__isnull=True)
+    else:
+        deliveries = GoodDelivery.objects.filter(Q(choosen_delivery_point=delivery_point) |
+                                                 Q(delivery_point=delivery_point),
+                                                 delivery_date__isnull=False,
+                                                 disabled_date__isnull=True)
+    dtd = UsersDeliveryPointDTD( request, deliveries, columns )
+    return JsonResponse(dtd.get_dict())
+
+@csrf_exempt
+@login_required
+@campaign_is_active
+@is_delivery_point_operator
+def delivery_point_deliveries_disabled(request, campaign_id, delivery_point_id,
+                                       campaign, delivery_point, multi_tenant):
+    """
+    :return: JsonResponse
+    """
+    columns = _columns
+    if multi_tenant:
+        deliveries = GoodDelivery.objects.filter(Q(choosen_delivery_point__campaign=campaign) |
+                                                 Q(delivery_point__campaign=campaign),
+                                                 disabled_date__isnull=False)
+    else:
+        deliveries = GoodDelivery.objects.filter(Q(choosen_delivery_point=delivery_point) |
+                                                 Q(delivery_point=delivery_point),
+                                                 disabled_date__isnull=False)
+    dtd = UsersDeliveryPointDTD( request, deliveries, columns )
+    return JsonResponse(dtd.get_dict())
+
+@csrf_exempt
+@login_required
+@campaign_is_active
+@is_delivery_point_operator
+def delivery_point_deliveries_waiting(request, campaign_id, delivery_point_id,
+                                      campaign, delivery_point, multi_tenant):
+    """
+    :return: JsonResponse
+    """
+    columns = _columns
+    if multi_tenant:
+        deliveries = GoodDelivery.objects.filter(Q(choosen_delivery_point__campaign=campaign) |
+                                                 Q(delivery_point__campaign=campaign),
+                                                 delivery_date__isnull=True,
+                                                 disabled_date__isnull=True,
+                                                 delivery_point__isnull=False)
+    else:
+        deliveries = GoodDelivery.objects.filter(Q(choosen_delivery_point=delivery_point) |
+                                                 Q(delivery_point=delivery_point),
+                                                 delivery_date__isnull=True,
+                                                 disabled_date__isnull=True,
+                                                 delivery_point__isnull=False)
     dtd = UsersDeliveryPointDTD( request, deliveries, columns )
     return JsonResponse(dtd.get_dict())
