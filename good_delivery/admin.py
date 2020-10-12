@@ -77,7 +77,9 @@ class GoodDeliveryAdmin(admin.ModelAdmin):
                     'delivery_point')
     autocomplete_fields = ('delivered_to',)
     list_filter = ('delivery_point','create','delivery_date')
-    search_fields = ('delivered_to',)
+    search_fields = ('delivered_to__first_name',
+                     'delivered_to__last_name',
+                     'delivered_to__username')
     inlines = [GoodDeliveryItemInline,]
     autocomplete_fields = ('delivered_to', 'delivered_by', 'disabled_by')
 
