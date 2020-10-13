@@ -62,12 +62,16 @@
 {% endblock top_buttons %}
 
 {% block over_content %}
-<div class="col-12 col-lg-4">
+<div class="col-12 col-lg-5">
     <div class="card-wrapper card-space">
         <div class="card card-bg no-after">
             <div class="card-body">
+                <h5 class="card-title">
+                    {% trans "Dati del punto di consegna" %}
+                </h5>
                 <ul>
                     <li>{% trans "Singoli prodotti consegnati" %}: <b>{{ total_delivered_items }}</b></li>
+                    <li>{% trans "Singoli prodotti consegnati in altri punti" %}: <b>{{ total_delivered_by_others_items }}</b></li>
                     <li>{% trans "Resi effettuati" %}: <b>{{ total_returned_items }}</b></li>
                     <li>{% trans "Consegne annullate" %}: <b>{{ total_disabled_deliveries }}</b></li>
                 </ul>
@@ -76,7 +80,6 @@
     </div>
 </div>
 {% endblock over_content %}
-
 
 {% block page_content %}
     {% include 'datatables/table.html' %}
@@ -87,8 +90,3 @@
     {% url 'good_delivery:delivery_point_deliveries_json' campaign_id=campaign.slug delivery_point_id=delivery_point.pk as ajax_url %}
     {% include 'datatables/datatable_script.html' with ajax_url=ajax_url back_url=back_url %}
 {% endblock extra_scripts %}
-
-
-
-
-

@@ -1193,18 +1193,22 @@ class OperatorDeliveryPointDetail(View):
         """
         title = _("Prenotazioni da gestire")
 
-
+        # all deliveries with choosen_delivery_point == delivery_point
         deliveries = GoodDelivery.objects.filter(choosen_delivery_point=delivery_point)
+
         pending_deliveries = deliveries.filter(delivery_point__isnull=True).count()
         waiting_deliveries = deliveries.filter(delivery_point__isnull=False,
                                                delivery_date__isnull=True,
                                                disabled_date__isnull=True).count()
-        delivered_deliveries = deliveries.filter(delivery_date__isnull=False,
-                                                 disabled_date__isnull=True).count()
+        delivered_deliveries = deliveries.filter(Q(choosen_delivery_point=delivery_point) |
+                                                 Q(delivery_point=delivery_point),
+                                                 delivery_date__isnull=False).count()
         disabled_deliveries = deliveries.filter(disabled_date__isnull=False).count()
 
         total_delivered_items = GoodDeliveryItem.objects.filter(delivery_date__isnull=False,
                                                                 delivery_point=delivery_point).count()
+        total_delivered_by_others_items = GoodDeliveryItem.objects.filter(delivery_date__isnull=False,
+                                                                          good_delivery__choosen_delivery_point=delivery_point).exclude(delivery_point=delivery_point).count()
         total_returned_items = GoodDeliveryItem.objects.filter(return_date__isnull=False,
                                                                returned_point=delivery_point).count()
         total_disabled_deliveries = GoodDelivery.objects.filter(disabled_date__isnull=False,
@@ -1216,6 +1220,7 @@ class OperatorDeliveryPointDetail(View):
              'sub_title': delivery_point,
              'title': title,
              'total_delivered_items': total_delivered_items,
+             'total_delivered_by_others_items': total_delivered_by_others_items,
              'total_returned_items': total_returned_items,
              'total_disabled_deliveries': total_disabled_deliveries,
 

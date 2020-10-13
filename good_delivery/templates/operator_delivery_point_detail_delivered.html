@@ -40,8 +40,3 @@
     {% url 'good_delivery:delivery_point_deliveries_delivered_json' campaign_id=campaign.slug delivery_point_id=delivery_point.pk as ajax_url %}
     {% include 'datatables/datatable_script.html' with ajax_url=ajax_url back_url=back_url %}
 {% endblock extra_scripts %}
-
-
-
-
-
