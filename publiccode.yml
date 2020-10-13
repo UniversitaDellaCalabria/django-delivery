@@ -39,7 +39,7 @@ description:
     longDescription: >
       Manage delivery of goods in presence.  This application was created to
       manage a valid list of users for  the delivery of an asset, such as sim
-      cards or a 4g routers.  This application can therefore manage a stock of
+      cards or 4g routers.  This application can therefore manage a stock of
       uniquely  identifiable products and at the same time serve for the
       delivery  of anonymous goods, such as glasses of water or food  (goods
       without any identificative value).
@@ -66,7 +66,7 @@ description:
         https://raw.githubusercontent.com/UniversitaDellaCalabria/django-delivery/master/gallery/4.png
       - >-
         https://raw.githubusercontent.com/UniversitaDellaCalabria/django-delivery/master/gallery/5.png
-    shortDescription: 'Manage the delivery of goods, such as a sim cards or a 4g routers.  '
+    shortDescription: 'Manage delivery of goods, such as sim cards or 4g routers.  '
 developmentStatus: stable
 intendedAudience:
   scope:
