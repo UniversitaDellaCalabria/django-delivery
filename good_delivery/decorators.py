@@ -67,14 +67,24 @@ def is_operator(func_to_decorate):
     """
     def new_func(*original_args, **original_kwargs):
         request = original_args[0]
-        my_delivery_points = OperatorDeliveryPoint.objects.filter(operator=request.user,
-                                                                  is_active=True,
-                                                                  delivery_point__is_active=True,
-                                                                  delivery_point__campaign__is_active=True)
+        user = request.user
+
         my_dp = []
-        for dp in my_delivery_points:
-            if dp.delivery_point.campaign.is_in_progress():
-                my_dp.append(dp)
+        if user.is_staff:
+            delivery_points = DeliveryPoint.objects.filter(is_active=True,
+                                                           campaign__is_active=True)
+            for dp in delivery_points:
+                if dp.campaign.is_in_progress():
+                    my_dp.append(dp)
+        else:
+            my_delivery_points = OperatorDeliveryPoint.objects.filter(operator=user,
+                                                                      is_active=True,
+                                                                      delivery_point__is_active=True,
+                                                                      delivery_point__campaign__is_active=True)
+            for dp in my_delivery_points:
+                if dp.delivery_point.campaign.is_in_progress():
+                    my_dp.append(dp.delivery_point)
+
         if my_dp:
             original_kwargs['my_delivery_points'] = my_dp
             return func_to_decorate(*original_args, **original_kwargs)
@@ -90,7 +100,15 @@ def is_campaign_operator(func_to_decorate):
     def new_func(*original_args, **original_kwargs):
         request = original_args[0]
         campaign = original_kwargs['campaign']
-        operator_delivery_points = OperatorDeliveryPoint.objects.filter(operator=request.user,
+        user = request.user
+
+        if user.is_staff:
+            delivery_points = DeliveryPoint.objects.filter(campaign=campaign,
+                                                           is_active=True)
+            original_kwargs['delivery_points'] = delivery_points
+            return func_to_decorate(*original_args, **original_kwargs)
+
+        operator_delivery_points = OperatorDeliveryPoint.objects.filter(operator=user,
                                                                         is_active=True,
                                                                         delivery_point__is_active=True,
                                                                         delivery_point__campaign=campaign)
@@ -110,15 +128,25 @@ def is_delivery_point_operator(func_to_decorate):
     """
     def new_func(*original_args, **original_kwargs):
         request = original_args[0]
+        user = request.user
         campaign = original_kwargs['campaign']
         delivery_point_id = original_kwargs['delivery_point_id']
-        operator = OperatorDeliveryPoint.objects.filter(operator=request.user,
-                                                        is_active=True,
-                                                        delivery_point__is_active=True,
-                                                        delivery_point__campaign=campaign,
-                                                        delivery_point__pk=delivery_point_id).first()
+
+        delivery_point = get_object_or_404(DeliveryPoint,
+                                           campaign=campaign,
+                                           pk=delivery_point_id,
+                                           is_active=True)
+
+        if user.is_staff:
+            original_kwargs['delivery_point'] = delivery_point
+            original_kwargs['multi_tenant'] = True
+            return func_to_decorate(*original_args, **original_kwargs)
+
+        operator = OperatorDeliveryPoint.objects.filter(operator=user,
+                                                        delivery_point=delivery_point,
+                                                        is_active=True).first()
         if operator:
-            original_kwargs['delivery_point'] = operator.delivery_point
+            original_kwargs['delivery_point'] = delivery_point
             original_kwargs['multi_tenant'] = operator.multi_tenant
             return func_to_decorate(*original_args, **original_kwargs)
         return custom_message(request,

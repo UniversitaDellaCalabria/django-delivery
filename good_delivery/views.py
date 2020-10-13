@@ -88,8 +88,7 @@ def operator_active_campaigns(request, my_delivery_points):
     """
     title =_("Campagne attive")
     template = "operator_active_campaigns.html"
-    active_campaigns = tuple(set([dp.delivery_point.campaign
-                                  for dp in my_delivery_points]))
+    active_campaigns = tuple(set([dp.campaign for dp in my_delivery_points]))
     d = {'campaigns': active_campaigns,
          'is_operator': True,
          'title': title,}

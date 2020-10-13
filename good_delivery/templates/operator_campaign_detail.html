@@ -38,27 +38,31 @@
 
     {% include "campaign_detail.html" %}
 
-    {% for delivery_point in delivery_points %}
-    <div class="col-12 col-lg-4 category-box">
-        <!--start card-->
-        <div class="card-wrapper card-space">
-          <div class="card card-bg no-after">
-            <div class="card-body">
-                <a class="read-more" href="{% url 'good_delivery:operator_delivery_point_detail' campaign_id=campaign.slug delivery_point_id=delivery_point.pk %}">
-                    <h5 class="card-title">{{ delivery_point.name }}</h5>
-                </a>
-                <p class="card-text">
-                    <b>{% trans "Location" %}:</b> {{ delivery_point.location }}
-                    {% if delivery_point.notes %}
-                        <br>
-                        {{ delivery_point.notes }}
-                    {% endif %}
-                </p>
+    <hr>
+
+    <div class="row mt-4">
+        {% for delivery_point in delivery_points %}
+        <div class="col-12 col-lg-4">
+            <!--start card-->
+            <div class="card-wrapper card-space">
+              <div class="card card-bg no-after">
+                <div class="card-body">
+                    <a class="read-more" href="{% url 'good_delivery:operator_delivery_point_detail' campaign_id=campaign.slug delivery_point_id=delivery_point.pk %}">
+                        <h5 class="card-title">{{ delivery_point.name }}</h5>
+                    </a>
+                    <p class="card-text">
+                        <b>{% trans "Location" %}:</b> {{ delivery_point.location }}
+                        {% if delivery_point.notes %}
+                            <br>
+                            {{ delivery_point.notes }}
+                        {% endif %}
+                    </p>
+                </div>
+              </div>
             </div>
+            <!--end card-->
           </div>
-        </div>
-        <!--end card-->
-      </div>
-    {% endfor %}
+        {% endfor %}
+    </div>
 
 {% endblock container_inner %}
