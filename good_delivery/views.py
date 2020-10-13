@@ -398,7 +398,7 @@ def operator_good_delivery_add_items(request, campaign_id, delivery_point_id,
                 good_delivery.delivery_point = delivery_point
                 if campaign.identity_document_required:
                     good_delivery.document_type = document_type
-                    good_delivery.document_number = document_id
+                    good_delivery.document_id = document_id
                 good_delivery.notes = notes
                 good_delivery.save()
 
