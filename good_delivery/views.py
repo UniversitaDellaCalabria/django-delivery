@@ -1203,7 +1203,9 @@ class OperatorDeliveryPointDetail(View):
         delivered_deliveries = deliveries.filter(Q(choosen_delivery_point=delivery_point) |
                                                  Q(delivery_point=delivery_point),
                                                  delivery_date__isnull=False).count()
-        disabled_deliveries = deliveries.filter(disabled_date__isnull=False).count()
+        disabled_deliveries = deliveries.filter(Q(choosen_delivery_point=delivery_point) |
+                                                Q(disabled_point=delivery_point),
+                                                disabled_date__isnull=False).count()
 
         total_delivered_items = GoodDeliveryItem.objects.filter(delivery_date__isnull=False,
                                                                 delivery_point=delivery_point).count()
