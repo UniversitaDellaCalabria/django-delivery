@@ -28,6 +28,8 @@ Cordiali saluti.
 
 NEW_DELIVERY_WITH_TOKEN_CREATED = _("""<div>{added_text}
 <br><br>
-Clicca qui<br>
-{url}<br>
+Clicca qui
+<br><br>
+{url}
+<br><br>
 per completare la procedura di consegna.</div>""")
