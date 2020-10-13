@@ -1199,12 +1199,12 @@ class OperatorDeliveryPointDetail(View):
         waiting_deliveries = deliveries.filter(delivery_point__isnull=False,
                                                delivery_date__isnull=True,
                                                disabled_date__isnull=True).count()
-        delivered_deliveries = deliveries.filter(Q(choosen_delivery_point=delivery_point) |
-                                                 Q(delivery_point=delivery_point),
-                                                 delivery_date__isnull=False).count()
-        disabled_deliveries = deliveries.filter(Q(choosen_delivery_point=delivery_point) |
-                                                Q(disabled_point=delivery_point),
-                                                disabled_date__isnull=False).count()
+        delivered_deliveries = GoodDelivery.objects.filter(Q(choosen_delivery_point=delivery_point) |
+                                                           Q(delivery_point=delivery_point),
+                                                           delivery_date__isnull=False).count()
+        disabled_deliveries = GoodDelivery.objects.filter(Q(choosen_delivery_point=delivery_point) |
+                                                          Q(disabled_point=delivery_point),
+                                                          disabled_date__isnull=False).count()
 
         total_delivered_items = GoodDeliveryItem.objects.filter(delivery_date__isnull=False,
                                                                 delivery_point=delivery_point).count()
