@@ -70,7 +70,7 @@ def is_operator(func_to_decorate):
         user = request.user
 
         my_dp = []
-        if user.is_staff:
+        if user.is_superuser:
             delivery_points = DeliveryPoint.objects.filter(is_active=True,
                                                            campaign__is_active=True)
             for dp in delivery_points:
@@ -102,7 +102,7 @@ def is_campaign_operator(func_to_decorate):
         campaign = original_kwargs['campaign']
         user = request.user
 
-        if user.is_staff:
+        if user.is_superuser:
             delivery_points = DeliveryPoint.objects.filter(campaign=campaign,
                                                            is_active=True)
             original_kwargs['delivery_points'] = delivery_points
@@ -137,7 +137,7 @@ def is_delivery_point_operator(func_to_decorate):
                                            pk=delivery_point_id,
                                            is_active=True)
 
-        if user.is_staff:
+        if user.is_superuser:
             original_kwargs['delivery_point'] = delivery_point
             original_kwargs['multi_tenant'] = True
             return func_to_decorate(*original_args, **original_kwargs)
