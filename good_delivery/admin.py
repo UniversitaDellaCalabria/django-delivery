@@ -74,7 +74,7 @@ class DeliveryPointGoodStockIdentifierAdmin(CsvUploadAdmin):
 class GoodDeliveryAdmin(admin.ModelAdmin):
     list_display = ('delivered_to', 'create',
                     'modified','choosen_delivery_point',
-                    'delivery_point')
+                    'delivery_point', 'delivery_date', 'disabled_date')
     autocomplete_fields = ('delivered_to',)
     list_filter = ('delivery_point','create','delivery_date')
     search_fields = ('delivered_to__first_name',
