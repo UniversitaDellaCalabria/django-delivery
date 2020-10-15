@@ -65,7 +65,7 @@ class DeliveryPointGoodStockAdmin(admin.ModelAdmin):
 
 @admin.register(DeliveryPointGoodStockIdentifier)
 class DeliveryPointGoodStockIdentifierAdmin(CsvUploadAdmin):
-    list_display = ('delivery_point_stock','good_identifier','notes')
+    list_display = ('delivery_point_stock','good_identifier','create','notes')
     list_filter = ('delivery_point_stock','create')
     search_fields = ('good_identifier',)
 
