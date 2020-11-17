@@ -236,6 +236,14 @@ class GoodDelivery(TimeStampedModel):
     document_type = models.CharField(max_length=255,
                                      blank=True, null=True)
     document_id = models.CharField(max_length=255, blank=True, null=True)
+
+    address_city = models.CharField(max_length=50, blank=True, null=True)
+    address_state = models.CharField(max_length=2, blank=True, null=True)
+    address_zip_code = models.CharField(max_length=6, blank=True, null=True)
+    address_road = models.CharField(max_length=100, blank=True, null=True)
+    address_number = models.CharField(max_length=10, blank=True, null=True)
+    address_country = models.CharField(max_length=50, blank=True, null=True)
+
     notes = models.TextField(null=True, blank=True)
 
     class Meta:
