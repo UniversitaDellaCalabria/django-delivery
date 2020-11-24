@@ -43,11 +43,41 @@ def get_labeled_errors(form):
         d[field.label] = form.errors[field_name]
     return d
 
-
 def open_html_in_webbrowser(bhtml, fpath='/tmp'):  # pragma: no cover
     fname = '{}/{}.html'.format(fpath,
                                 __name__)
     with open(fname ,'wb') as f:
         f.write(bhtml)
         webbrowser.open_new_tab(fname)
+
+def export_waiting_deliveries(queryset, fopen,
+                              delimiter=';', quotechar='"'):
+    """
+    """
+    # selected delivery campaigns
+    campaign = queryset.first()
+
+    # campaign waiting deliveries
+    deliveries = GoodDelivery.objects.filter(campaign=campaign,
+                                             delivery_point__isnull=True)
+
+    head = ['Matricola', 'CF', 'Cognome', 'Nome',
+            'Via', 'Num', 'Città', 'CAP', 'Prov']
+
+    writer.writerow(head)
+
+    for delivery in deliveries:
+        user = delivery.delivered_to
+        row = [user.matricola_studente,
+               user.taxpayer_id,
+               user.last_name,
+               user.first_name,
+               delivery.address_road,
+               delivery.address_number,
+               delivery.address_city,
+               delivery.address_zip_code,
+               delivery.address_state]
+        writer.writerow(row)
+
+    return fopen
 

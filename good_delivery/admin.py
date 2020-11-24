@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.urls import path
 
+from . admin_actions import *
 from . admin_inlines import *
 from . forms import AdminImportCSVForm
 from . models import *
@@ -25,6 +26,7 @@ class DeliveryCampaignAdmin(admin.ModelAdmin):
                    'require_agreement', 'is_active')
     search_fields = ('name',)
     inlines = [DeliveryCampaignAgreementInline,]
+    actions = [export_waiting_deliveries]
 
 
 @admin.register(DeliveryPoint)
