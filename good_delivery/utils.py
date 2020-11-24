@@ -66,15 +66,14 @@ def export_waiting_deliveries_on_file(queryset, fopen,
     deliveries = GoodDelivery.objects.filter(campaign=campaign,
                                              delivery_point__isnull=True)
 
-    head = ['Matricola', 'CF', 'Cognome', 'Nome',
+    head = ['CF', 'Cognome', 'Nome',
             'Via', 'Num', 'Città', 'CAP', 'Prov']
 
     writer.writerow(head)
 
     for delivery in deliveries:
         user = delivery.delivered_to
-        row = [user.matricola_studente,
-               user.taxpayer_id,
+        row = [user.taxpayer_id,
                user.last_name,
                user.first_name,
                delivery.address_road,
