@@ -15,7 +15,7 @@ def _export_waiting_deliveries(modeladmin,
                                request,
                                queryset):
     response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="{}.csv"'.format(queryset.first().bando)
+    response['Content-Disposition'] = 'attachment; filename="{}.csv"'.format(queryset.first().name)
     return export_waiting_deliveries(queryset=queryset, fopen=response)
 
 def export_waiting_deliveries(modeladmin, request, queryset):
