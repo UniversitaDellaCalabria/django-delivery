@@ -1,11 +1,14 @@
-import webbrowser
+import csv
 import os
+import webbrowser
 
 from django.conf import settings
 from django.core.mail import send_mail
 from django.shortcuts import render
 from django.utils.html import strip_tags
 from django.utils.translation import gettext as _
+
+from . models import GoodDelivery
 
 
 def custom_message(request, message='', msg_type='danger', status=None):
@@ -50,10 +53,12 @@ def open_html_in_webbrowser(bhtml, fpath='/tmp'):  # pragma: no cover
         f.write(bhtml)
         webbrowser.open_new_tab(fname)
 
-def export_waiting_deliveries(queryset, fopen,
-                              delimiter=';', quotechar='"'):
+def export_waiting_deliveries_on_file(queryset, fopen,
+                                      delimiter=';', quotechar='"'):
     """
     """
+    writer = csv.writer(fopen, delimiter=delimiter, quotechar=quotechar)
+
     # selected delivery campaigns
     campaign = queryset.first()
 
