@@ -67,7 +67,7 @@ def export_waiting_deliveries_on_file(queryset, fopen,
                                              delivery_point__isnull=True)
 
     head = ['CF', 'Cognome', 'Nome',
-            'Via', 'Num', 'Città', 'CAP', 'Prov']
+            'Via', 'Num', 'Città', 'CAP', 'Prov', 'Tel']
 
     writer.writerow(head)
 
@@ -80,7 +80,8 @@ def export_waiting_deliveries_on_file(queryset, fopen,
                delivery.address_number,
                delivery.address_city,
                delivery.address_zip_code,
-               delivery.address_state]
+               delivery.address_state,
+               delivery.phone]
         writer.writerow(row)
 
     return fopen
