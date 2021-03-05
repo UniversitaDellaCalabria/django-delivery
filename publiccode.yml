@@ -1,4 +1,4 @@
-# This repository adheres to the publiccode.yml standard by including this 
+# This repository adheres to the publiccode.yml standard by including this
 # metadata file that makes public software easily discoverable.
 # More info at https://github.com/italia/publiccode.yml
 
@@ -106,10 +106,10 @@ name: django-delivery
 platforms:
   - linux
   - web
-releaseDate: '2020-09-24'
+releaseDate: '2021-03-05'
 roadmap: 'https://github.com/UniversitaDellaCalabria/django-delivery/issues'
 softwareType: standalone/web
-softwareVersion: v0.4.0
+softwareVersion: v0.8.2
 url: 'https://github.com/UniversitaDellaCalabria/django-delivery'
 usedBy:
   - 'https://www.unical.it'
