@@ -898,9 +898,15 @@ def operator_good_delivery_send_token(request, campaign_id, delivery_point_id,
 
     :return: redirect
     """
-    good_delivery = get_object_or_404(GoodDelivery,
-                                      delivery_point=delivery_point,
-                                      pk=good_delivery_id)
+    if multi_tenant:
+        good_delivery = get_object_or_404(GoodDelivery,
+                                          delivery_point__campaign=campaign,
+                                          pk=good_delivery_id)
+    else:
+        good_delivery = get_object_or_404(GoodDelivery,
+                                          delivery_point=delivery_point,
+                                          pk=good_delivery_id)
+
     if good_delivery.disabled_date:
         messages.add_message(request, messages.ERROR,
                              _("Consegna bloccata"))
