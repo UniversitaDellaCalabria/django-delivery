@@ -390,7 +390,7 @@ class GoodDeliveryItem(TimeStampedModel):
     good_delivery = models.ForeignKey(GoodDelivery,
                                       on_delete=models.CASCADE)
     good = models.ForeignKey(Good, on_delete=models.CASCADE)
-    quantity = models.PositiveIntegerField(default=1)
+    quantity = models.PositiveIntegerField(default=0)
     good_stock_identifier = models.ForeignKey(DeliveryPointGoodStockIdentifier,
                                               blank=True, null=True,
                                               on_delete=models.CASCADE)
