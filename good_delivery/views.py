@@ -345,6 +345,10 @@ def operator_good_delivery_add_items(request, campaign_id, delivery_point_id,
                                 good_delivery_id=good_delivery.pk)
 
             quantity = int(v)
+
+            # zero!
+            if not quantity: continue
+
             # get single stock
             stock_prefix = getattr(settings,
                                    "GOOD_STOCK_FORMS_PREFIX",
