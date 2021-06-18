@@ -172,3 +172,9 @@
     <b>{% trans "Motivazione" %}:</b> {{ good_delivery.disable_notes }}
 </p>
 {% endif %}
+
+{% if good_delivery.notes %}
+<p class="card-text">
+    <b>{% trans "Note" %}:</b> {{ good_delivery.notes }}
+</p>
+{% endif %}
