@@ -100,7 +100,7 @@ def operator_active_campaigns(request, my_delivery_points):
 
 @login_required
 @campaign_is_active
-@campaign_is_in_progress
+# @campaign_is_in_progress
 @is_campaign_operator
 def operator_campaign_detail(request, campaign_id, campaign, delivery_points):
     """
@@ -428,7 +428,7 @@ def operator_good_delivery_add_items(request, campaign_id, delivery_point_id,
 
 @login_required
 @campaign_is_active
-@campaign_is_in_progress
+# @campaign_is_in_progress
 @is_delivery_point_operator
 @can_manage_good_delivery
 def operator_good_delivery_detail(request, campaign_id, delivery_point_id,
@@ -1179,7 +1179,7 @@ class OperatorDeliveryPointDetail(View):
 
     @method_decorator(login_required)
     @method_decorator(campaign_is_active)
-    @method_decorator(campaign_is_in_progress)
+    # @method_decorator(campaign_is_in_progress)
     @method_decorator(is_delivery_point_operator)
     def get(self, request, campaign_id, delivery_point_id,
             campaign, delivery_point, multi_tenant):

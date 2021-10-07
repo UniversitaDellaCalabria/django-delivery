@@ -6,9 +6,19 @@
     <div class="card-wrapper card-space">
       <div class="card card-bg no-after">
         <div class="card-body">
+            {% if not campaign.is_started %}
+            <span class="badge badge-warning mb-2">
+                {% trans "Non ancora iniziata" %}
+            </span>
+            {% elif campaign.is_end %}
+            <span class="badge badge-danger mb-2">
+                {% trans "Terminata" %}
+            </span>
+            {% else %}
             <span class="badge badge-success mb-2">
                 {% trans "In corso" %}
             </span>
+            {% endif %}
             <a class="read-more" href="{% url 'good_delivery:operator_campaign_detail' campaign_id=campaign.slug %}">
                 <h5 class="card-title">{{ campaign.name }}</h5>
             </a>

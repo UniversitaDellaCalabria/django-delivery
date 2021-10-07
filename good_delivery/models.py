@@ -70,10 +70,16 @@ class DeliveryCampaign(TimeStampedModel):
         verbose_name = _('Campagna di consegne')
         verbose_name_plural = _('Campagne di consegne')
 
+    def is_started(self):
+        return self.date_start <= timezone.localtime()
+
+    def is_end(self):
+        return self.date_end <= timezone.localtime()
+
     # @property
     # TODO perchè la data di inizio no?
     def is_in_progress(self):
-        return self.date_start <= timezone.localtime() and self.date_end > timezone.localtime()
+        return self.is_started() and not self.is_end()
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)

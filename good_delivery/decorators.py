@@ -69,25 +69,16 @@ def is_operator(func_to_decorate):
         request = original_args[0]
         user = request.user
 
-        my_dp = []
         if user.is_superuser:
-            delivery_points = DeliveryPoint.objects.filter(is_active=True,
-                                                           campaign__is_active=True)
-            for dp in delivery_points:
-                if dp.campaign.is_in_progress():
-                    my_dp.append(dp)
+            my_delivery_points = DeliveryPoint.objects.filter(is_active=True,
+                                                              campaign__is_active=True)
         else:
             my_delivery_points = OperatorDeliveryPoint.objects.filter(operator=user,
                                                                       is_active=True,
                                                                       delivery_point__is_active=True,
                                                                       delivery_point__campaign__is_active=True)
-            for dp in my_delivery_points:
-                if dp.delivery_point.campaign.is_in_progress():
-                    my_dp.append(dp.delivery_point)
-
-        if my_dp:
-            original_kwargs['my_delivery_points'] = my_dp
-            return func_to_decorate(*original_args, **original_kwargs)
+        original_kwargs['my_delivery_points'] = my_delivery_points
+        return func_to_decorate(*original_args, **original_kwargs)
         return custom_message(request,
                               _("Operatore non abilitato a nessuna "
                                 "delle campagne attive"))
