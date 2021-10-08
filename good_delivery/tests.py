@@ -215,7 +215,7 @@ class GoodDeliveryTest(TestCase):
 
         data.pop('document_id')
         req = self.client.post(url, data=data, follow=True)
-        assert b'Inserisci gli estremi' in req.content
+        assert b'obbligatorio' in req.content
 
         # test invalid quantities
         data = _item_data.copy()
@@ -223,7 +223,7 @@ class GoodDeliveryTest(TestCase):
         csrf_data = self._get_csrfmiddlewaretoken(req.context)
         data.update(csrf_data)
         req = self.client.post(url, data=data, follow=True)
-        assert b'reali' in req.content
+        assert b'numero intero' in req.content
 
         # test buono
         data = _item_data.copy()

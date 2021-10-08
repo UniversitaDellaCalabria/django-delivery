@@ -14,7 +14,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='django-good-delivery',
-    version='0.10.1',
+    version='0.11.0',
     packages=find_packages(),
     include_package_data=True,
     license='Apache Software License',

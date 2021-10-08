@@ -1,4 +1,5 @@
 from django import forms
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.forms import ModelForm
@@ -44,6 +45,39 @@ class GoodDeliveryPreloadForm(forms.Form):
         users = get_user_model().objects.filter(is_active=True)
         super().__init__(*args, **kwargs)
         self.fields['user'].queryset = users
+
+
+class GoodDeliveryQuantityForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        stocks = kwargs.pop('stocks', [])
+        super().__init__(*args, **kwargs)
+        campaign = None
+        if stocks:
+            campaign = stocks[0].delivery_point.campaign
+        for stock in stocks:
+            field_name = f'{settings.GOOD_STOCK_FORMS_PREFIX}{stock.pk}'
+            self.fields[field_name] = forms.IntegerField(
+                                        label=f'{_("Quantità")} {stock.good.name}',
+                                        required=True,
+                                        min_value=0,
+                                        initial=campaign.default_delivered_quantity
+                                      )
+
+        if campaign:
+            if campaign.identity_document_required:
+                self.fields['document_type'] = forms.CharField(label='Tipo documento di identità',
+                                                               required=True,
+                                                               help_text=_("Carta identità, Patente, ecc..."))
+                self.fields['document_id'] = forms.CharField(label='Dati documento di identità',
+                                                             required=True,
+                                                             help_text=_("Numero, data, rilasciato da"))
+
+        self.fields['notes'] = forms.CharField(label='Note',
+                                               widget=forms.Textarea(attrs={'rows':2}),
+                                               required=False)
+
+    class Media:
+        js = ('js/textarea-autosize.js',)
 
 
 class GoodDeliveryItemForm(forms.ModelForm):

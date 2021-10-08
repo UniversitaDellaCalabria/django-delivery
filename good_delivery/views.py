@@ -309,103 +309,90 @@ def operator_good_delivery_add_items(request, campaign_id, delivery_point_id,
 
     # get delivery point good stocks
     stocks = DeliveryPointGoodStock.objects.filter(delivery_point=delivery_point)
+    form = GoodDeliveryQuantityForm(stocks=stocks)
 
     if request.POST:
-        post_dict = dict(request.POST.items())
+        form = GoodDeliveryQuantityForm(data=request.POST,
+                                        stocks=stocks)
+        if form.is_valid():
+            document_type = form.cleaned_data.get('document_type', '')
+            document_id = form.cleaned_data.get('document_id', '')
+            notes = form.cleaned_data['notes']
 
-        # pop not related to stocks POST values
-        post_dict.pop('csrfmiddlewaretoken')
-        notes = post_dict.pop('notes')
+            for stock in stocks:
+                field_name = f'{settings.GOOD_STOCK_FORMS_PREFIX}{stock.pk}'
+                quantity = form.cleaned_data[field_name]
 
-        # identity document required?
-        if campaign.identity_document_required:
-            document_type = post_dict.pop('document_type') \
-                            if post_dict.get('document_type') else ''
-            document_id = post_dict.pop('document_id') \
-                          if post_dict.get('document_id') else ''
+                # zero!
+                if not quantity:
+                    messages.add_message(request, messages.INFO,
+                                         _("Non è stata inserita alcuna "
+                                           "unità di tipo <b>{}</b>")\
+                            .format(stock.good))
+                    continue
 
-            if not document_type.strip() or not document_id.strip():
-                messages.add_message(request, messages.ERROR,
-                                     _("Inserisci gli estremi del documento di identità"))
-                return redirect('good_delivery:operator_good_delivery_add_items',
-                                campaign_id=campaign_id,
-                                delivery_point_id=delivery_point_id,
-                                good_delivery_id=good_delivery.pk)
+                # check availability
+                available_items = stock.get_available_items()
 
-        # for every stock, get quantity of items to add
-        for k,v in post_dict.items():
-            # validate stock quantity fields
-            if not v.isdigit():
-                GoodDeliveryItem.objects.filter(good_delivery=good_delivery).delete()
-                messages.add_message(request, messages.ERROR,
-                                     _("Inserisci quantità reali"))
-                return redirect('good_delivery:operator_good_delivery_add_items',
-                                campaign_id=campaign_id,
-                                delivery_point_id=delivery_point_id,
-                                good_delivery_id=good_delivery.pk)
+                # if choosen quantity exceeds stock availability
+                if type(available_items) == int and quantity > available_items:
+                    # delete already inserted items
+                    items = good_delivery.get_items()
+                    items.delete()
+                    messages.add_message(request, messages.ERROR,
+                                         _("La quantità residua nello "
+                                           "stock <b>{}</b> è di "
+                                           "<b>{}</b> unità").format(stock.good,
+                                                                     available_items))
+                    return redirect('good_delivery:operator_good_delivery_detail',
+                        campaign_id=campaign_id,
+                        delivery_point_id=delivery_point_id,
+                        good_delivery_id=good_delivery_id)
 
-            quantity = int(v)
+                # else
+                else:
+                    # if stock provides a list of identification codes
+                    # then quantity must be 1 for each item
+                    # and user has to select an ID number for every one
+                    dpgsi = DeliveryPointGoodStockIdentifier
+                    has_identifier = dpgsi.objects.filter(delivery_point_stock=stock).first()
 
-            # zero!
-            if not quantity: continue
+                    if has_identifier:
+                        for i in range(quantity):
+                            good_delivery_item = GoodDeliveryItem.objects.\
+                                                    create(good_delivery=good_delivery,
+                                                           quantity=1,
+                                                           good=stock.good)
+                            # log action
+                            good_delivery.log_action(_("Inserimento item {}").format(good_delivery_item),
+                                                    CHANGE,
+                                                    request.user)
+                    # else (e.g. glasses of water, bananas...)
+                    # quantity is choosen by user
+                    else: # pragma: no cover
+                        good_delivery_item = GoodDeliveryItem(good_delivery=good_delivery,
+                                                              quantity=quantity,
+                                                              good=stock.good)
+                        good_delivery.delivered_by = request.user
+                        good_delivery_item.save()
 
-            # get single stock
-            stock_prefix = getattr(settings,
-                                   "GOOD_STOCK_FORMS_PREFIX",
-                                   GOOD_STOCK_FORMS_PREFIX)
-            stock_pk = k.replace(stock_prefix,'')
-            stock = stocks.get(pk=stock_pk)
-            # check availability
-            available_items = stock.get_available_items()
-            # if choosen quantity exceeds stock availability
-            if type(available_items) == int and \
-               quantity > available_items:
-                messages.add_message(request, messages.ERROR,
-                                     _("La quantità residua nello "
-                                       "stock <b>{}</b> è di "
-                                       "<b>{}</b> unità").format(stock,
-                                                                 available_items))
-            # else
-            else:
-                # if stock provides a list of identification codes
-                # then quantity must be 1 for each item
-                # and user has to select an ID number for every one
-                dpgsi = DeliveryPointGoodStockIdentifier
-                has_identifier = dpgsi.objects.filter(delivery_point_stock=stock).first()
-
-                if has_identifier:
-                    for i in range(quantity):
-                        good_delivery_item = GoodDeliveryItem.objects.\
-                                                create(good_delivery=good_delivery,
-                                                       quantity=1,
-                                                       good=stock.good)
                         # log action
-                        good_delivery.log_action(_("Inserimento item {}").format(good_delivery_item),
+                        good_delivery.log_action(_("Inserimento {} item {}").format(quantity,
+                                                                                    good_delivery_item),
                                                 CHANGE,
                                                 request.user)
-                # else (e.g. glasses of water, bananas...)
-                # quantity is choosen by user
-                else: # pragma: no cover
-                    good_delivery_item = GoodDeliveryItem(good_delivery=good_delivery,
-                                                          quantity=quantity,
-                                                          good=stock.good)
-                    good_delivery.delivered_by = request.user
-                    good_delivery_item.save()
 
-                    # log action
-                    good_delivery.log_action(_("Inserimento {} item {}").format(quantity,
-                                                                                good_delivery_item),
-                                            CHANGE,
-                                            request.user)
-
-                # set operator data in good delivery
-                good_delivery.delivery_point = delivery_point
-                if campaign.identity_document_required:
-                    good_delivery.document_type = document_type
-                    good_delivery.document_id = document_id
-                good_delivery.notes = notes
-                good_delivery.save()
-
+            # set operator data in good delivery
+            good_delivery.delivery_point = delivery_point
+            if campaign.identity_document_required:
+                good_delivery.document_type = document_type
+                good_delivery.document_id = document_id
+            good_delivery.notes = notes
+            good_delivery.save()
+        else:
+            for k,v in get_labeled_errors(form).items():
+                messages.add_message(request, messages.ERROR,
+                                     "<b>{}</b>: {}".format(k, strip_tags(v)))
         return redirect('good_delivery:operator_good_delivery_detail',
                         campaign_id=campaign_id,
                         delivery_point_id=delivery_point_id,
@@ -416,13 +403,15 @@ def operator_good_delivery_add_items(request, campaign_id, delivery_point_id,
     logs = LogEntry.objects.filter(content_type_id=ContentType.objects.get_for_model(good_delivery).pk,
                                    object_id=good_delivery.pk)
 
+
     d = {'campaign': campaign,
          'delivery_point': delivery_point,
          'good_delivery': good_delivery,
          'logs': logs,
          'stocks': stocks,
          'sub_title': delivery_point,
-         'title': good_delivery,}
+         'title': good_delivery,
+         'form': form}
     return render(request, template, d)
 
 

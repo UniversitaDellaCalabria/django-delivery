@@ -64,7 +64,8 @@ class DeliveryCampaign(TimeStampedModel):
     note_operator = models.TextField(help_text=_('Notes to operators'),
                                      blank=True, null=True)
     note_users = models.TextField(help_text=_('Notes to users'),
-                                     blank=True, null=True)
+                                  blank=True, null=True)
+    default_delivered_quantity = models.IntegerField(default=0)
 
     class Meta:
         verbose_name = _('Campagna di consegne')

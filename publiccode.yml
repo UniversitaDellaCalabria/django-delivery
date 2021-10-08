@@ -109,7 +109,7 @@ platforms:
 releaseDate: '2021-10-08'
 roadmap: 'https://github.com/UniversitaDellaCalabria/django-delivery/issues'
 softwareType: standalone/web
-softwareVersion: v0.10.1
+softwareVersion: v0.11.0
 url: 'https://github.com/UniversitaDellaCalabria/django-delivery'
 usedBy:
   - 'https://www.unical.it'

@@ -1,4 +1,4 @@
-{% extends "base_page_schema.html" %}
+{% extends "form_complete.html" %}
 
 {% load i18n %}
 {% load static %}
@@ -36,78 +36,3 @@
 </a>
 {% endif %}
 {% endblock top_buttons %}
-
-{% block page_content %}
-    {% settings_value "GOOD_STOCK_FORMS_PREFIX" as stock_prefix %}
-    <form method="post" enctype="multipart/form-data">
-
-        {% for stock in stocks %}
-        <div style="padding: 0 0 1rem">
-            <b>
-                <label for="{{stock_prefix}}{{ stock.pk }}">
-                    {{ stock.good }}
-                </label>
-            </b> *
-            <input type="number"
-                   name="{{stock_prefix}}{{ stock.pk }}"
-                   value="0"
-                   required
-                   id="{{stock_prefix}}{{ stock.pk }}">
-            <small class="form-text text-muted">
-                {% trans "Specifica la quantità da consegnare" %}
-            </small>
-        </div>
-        {% endfor %}
-
-        <hr>
-
-        {% if campaign.identity_document_required %}
-        <h4 class="pb-4">{% trans "Documento d'identità" %}</h4>
-        <div style="padding: 0 0 1rem">
-            <b>
-                <label for="document_type">
-                    {% trans "Tipo documento" %}
-                </label>
-            </b> *
-            <input type="text"
-                   required
-                   name="document_type"
-                   id="id_document_type">
-        </div>
-
-        <div style="padding: 0 0 1rem">
-            <b>
-                <label for="document_id">
-                    {% trans "Dati documento" %}
-                </label>
-            </b> *
-            <input type="text"
-                   required
-                   name="document_id"
-                   id="id_document_id">
-            <small class="form-text text-muted">
-                {% trans "Numero, data, rilasciato da" %}
-            </small>
-        </div>
-        {% endif %}
-        <div style="padding: 0 0 1rem">
-            <b>
-                <label for="notes">
-                    {% trans "Note" %}
-                </label>
-            </b>
-            <textarea name="notes"
-                      cols="40" rows="2" id="id_notes"></textarea>
-        </div>
-        {% csrf_token %}
-
-        {% block form_buttons %}
-        <input class="btn btn-success btn-block"
-               type="submit"
-               value="{% trans 'Procedi' %}">
-        {% endblock form_buttons %}
-    </form>
-
-    {% include "logs.html" %}
-
-{% endblock page_content %}
