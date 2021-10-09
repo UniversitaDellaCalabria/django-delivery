@@ -11,6 +11,16 @@ from bootstrap_italia_template.widgets import (BootstrapItaliaSelectWidget,
 from . models import *
 
 
+IDENTITY_DOCUMENT_TYPES = (
+    ("carta d'identità", _("Carta d'identità")),
+    ("passaporto", _("Passaporto")),
+    ("patente di guida", _("Patente di guida")),
+    ("patente nautica", _("Patente nautica")),
+    ("porto d'armi", _("Porto d'armi")),
+    ("altro", _("Altro (specificare nei dati del documento)")),
+)
+
+
 # in admin
 class AdminImportCSVForm(forms.Form):
     campaign = forms.ModelChoiceField(label=_('Campagna'),
@@ -63,11 +73,12 @@ class GoodDeliveryQuantityForm(forms.Form):
                                         initial=campaign.default_delivered_quantity
                                       )
 
-        if campaign:
-            if campaign.identity_document_required:
-                self.fields['document_type'] = forms.CharField(label='Tipo documento di identità',
-                                                               required=True,
-                                                               help_text=_("Carta identità, Patente, ecc..."))
+        if campaign and campaign.identity_document_required:
+                self.fields['document_type'] = forms.ChoiceField(choices=IDENTITY_DOCUMENT_TYPES,
+                                                                 label='Tipo documento di identità',
+                                                                 required=True,
+                                                                 help_text=_("Carta identità, Patente, ecc..."),
+                                                                 widget=BootstrapItaliaSelectWidget)
                 self.fields['document_id'] = forms.CharField(label='Dati documento di identità',
                                                              required=True,
                                                              help_text=_("Numero, data, rilasciato da"))

@@ -389,14 +389,16 @@ def operator_good_delivery_add_items(request, campaign_id, delivery_point_id,
                 good_delivery.document_id = document_id
             good_delivery.notes = notes
             good_delivery.save()
+
+            return redirect('good_delivery:operator_good_delivery_detail',
+                        campaign_id=campaign_id,
+                        delivery_point_id=delivery_point_id,
+                        good_delivery_id=good_delivery_id)
+
         else:
             for k,v in get_labeled_errors(form).items():
                 messages.add_message(request, messages.ERROR,
                                      "<b>{}</b>: {}".format(k, strip_tags(v)))
-        return redirect('good_delivery:operator_good_delivery_detail',
-                        campaign_id=campaign_id,
-                        delivery_point_id=delivery_point_id,
-                        good_delivery_id=good_delivery_id)
 
     template = "operator_good_delivery_preload.html"
 
