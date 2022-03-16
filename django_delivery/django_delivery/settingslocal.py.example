@@ -96,7 +96,7 @@ SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 # JWE support
 JWE_RSA_KEY_PATH = 'certs/private.key'
-JWE_ALG = "RSA1_5"
+JWE_ALG = "RSA-OAEP"
 JWE_ENC = "A128CBC-HS256"
 # end JWE support
 
