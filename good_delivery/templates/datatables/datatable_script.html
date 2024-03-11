@@ -59,8 +59,21 @@ $(function() {
                 visible: false,
             } ,
             {
+                targets: [ 1 ],
+                className: "min-mobile-p",
+                orderable: true,
+            },
+            {
+                targets: [ 2 ],
+                className: "min-mobile-p",
+                orderable: true,
+                render: function ( data, type, row ) {
+                    return data||"-";
+                }
+            },
+            {
 
-                targets:   [ 1 ],
+                targets:   [ 3 ],
                 orderable: false,
                 className: "min-mobile-p",
                 render: function ( data, type, row ) {
@@ -68,19 +81,23 @@ $(function() {
                 }
             } ,
             {
-                targets: [ 2 ],
-                className: "desktop",
-                orderable: false,
-            },
-            {
-                targets: [ 3 ],
-                className: "desktop",
-                orderable: false,
-            },
-            {
                 targets: [ 4 ],
                 className: "desktop",
                 orderable: false,
+            },
+            {
+                targets: [ 5 ],
+                className: "desktop",
+                orderable: false,
+            },
+            {
+                targets: [ 6 ],
+                className: "desktop",
+                orderable: false,
+            },
+            {
+                targets: [ 7 ],
+                visible: false,
             },
         ];
 

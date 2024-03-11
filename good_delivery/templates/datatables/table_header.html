@@ -2,16 +2,19 @@
 {% load static %}
 
 <form method="post">
-    <div>
+    <div class="table-responsive">
         <table class="table table-striped table-hover datatable-responsive-serverside">
                 <!--id="ticketTable"-->
                 <thead>
                 <tr>
                     <th></th>
+                    <th>{% trans "Data inserimento" %}</th>
+                    <th>{% trans "Data di consegna" %}</th>
                     <th>{% trans "Utente" %}</th>
                     <th>{% trans "Punto di consegna scelto" %}</th>
                     <th>{% trans "Punto di consegna" %}</th>
                     <th>{% trans "Stato" %}</th>
+                    <th>{% trans "Note" %}</th>
                 </tr>
             </thead>
         </table>

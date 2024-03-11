@@ -14,8 +14,9 @@ from good_delivery.decorators import *
 from good_delivery.models import *
 
 
-_columns = ['pk', 'delivered_to', 'choosen_delivery_point', 'delivery_point',
-            'state']
+_columns = ['pk', 'create', 'delivery_date', 'delivered_to',
+            'choosen_delivery_point', 'delivery_point',
+            'state', 'notes']
 
 
 class UsersDeliveryPointDTD(DjangoDatatablesServerProc):
@@ -38,7 +39,8 @@ class UsersDeliveryPointDTD(DjangoDatatablesServerProc):
                     Q(delivered_to__first_name__icontains=text) | \
                     Q(delivered_to__last_name__icontains=text) | \
                     Q(choosen_delivery_point__name__icontains=text) | \
-                    Q(delivery_point__name__icontains=text))
+                    Q(delivery_point__name__icontains=text) | \
+                    Q(notes__icontains=text))
 
 @csrf_exempt
 @login_required
